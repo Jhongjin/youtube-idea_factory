@@ -492,6 +492,56 @@ a {
   font-weight: 750;
 }
 
+.validation-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.validation-banner.pass {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.validation-banner.fail {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.validation-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.validation-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.validation-grid strong {
+  font-size: 12px;
+  text-align: right;
+}
+
+.validation-failures {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 17px;
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .spin {
   animation: spin 0.8s linear infinite;
 }

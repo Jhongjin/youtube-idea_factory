@@ -21,7 +21,9 @@ import {
 import Link from "next/link";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { NewRunForm } from "@/app/components/new-run-form";
+import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
+import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
@@ -251,7 +253,13 @@ function SourcesPanel({ run }: { run: RunSummary }) {
   );
 }
 
-function Inspector({ run }: { run: RunSummary }) {
+function Inspector({
+  run,
+  validation,
+}: {
+  run: RunSummary;
+  validation: PackageValidationResult;
+}) {
   const brief = run.package.brief;
   return (
     <aside className="inspector">
@@ -265,6 +273,8 @@ function Inspector({ run }: { run: RunSummary }) {
             <NewRunForm />
           </div>
         </section>
+
+        <PackageValidationPanel initialResult={validation} runId={run.id} />
 
         <section className="panel">
           <div className="panel-header">
@@ -358,6 +368,7 @@ export default async function Home({
   const params = searchParams ? await searchParams : {};
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
+  const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
 
   return (
     <div className="shell">
@@ -400,7 +411,7 @@ export default async function Home({
         <EmptyState />
       )}
       {activeRun ? (
-        <Inspector run={activeRun} />
+        <Inspector run={activeRun} validation={validation!} />
       ) : (
         <aside className="inspector">
           <section className="panel">

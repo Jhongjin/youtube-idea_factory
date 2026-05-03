@@ -63,6 +63,12 @@ API routes:
 - `GET /api/runs/:runId/artifacts/:artifactId`
 - `PUT /api/runs/:runId/artifacts/:artifactId`
 
+## Validate From Dashboard
+
+The dashboard inspector shows production package structure validation. The API route is:
+
+- `GET /api/runs/:runId/validate`
+
 ## Validate A Run
 
 ```powershell
