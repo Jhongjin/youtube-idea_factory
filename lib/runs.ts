@@ -58,7 +58,7 @@ export type RunSummary = {
   updatedAt: string;
 };
 
-const runsDir = path.join(process.cwd(), "runs");
+const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 
 async function exists(filePath: string) {
   try {
@@ -91,7 +91,7 @@ export async function getRuns(): Promise<RunSummary[]> {
 
       return {
         id: entry.name,
-        path: path.relative(process.cwd(), runPath),
+        path: path.relative(/* turbopackIgnore: true */ process.cwd(), runPath),
         package: JSON.parse(raw) as ProductionPackage,
         updatedAt: stat.mtime.toISOString(),
       };

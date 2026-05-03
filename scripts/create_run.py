@@ -17,9 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def slugify(value: str) -> str:
     value = value.strip().lower()
-    value = re.sub(r"[^a-z0-9가-힣]+", "-", value)
+    value = re.sub(r"[^a-z0-9]+", "-", value)
     value = value.strip("-")
-    return value[:48] or "untitled"
+    return value[:48] or "run"
 
 
 def extract_youtube_video_id(url: str) -> str:
@@ -444,4 +444,3 @@ def main(argv: list[str]) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
-

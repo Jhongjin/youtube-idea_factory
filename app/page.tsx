@@ -18,6 +18,7 @@ import {
   Upload,
   Wand2,
 } from "lucide-react";
+import { NewRunForm } from "@/app/components/new-run-form";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
@@ -138,10 +139,7 @@ function EmptyState() {
         <div>
           <Rocket size={34} />
           <h3>No production runs yet</h3>
-          <p>
-            Create a manual-seed run with `python .\scripts\create_run.py` and this
-            workspace will load the package from `runs/`.
-          </p>
+          <p>New runs appear here as production packages move through the pipeline.</p>
         </div>
       </div>
     </main>
@@ -254,6 +252,16 @@ function Inspector({ run }: { run: RunSummary }) {
   return (
     <aside className="inspector">
       <div className="detail-stack">
+        <section className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">New Run</h3>
+            <Rocket size={16} />
+          </div>
+          <div className="panel-body">
+            <NewRunForm />
+          </div>
+        </section>
+
         <section className="panel">
           <div className="panel-header">
             <h3 className="panel-title">Run Brief</h3>
@@ -379,7 +387,21 @@ export default async function Home() {
       ) : (
         <EmptyState />
       )}
-      {activeRun ? <Inspector run={activeRun} /> : <aside className="inspector" />}
+      {activeRun ? (
+        <Inspector run={activeRun} />
+      ) : (
+        <aside className="inspector">
+          <section className="panel">
+            <div className="panel-header">
+              <h3 className="panel-title">New Run</h3>
+              <Rocket size={16} />
+            </div>
+            <div className="panel-body">
+              <NewRunForm />
+            </div>
+          </section>
+        </aside>
+      )}
     </div>
   );
 }

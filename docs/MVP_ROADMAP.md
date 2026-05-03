@@ -49,7 +49,7 @@ Candidate stack:
 
 Decision remains open until MVP data contracts settle.
 
-Initial dashboard work has started with a Next.js operator workspace that reads local run packages from `runs/`.
+Initial dashboard work has started with a Next.js operator workspace that reads local run packages from `runs/` and creates manual-seed runs through a local API route.
 
 ## Phase 4: Media Generation Adapters
 

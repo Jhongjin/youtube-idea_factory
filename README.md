@@ -52,6 +52,8 @@ npm run dev
 
 Then open `http://localhost:3000`.
 
+The dashboard reads local packages from `runs/` and can create new manual-seed runs through `POST /api/runs`.
+
 ## Validate
 
 ```powershell

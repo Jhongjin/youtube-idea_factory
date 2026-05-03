@@ -8,6 +8,14 @@ Manual seed mode gives the harness a stable output shape before provider decisio
 
 ## Create A Run
 
+From the dashboard, start the dev server and use the `New Run` panel:
+
+```powershell
+npm run dev
+```
+
+CLI mode is also available:
+
 ```powershell
 python .\scripts\create_run.py `
   --topic "AI 뉴스 요약 자동화" `
@@ -57,4 +65,3 @@ Use the local skills in this order:
 ## Git Policy
 
 Generated `runs/` and `artifacts/` contents are ignored by default. Commit only templates, scripts, schemas, docs, and intentionally curated examples.
-
