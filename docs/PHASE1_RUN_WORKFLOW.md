@@ -87,6 +87,10 @@ This no-key script calls YouTube oEmbed for basic title, channel, and thumbnail 
 - `production-package.json`
 - `01-research.md`
 
+The dashboard exposes the same operation through:
+
+- `POST /api/runs/:runId/sources/enrich`
+
 ## Fill The Package
 
 Use the local skills in this order:

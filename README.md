@@ -63,6 +63,7 @@ Then open `http://localhost:3000`.
 The dashboard reads local packages from `runs/` and can create new manual-seed runs through `POST /api/runs`.
 It also exposes a markdown artifact editor for `01-research.md` through `08-qa.md` using allowlisted local API routes.
 Package structure validation is available in the right inspector and through `GET /api/runs/:runId/validate`.
+Source metadata enrichment can be triggered from the Source Videos panel or through `POST /api/runs/:runId/sources/enrich`.
 
 ## Validate
 

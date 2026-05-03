@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
+import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -222,7 +223,7 @@ function SourcesPanel({ run }: { run: RunSummary }) {
     <section className="panel">
       <div className="panel-header">
         <h3 className="panel-title">Source Videos</h3>
-        <span className="meta">manual seed</span>
+        <EnrichSourcesButton runId={run.id} />
       </div>
       <div className="panel-body">
         <table className="source-table">

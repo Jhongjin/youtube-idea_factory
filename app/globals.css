@@ -382,6 +382,18 @@ a {
   white-space: nowrap;
 }
 
+.source-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.source-action span {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .inspector {
   border-left: 1px solid var(--line);
   background: #fbfcfd;
