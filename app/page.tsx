@@ -18,7 +18,9 @@ import {
   Upload,
   Wand2,
 } from "lucide-react";
+import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { NewRunForm } from "@/app/components/new-run-form";
+import { getRunArtifacts } from "@/lib/artifacts";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
@@ -348,6 +350,7 @@ function Inspector({ run }: { run: RunSummary }) {
 export default async function Home() {
   const runs = await getRuns();
   const activeRun = runs[0];
+  const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
 
   return (
     <div className="shell">
@@ -383,6 +386,8 @@ export default async function Home() {
             <PipelinePanel run={activeRun} />
             <SourcesPanel run={activeRun} />
           </div>
+
+          <ArtifactWorkspace artifacts={artifacts} runId={activeRun.id} />
         </main>
       ) : (
         <EmptyState />

@@ -44,6 +44,25 @@ The command creates:
 - `07-publishing-package.md`
 - `08-qa.md`
 
+## Edit Artifacts
+
+The dashboard artifact editor can read and save these allowlisted markdown files:
+
+- `01-research.md`
+- `02-video-analysis.md`
+- `03-claim-ledger.md`
+- `04-script-plan.md`
+- `05-storyboard.md`
+- `06-media-prompts.md`
+- `07-publishing-package.md`
+- `08-qa.md`
+
+API routes:
+
+- `GET /api/runs/:runId/artifacts`
+- `GET /api/runs/:runId/artifacts/:artifactId`
+- `PUT /api/runs/:runId/artifacts/:artifactId`
+
 ## Validate A Run
 
 ```powershell

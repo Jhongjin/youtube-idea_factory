@@ -53,6 +53,7 @@ npm run dev
 Then open `http://localhost:3000`.
 
 The dashboard reads local packages from `runs/` and can create new manual-seed runs through `POST /api/runs`.
+It also exposes a markdown artifact editor for `01-research.md` through `08-qa.md` using allowlisted local API routes.
 
 ## Validate
 
