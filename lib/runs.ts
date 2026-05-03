@@ -91,7 +91,7 @@ export async function getRuns(): Promise<RunSummary[]> {
 
       return {
         id: entry.name,
-        path: runPath,
+        path: path.relative(process.cwd(), runPath),
         package: JSON.parse(raw) as ProductionPackage,
         updatedAt: stat.mtime.toISOString(),
       };
@@ -169,4 +169,3 @@ export function getStageState(pkg: ProductionPackage) {
     },
   ];
 }
-
