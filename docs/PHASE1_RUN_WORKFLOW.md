@@ -75,6 +75,18 @@ The dashboard inspector shows production package structure validation. The API r
 python .\scripts\validate_package.py .\runs\<run-id>
 ```
 
+## Enrich Source Metadata
+
+```powershell
+python .\scripts\enrich_sources.py <run-id>
+```
+
+This no-key script calls YouTube oEmbed for basic title, channel, and thumbnail metadata. It updates:
+
+- `sources.json`
+- `production-package.json`
+- `01-research.md`
+
 ## Fill The Package
 
 Use the local skills in this order:

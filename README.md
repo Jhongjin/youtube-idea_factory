@@ -43,6 +43,14 @@ python .\scripts\create_run.py `
 python .\scripts\validate_package.py .\runs\<run-id>
 ```
 
+## Enrich Source Metadata
+
+```powershell
+python .\scripts\enrich_sources.py <run-id>
+```
+
+This uses YouTube oEmbed to fill basic title/channel metadata without an API key.
+
 ## Run Dashboard
 
 ```powershell
