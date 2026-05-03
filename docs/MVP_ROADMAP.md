@@ -1,0 +1,86 @@
+# MVP Roadmap
+
+## Phase 0: Harness Baseline
+
+Status: started.
+
+- Create project guidance and docs map.
+- Create local YouTube production skills.
+- Create validation script.
+- Define seed data contracts.
+
+## Phase 1: Manual-Input Production Package
+
+Goal: User can paste a category/topic and seed URLs, then receive a structured production package.
+
+Build:
+
+- run folder creation: started with `scripts/create_run.py`
+- run brief form or template: started with `docs/templates/run-brief.md` and `brief.json`
+- source video table: started with `sources.json` and `01-research.md`
+- analysis artifact format: started with `02-video-analysis.md`
+- claim ledger: started with `03-claim-ledger.md`
+- script plan: started with `04-script-plan.md`
+- storyboard: started with `05-storyboard.md`
+- media prompt pack: started with `06-media-prompts.md`
+- QA packet: started with `08-qa.md` and `scripts/validate_package.py`
+
+## Phase 2: Research Automation
+
+Goal: Add YouTube finder and transcript ingestion.
+
+Build:
+
+- YouTube Data API adapter or approved search provider
+- transcript fetch adapter
+- source ranking logic
+- failure and quota handling
+
+## Phase 3: Dashboard App
+
+Goal: Build the usable production dashboard.
+
+Candidate stack:
+
+- Next.js + TypeScript for dashboard
+- Python/FastAPI or Node server for orchestration
+- SQLite/Postgres for runs and artifacts
+- object storage or local filesystem for generated media
+
+Decision remains open until MVP data contracts settle.
+
+## Phase 4: Media Generation Adapters
+
+Goal: Add paid generation behind approval gates.
+
+Build:
+
+- image generation adapter
+- video generation adapter
+- TTS adapter
+- subtitle adapter
+- BGM selection
+- asset manifest
+
+## Phase 5: Assembly And Publishing
+
+Goal: Render and hand off to YouTube.
+
+Build:
+
+- timeline assembly
+- render validation
+- thumbnail export
+- YouTube upload adapter
+- schedule/publish approval gate
+
+## Phase 6: Feedback Loop
+
+Goal: Use performance data to improve future content.
+
+Build:
+
+- analytics ingestion
+- retention pattern comparison
+- title/thumbnail A/B learning log
+- channel memory updates

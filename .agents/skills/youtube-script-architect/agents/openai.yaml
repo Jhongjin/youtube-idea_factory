@@ -1,0 +1,5 @@
+interface:
+  display_name: "Script Architect"
+  short_description: "Build source-backed YouTube scripts"
+  default_prompt: "Use $youtube-script-architect to turn research into a complete YouTube script plan."
+

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Video Analysis"
+  short_description: "Analyze structure and hooks"
+  default_prompt: "Use $youtube-video-analysis to break down competitor videos into reusable patterns."

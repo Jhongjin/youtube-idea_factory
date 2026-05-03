@@ -1,0 +1,4 @@
+interface:
+  display_name: "Production QA"
+  short_description: "Review final packages before publishing"
+  default_prompt: "Use $youtube-production-qa to inspect a YouTube production package before upload."

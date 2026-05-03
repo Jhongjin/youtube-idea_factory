@@ -1,0 +1,4 @@
+interface:
+  display_name: "Media Prompts"
+  short_description: "Generate image and video prompts"
+  default_prompt: "Use $youtube-media-prompts to create consistent prompts for image and video generation."

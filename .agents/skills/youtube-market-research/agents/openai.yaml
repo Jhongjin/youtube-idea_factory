@@ -1,0 +1,4 @@
+interface:
+  display_name: "YouTube Research"
+  short_description: "Find and synthesize competitor videos"
+  default_prompt: "Use $youtube-market-research to research a YouTube topic and return ranked source insights."

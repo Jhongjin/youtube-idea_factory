@@ -1,0 +1,4 @@
+interface:
+  display_name: "Fact Check"
+  short_description: "Verify claims and source risks"
+  default_prompt: "Use $youtube-fact-check to verify claims before script generation."

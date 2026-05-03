@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "YouTubeProductionPackage",
+  "type": "object",
+  "required": [
+    "run_id",
+    "brief",
+    "sources",
+    "claim_ledger",
+    "script_plan",
+    "storyboard",
+    "media_prompts",
+    "publishing_package",
+    "qa"
+  ],
+  "properties": {
+    "run_id": { "type": "string" },
+    "brief": {
+      "type": "object",
+      "required": ["topic", "format", "language"],
+      "properties": {
+        "topic": { "type": "string" },
+        "category": { "type": "string" },
+        "format": { "type": "string" },
+        "target_audience": { "type": "string" },
+        "target_duration_seconds": { "type": "integer", "minimum": 1 },
+        "language": { "type": "string" },
+        "tone": { "type": "string" }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/source_video" }
+    },
+    "claim_ledger": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim" }
+    },
+    "script_plan": {
+      "type": "object",
+      "required": ["angle", "hook", "outline"],
+      "properties": {
+        "angle": { "type": "string" },
+        "hook": { "type": "string" },
+        "outline": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "storyboard": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/scene" }
+    },
+    "media_prompts": {
+      "type": "object",
+      "properties": {
+        "style_bible": { "type": "string" },
+        "image_prompts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/media_prompt" }
+        },
+        "video_prompts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/media_prompt" }
+        }
+      }
+    },
+    "publishing_package": {
+      "type": "object",
+      "properties": {
+        "title_candidates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "thumbnail_prompt": { "type": "string" }
+      }
+    },
+    "qa": {
+      "type": "object",
+      "required": ["status", "blockers"],
+      "properties": {
+        "status": { "enum": ["pass", "blocked", "needs_review"] },
+        "blockers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approval_required": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "source_video": {
+      "type": "object",
+      "required": ["url", "title", "inclusion_reason"],
+      "properties": {
+        "url": { "type": "string" },
+        "title": { "type": "string" },
+        "channel": { "type": "string" },
+        "view_count": { "type": "integer", "minimum": 0 },
+        "published_at": { "type": "string" },
+        "inclusion_reason": { "type": "string" },
+        "transcript_status": { "type": "string" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["claim", "status"],
+      "properties": {
+        "claim": { "type": "string" },
+        "status": {
+          "enum": ["supported", "needs_evidence", "opinion", "high_risk", "do_not_use"]
+        },
+        "evidence_url": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "notes": { "type": "string" }
+      }
+    },
+    "scene": {
+      "type": "object",
+      "required": ["scene_id", "duration_seconds", "narration", "visual"],
+      "properties": {
+        "scene_id": { "type": "string" },
+        "duration_seconds": { "type": "integer", "minimum": 1 },
+        "narration": { "type": "string" },
+        "visual": { "type": "string" },
+        "on_screen_text": { "type": "string" },
+        "asset_needs": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "media_prompt": {
+      "type": "object",
+      "required": ["id", "prompt"],
+      "properties": {
+        "id": { "type": "string" },
+        "scene_id": { "type": "string" },
+        "prompt": { "type": "string" },
+        "negative_prompt": { "type": "string" },
+        "aspect_ratio": { "type": "string" },
+        "duration_seconds": { "type": "integer", "minimum": 1 },
+        "safety_notes": { "type": "string" }
+      }
+    }
+  }
+}
+

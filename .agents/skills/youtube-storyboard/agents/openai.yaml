@@ -1,0 +1,5 @@
+interface:
+  display_name: "Storyboard"
+  short_description: "Plan scenes and production cards"
+  default_prompt: "Use $youtube-storyboard to convert a script into scene-by-scene production cards."
+
