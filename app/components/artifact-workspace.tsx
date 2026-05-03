@@ -17,6 +17,9 @@ export function ArtifactWorkspace({
   const [contents, setContents] = useState(() =>
     Object.fromEntries(artifacts.map((artifact) => [artifact.id, artifact.content])),
   );
+  const [savedContents, setSavedContents] = useState(() =>
+    Object.fromEntries(artifacts.map((artifact) => [artifact.id, artifact.content])),
+  );
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState("");
 
@@ -30,7 +33,7 @@ export function ArtifactWorkspace({
   }
 
   const activeContent = contents[activeArtifact.id] ?? "";
-  const originalContent = activeArtifact.content;
+  const originalContent = savedContents[activeArtifact.id] ?? activeArtifact.content;
   const isDirty = activeContent !== originalContent;
 
   async function saveArtifact() {
@@ -50,6 +53,15 @@ export function ArtifactWorkspace({
       return;
     }
 
+    const body = (await response.json()) as { artifact: RunArtifact };
+    setContents((current) => ({
+      ...current,
+      [activeArtifact.id]: body.artifact.content,
+    }));
+    setSavedContents((current) => ({
+      ...current,
+      [activeArtifact.id]: body.artifact.content,
+    }));
     setSaveState("saved");
     window.setTimeout(() => setSaveState("idle"), 1400);
   }
@@ -118,4 +130,3 @@ export function ArtifactWorkspace({
     </section>
   );
 }
-

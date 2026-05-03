@@ -44,6 +44,12 @@ export function NewRunForm() {
       return;
     }
 
+    const body = (await response.json()) as { run?: { id?: string } };
+    if (body.run?.id) {
+      window.location.href = `/?run=${encodeURIComponent(body.run.id)}`;
+      return;
+    }
+
     window.location.reload();
   }
 
@@ -101,4 +107,3 @@ export function NewRunForm() {
     </form>
   );
 }
-

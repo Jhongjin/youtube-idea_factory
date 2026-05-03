@@ -18,6 +18,7 @@ import {
   Upload,
   Wand2,
 } from "lucide-react";
+import Link from "next/link";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -101,13 +102,14 @@ function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSumma
         <h2>Runs</h2>
         <div className="nav-list">
           {runs.slice(0, 5).map((run) => (
-            <div
+            <Link
               className={`run-card ${run.id === activeRun?.id ? "active" : ""}`}
+              href={`/?run=${encodeURIComponent(run.id)}`}
               key={run.id}
             >
               <strong>{run.package.brief.topic}</strong>
               <span>{run.id}</span>
-            </div>
+            </Link>
           ))}
           {runs.length === 0 ? <p className="muted">No runs found</p> : null}
         </div>
@@ -347,9 +349,14 @@ function Inspector({ run }: { run: RunSummary }) {
   );
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ run?: string }>;
+}) {
   const runs = await getRuns();
-  const activeRun = runs[0];
+  const params = searchParams ? await searchParams : {};
+  const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
 
   return (
