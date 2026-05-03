@@ -49,6 +49,8 @@ Candidate stack:
 
 Decision remains open until MVP data contracts settle.
 
+Initial dashboard work has started with a Next.js operator workspace that reads local run packages from `runs/`.
+
 ## Phase 4: Media Generation Adapters
 
 Goal: Add paid generation behind approval gates.

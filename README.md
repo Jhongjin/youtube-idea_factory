@@ -43,6 +43,15 @@ python .\scripts\create_run.py `
 python .\scripts\validate_package.py .\runs\<run-id>
 ```
 
+## Run Dashboard
+
+```powershell
+npm install
+npm run dev
+```
+
+Then open `http://localhost:3000`.
+
 ## Validate
 
 ```powershell

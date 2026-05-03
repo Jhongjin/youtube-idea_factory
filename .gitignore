@@ -5,6 +5,13 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
+# Node / Next.js
+node_modules/
+.next/
+.next-dev-logs/
+out/
+*.tsbuildinfo
+
 # Environment
 .env
 .env.*
@@ -24,4 +31,3 @@ assets/generated/*
 Thumbs.db
 .vscode/
 .idea/
-
