@@ -163,6 +163,8 @@ The dashboard `Prep Queue` action creates `generation-queue.json` for the active
 
 API route: `POST /api/runs/:runId/assets/queue`.
 
+The inspector `Generation Console` lists queue status and can invoke the guarded OpenAI image and TTS adapters for ready assets.
+
 ## Generate Image Assets
 
 Direct image generation is available as a guarded adapter route for OpenAI only:

@@ -933,6 +933,121 @@ a {
   font-weight: 750;
 }
 
+.asset-console {
+  display: grid;
+  gap: 10px;
+}
+
+.asset-console-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.asset-console-summary span {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: #455366;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.asset-control-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.asset-control-grid label,
+.asset-narration {
+  display: grid;
+  gap: 5px;
+}
+
+.asset-control-grid span,
+.asset-narration span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.asset-control-grid input,
+.asset-control-grid select,
+.asset-narration input,
+.asset-narration textarea {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 9px;
+  outline: none;
+}
+
+.asset-narration textarea {
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.asset-action-list {
+  display: grid;
+  gap: 7px;
+}
+
+.asset-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.asset-action-row strong,
+.asset-action-row small {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.asset-action-row strong {
+  font-size: 12px;
+}
+
+.asset-action-row small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.asset-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.asset-status.ready {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.asset-status.blocked {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
 .settings-message.compact {
   margin-top: 10px;
   padding: 8px 10px;
@@ -1186,6 +1301,11 @@ a {
   }
 
   .provider-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-control-grid,
+  .asset-action-row {
     grid-template-columns: 1fr;
   }
 

@@ -220,7 +220,7 @@ Behavior:
 
 ## Generation Queue
 
-Status: provider-agnostic preflight queue implemented.
+Status: provider-agnostic preflight queue and dashboard console implemented.
 
 Route:
 
@@ -234,6 +234,13 @@ Behavior:
 4. Keeps blocked items in `pending_approval` and records the exact missing approval, provider, prompt, or QA condition.
 5. Updates `production-package.json.asset_manifest` with ready and blocked counts.
 6. Does not call image, video, TTS, subtitle, or BGM providers; external spend remains a later adapter step.
+
+Dashboard:
+
+- The inspector `Generation Console` reads `asset-manifest.json` and `generation-queue.json`.
+- Ready image/thumbnail assets can call the guarded image adapter.
+- Ready voice assets can call the guarded TTS adapter with editable narration and voice settings.
+- Each direct adapter still requires its explicit confirmation token.
 
 ## OpenAI Image Generation
 

@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
 import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
+import { AssetGenerationConsole } from "@/app/components/asset-generation-console";
 import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
@@ -43,6 +44,7 @@ import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button"
 import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
+import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
@@ -277,16 +279,26 @@ function SourcesPanel({ run }: { run: RunSummary }) {
   );
 }
 
+function narrationFromStoryboard(storyboard: unknown[]) {
+  return storyboard
+    .filter((item): item is { narration?: unknown } => typeof item === "object" && item !== null)
+    .map((item) => (typeof item.narration === "string" ? item.narration.trim() : ""))
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 function Inspector({
   run,
   validation,
   providerSettings,
   approvals,
+  generationState,
 }: {
   run: RunSummary;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
   approvals: RunApprovals;
+  generationState: AssetGenerationState;
 }) {
   const brief = run.package.brief;
   const readyProviderCount = providerRoles.filter((role) => {
@@ -309,6 +321,20 @@ function Inspector({
         <PackageValidationPanel initialResult={validation} runId={run.id} />
 
         <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
+
+        <section className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Generation Console</h3>
+            <Sparkles size={16} />
+          </div>
+          <div className="panel-body">
+            <AssetGenerationConsole
+              defaultNarration={narrationFromStoryboard(run.package.storyboard)}
+              runId={run.id}
+              state={generationState}
+            />
+          </div>
+        </section>
 
         <section className="panel">
           <div className="panel-header">
@@ -463,6 +489,7 @@ export default async function Home({
   const params = searchParams ? await searchParams : {};
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
+  const generationState = activeRun ? await getAssetGenerationState(activeRun.id) : null;
   const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
   const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
 
@@ -524,6 +551,7 @@ export default async function Home({
       {activeRun ? (
         <Inspector
           approvals={approvals!}
+          generationState={generationState!}
           providerSettings={providerSettings}
           run={activeRun}
           validation={validation!}
