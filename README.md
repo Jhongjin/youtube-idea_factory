@@ -83,6 +83,8 @@ Copy `.env.example` to `.env.local` and set:
 YOUTUBE_API_KEY=...
 ```
 
+Or register the key on `http://localhost:3000/settings` under `YouTube API`.
+
 Then use the dashboard `YouTube Finder` panel or call `POST /api/youtube/search`.
 Finder results can be imported into the active run with `POST /api/runs/:runId/sources/import`.
 

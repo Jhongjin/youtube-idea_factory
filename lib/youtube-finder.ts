@@ -1,3 +1,5 @@
+import { getProviderSettings } from "@/lib/provider-settings";
+
 export type YouTubeSearchInput = {
   query: string;
   maxResults?: number;
@@ -57,10 +59,14 @@ type VideosResponse = {
 const searchEndpoint = "https://www.googleapis.com/youtube/v3/search";
 const videosEndpoint = "https://www.googleapis.com/youtube/v3/videos";
 
-function getApiKey() {
-  const apiKey = process.env.YOUTUBE_API_KEY?.trim();
+async function getApiKey() {
+  const settings = await getProviderSettings();
+  const settingsApiKey = settings.roles.youtube.enabled
+    ? settings.roles.youtube.apiKey?.trim()
+    : "";
+  const apiKey = settingsApiKey || process.env.YOUTUBE_API_KEY?.trim();
   if (!apiKey) {
-    throw new Error("YOUTUBE_API_KEY is not configured.");
+    throw new Error("YouTube API key is not configured. Add it at /settings or set YOUTUBE_API_KEY.");
   }
   return apiKey;
 }
@@ -113,7 +119,7 @@ export async function searchYouTubeVideos(input: YouTubeSearchInput) {
     throw new Error("Search query is required.");
   }
 
-  const apiKey = getApiKey();
+  const apiKey = await getApiKey();
   const maxResults = clampMaxResults(input.maxResults);
   const searchUrl = new URL(searchEndpoint);
   searchUrl.searchParams.set("key", apiKey);
@@ -191,4 +197,3 @@ export async function searchYouTubeVideos(input: YouTubeSearchInput) {
     })
     .filter((candidate): candidate is YouTubeCandidate => candidate !== null);
 }
-

@@ -55,6 +55,8 @@ Environment:
 YOUTUBE_API_KEY=...
 ```
 
+The YouTube API key can also be registered through `/settings` under the `YouTube API` provider role.
+
 Routes:
 
 - `POST /api/youtube/search`
