@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "roles": {
+    "llm": {
+      "role": "llm",
+      "enabled": false,
+      "provider": "OpenAI",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "image": {
+      "role": "image",
+      "enabled": false,
+      "provider": "OpenAI",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "video": {
+      "role": "video",
+      "enabled": false,
+      "provider": "Runway",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "tts": {
+      "role": "tts",
+      "enabled": false,
+      "provider": "OpenAI",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "subtitles": {
+      "role": "subtitles",
+      "enabled": false,
+      "provider": "OpenAI",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "bgm": {
+      "role": "bgm",
+      "enabled": false,
+      "provider": "Manual Library",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    },
+    "youtube": {
+      "role": "youtube",
+      "enabled": false,
+      "provider": "YouTube Data API",
+      "model": "",
+      "baseUrl": "",
+      "notes": ""
+    }
+  }
+}

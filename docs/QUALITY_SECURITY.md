@@ -40,6 +40,7 @@
 ## Security Rules
 
 - Store credentials outside committed files.
+- Use `/settings` or `config/provider-settings.local.json` for provider credentials; never commit local provider settings.
 - Do not log API keys, OAuth tokens, cookies, or paid provider secrets.
 - Do not run upload/publish actions without explicit human approval.
 - Do not run paid generation or render actions without explicit human approval.

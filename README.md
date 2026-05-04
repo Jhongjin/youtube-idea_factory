@@ -53,6 +53,12 @@ python .\scripts\check_approval_gate.py .\runs\<run-id> --gate render
 python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
 ```
 
+## Provider API Settings
+
+Open `http://localhost:3000/settings` to choose providers and register API keys for LLM, image generation, video generation, TTS, subtitles, BGM, and YouTube adapters.
+
+Settings are stored locally in `config/provider-settings.local.json`, which is ignored by git. The API route is `GET/PUT /api/settings/providers`; GET responses only return masked key status, never raw API keys.
+
 ## Enrich Source Metadata
 
 ```powershell

@@ -16,6 +16,27 @@ python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
 
 Run-level approvals live in `runs/:runId/approvals.json`, copied from `docs/templates/approvals.json`.
 
+## Provider Settings
+
+Status: local API registration page implemented.
+
+Page:
+
+- `/settings`
+
+Route:
+
+- `GET /api/settings/providers`
+- `PUT /api/settings/providers`
+
+Behavior:
+
+1. Lets the operator choose providers for LLM, image generation, video generation, TTS, subtitles, BGM, and YouTube adapters.
+2. Stores credentials in `config/provider-settings.local.json`, which is ignored by git.
+3. Preserves an existing API key when the API key field is left blank during updates.
+4. Returns only `hasApiKey` and a masked key preview to the browser.
+5. Keeps provider-specific payloads out of the core production package until each adapter is implemented.
+
 ## YouTube Finder
 
 Status: initial implementation.

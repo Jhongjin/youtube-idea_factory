@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Rocket,
   Search,
+  Settings,
   ShieldCheck,
   Sparkles,
   Upload,
@@ -402,6 +403,9 @@ export default async function Home({
               <button className="icon-button" title="Open media queue" type="button">
                 <Megaphone size={16} />
               </button>
+              <Link className="icon-button" href="/settings" title="Provider settings">
+                <Settings size={16} />
+              </Link>
               <RunDraftFlowButton runId={activeRun.id} />
               <AnalysisDraftButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />

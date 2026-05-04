@@ -43,6 +43,7 @@ Build:
 - deterministic QA gate draft with blockers, warnings, fix list, and approval checklist
 - dashboard one-click draft flow for analysis through QA
 - approval gate script and run-level approvals template for paid adapters
+- provider API registration page and local provider settings storage
 
 ## Phase 3: Dashboard App
 
