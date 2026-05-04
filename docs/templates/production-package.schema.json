@@ -101,6 +101,8 @@
         "ready_timeline_items": { "type": "integer", "minimum": 0 },
         "blockers": { "type": "integer", "minimum": 0 },
         "render_ready": { "type": "boolean" },
+        "rendered_path": { "type": "string" },
+        "rendered_at": { "type": "string" },
         "updated_at": { "type": "string" }
       }
     },

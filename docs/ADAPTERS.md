@@ -334,6 +334,30 @@ Behavior:
 8. `scripts/check_approval_gate.py --gate render` and `--gate publish` require `render_ready: true`.
 9. Does not render video; actual assembly remains a separate adapter behind the render approval gate.
 
+## Local FFmpeg Render
+
+Status: guarded local adapter implemented.
+
+Route:
+
+- `POST /api/runs/:runId/render/local`
+
+Required request body:
+
+- `confirmRender`: must equal `RENDER_VIDEO`
+
+Behavior:
+
+1. Rebuilds `render-manifest.json` before rendering.
+2. Requires `render_manifest.summary.render_ready` to be true.
+3. Runs `scripts/check_approval_gate.py --gate render` after the manifest refresh.
+4. Uses generated scene video assets first, or generated image assets as still segments.
+5. Normalizes each segment to the manifest resolution and fps with ffmpeg.
+6. Concatenates segments, muxes narration voice, optionally mixes generated BGM at low volume, and embeds SRT subtitles as an MP4 subtitle track.
+7. Writes the final file to `artifacts/:runId/renders/final.mp4`.
+8. Updates `production-package.json.render_manifest.rendered_path`, `rendered_at`, and `render-log.json`.
+9. Does not upload, schedule, or publish; YouTube handoff remains behind the publish gate.
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.

@@ -54,6 +54,7 @@ Build:
 - guarded OpenAI TTS adapter route for approved queued voice assets
 - deterministic storyboard-to-SRT subtitle draft route
 - deterministic render manifest and file-level preflight before assembly
+- guarded local ffmpeg render adapter for approved ready manifests
 
 ## Phase 3: Dashboard App
 
@@ -82,6 +83,7 @@ Build:
 - subtitle adapter
 - BGM selection
 - asset manifest
+- local render is available for ffmpeg-based MVP assembly; provider render adapters remain future work
 
 ## Phase 5: Assembly And Publishing
 

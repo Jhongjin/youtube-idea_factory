@@ -58,6 +58,8 @@ export type ProductionPackage = {
     ready_timeline_items: number;
     blockers: number;
     render_ready: boolean;
+    rendered_path?: string;
+    rendered_at?: string;
     updated_at: string;
   };
   qa: {

@@ -193,6 +193,16 @@ API route: `POST /api/runs/:runId/render/manifest`.
 
 `scripts/check_approval_gate.py --gate render` and `--gate publish` require `production-package.json.render_manifest.render_ready` to be true.
 
+## Render Local MP4
+
+The dashboard `Render MP4` action runs a guarded local ffmpeg assembly adapter:
+
+- API route: `POST /api/runs/:runId/render/local`
+- Confirmation token: `RENDER_VIDEO`
+- Output: `artifacts/:runId/renders/final.mp4`
+
+It refreshes the render manifest, runs `scripts/check_approval_gate.py --gate render`, normalizes scene videos or still images into segments, muxes voice plus optional BGM, embeds SRT subtitles, and records `rendered_path` / `rendered_at` in `production-package.json`.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.

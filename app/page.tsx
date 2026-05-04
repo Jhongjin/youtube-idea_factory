@@ -28,6 +28,7 @@ import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { GenerationQueueButton } from "@/app/components/generation-queue-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
+import { LocalRenderButton } from "@/app/components/local-render-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
@@ -421,6 +422,10 @@ function Inspector({
                 <span>{run.package.render_manifest?.render_ready ? "ready" : "pending"}</span>
               </div>
               <div className="detail-row">
+                <span>Final file</span>
+                <span>{run.package.render_manifest?.rendered_path ?? "pending"}</span>
+              </div>
+              <div className="detail-row">
                 <span>Asset manifest</span>
                 <span>
                   {run.package.asset_manifest
@@ -496,6 +501,7 @@ export default async function Home({
               <GenerationQueueButton runId={activeRun.id} />
               <SubtitleDraftButton runId={activeRun.id} />
               <RenderManifestButton runId={activeRun.id} />
+              <LocalRenderButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>

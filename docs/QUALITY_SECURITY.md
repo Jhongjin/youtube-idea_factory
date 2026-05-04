@@ -41,6 +41,7 @@
 - Subtitles and voice match script.
 - Render manifest exists.
 - Render manifest must report `render_ready: true` before a render adapter starts.
+- Local ffmpeg render also requires the explicit `RENDER_VIDEO` confirmation token and the render approval gate script.
 - BGM is optional; if present, license/provenance and mix level still need review.
 - Publishing checklist is complete.
 - Run `scripts/check_approval_gate.py --gate render` before final assembly or render spend.
