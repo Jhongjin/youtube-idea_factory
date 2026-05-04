@@ -6,6 +6,7 @@ import {
   FileSearch,
   FileText,
   Image,
+  KeyRound,
   ListChecks,
   Megaphone,
   Mic2,
@@ -35,6 +36,8 @@ import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button"
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
+import { getSafeProviderSettings } from "@/lib/provider-settings";
+import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
@@ -268,11 +271,17 @@ function SourcesPanel({ run }: { run: RunSummary }) {
 function Inspector({
   run,
   validation,
+  providerSettings,
 }: {
   run: RunSummary;
   validation: PackageValidationResult;
+  providerSettings: SafeProviderSettings;
 }) {
   const brief = run.package.brief;
+  const readyProviderCount = providerRoles.filter((role) => {
+    const setting = providerSettings.roles[role.id];
+    return setting.enabled && setting.hasApiKey;
+  }).length;
   return (
     <aside className="inspector">
       <div className="detail-stack">
@@ -287,6 +296,42 @@ function Inspector({
         </section>
 
         <PackageValidationPanel initialResult={validation} runId={run.id} />
+
+        <section className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Provider Readiness</h3>
+            <KeyRound size={16} />
+          </div>
+          <div className="panel-body">
+            <div className="detail-stack">
+              <div className="detail-row">
+                <span>Ready</span>
+                <span>
+                  {readyProviderCount}/{providerRoles.length}
+                </span>
+              </div>
+              {providerRoles.map((role) => {
+                const setting = providerSettings.roles[role.id];
+                const status =
+                  setting.enabled && setting.hasApiKey
+                    ? "ready"
+                    : setting.enabled
+                      ? "key needed"
+                      : "off";
+                return (
+                  <div className="detail-row" key={role.id}>
+                    <span>{role.label}</span>
+                    <span>{status}</span>
+                  </div>
+                );
+              })}
+              <Link className="text-button form-submit" href="/settings">
+                <Settings size={15} />
+                Configure Providers
+              </Link>
+            </div>
+          </div>
+        </section>
 
         <section className="panel">
           <div className="panel-header">
@@ -377,6 +422,7 @@ export default async function Home({
   searchParams?: Promise<{ run?: string }>;
 }) {
   const runs = await getRuns();
+  const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
@@ -431,7 +477,7 @@ export default async function Home({
         <EmptyState />
       )}
       {activeRun ? (
-        <Inspector run={activeRun} validation={validation!} />
+        <Inspector run={activeRun} validation={validation!} providerSettings={providerSettings} />
       ) : (
         <aside className="inspector">
           <section className="panel">
