@@ -47,6 +47,10 @@ export type ProductionPackage = {
   qa: {
     status: "pass" | "blocked" | "needs_review";
     blockers: string[];
+    warnings?: string[];
+    fix_list?: string[];
+    approval_checklist?: string[];
+    publish_readiness?: "ready" | "not ready" | "render-only ready";
     approval_required?: boolean;
   };
 };

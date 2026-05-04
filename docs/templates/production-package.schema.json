@@ -91,6 +91,19 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "fix_list": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "approval_checklist": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "publish_readiness": { "enum": ["ready", "not ready", "render-only ready"] },
         "approval_required": { "type": "boolean" }
       }
     }
@@ -152,4 +165,3 @@
     }
   }
 }
-

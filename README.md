@@ -102,6 +102,12 @@ The dashboard `Draft Publish` action creates a deterministic starter upload pack
 
 API route: `POST /api/runs/:runId/publishing/draft`.
 
+## Draft QA
+
+The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.
+
+API route: `POST /api/runs/:runId/qa/draft`.
+
 ## Run Dashboard
 
 ```powershell

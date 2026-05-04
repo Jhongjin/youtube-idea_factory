@@ -125,3 +125,19 @@ Behavior:
 3. Updates `production-package.json` with the structured publishing package.
 4. Flags needs-evidence rows in the description draft so upload approval cannot ignore unresolved claims.
 5. Keeps upload, scheduling, and public publishing behind a human approval gate.
+
+## QA Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/qa/draft`
+
+Behavior:
+
+1. Reads `production-package.json` and production artifacts `03` through `07`.
+2. Writes blockers, warnings, fix list, approval checklist, coverage snapshot, and policy notes to `08-qa.md`.
+3. Updates `production-package.json` with `qa.status`, `blockers`, `warnings`, `fix_list`, `approval_checklist`, and `publish_readiness`.
+4. Blocks publishing when supported claims are missing, unresolved claims remain, script placeholders remain, or required artifacts are incomplete.
+5. Keeps paid generation, final render, scheduling, and upload behind explicit human approval.
