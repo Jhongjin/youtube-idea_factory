@@ -48,6 +48,8 @@ export type ProductionPackage = {
     path: string;
     items: number;
     pending_approval: number;
+    ready_for_generation?: number;
+    blocked?: number;
     updated_at: string;
   };
   qa: {

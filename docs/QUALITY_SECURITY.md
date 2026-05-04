@@ -30,6 +30,7 @@
 - Asset manifest exists before paid generation and records provider role, expected path, and approval gate for each item.
 - Paid generation requires approval.
 - Run `scripts/check_approval_gate.py --gate generation` before calling image, video, TTS, subtitle, or BGM providers.
+- `generation-queue.json` must be prepared and reviewed before any provider adapter consumes asset-manifest items.
 
 ### G5 Final Package
 

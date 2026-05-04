@@ -218,6 +218,23 @@ Behavior:
 5. Marks assets as `pending_approval` so generation adapters can require `check_approval_gate.py --gate generation` before spending credits.
 6. Updates `production-package.json` with manifest item counts and pending approval count.
 
+## Generation Queue
+
+Status: provider-agnostic preflight queue implemented.
+
+Route:
+
+- `POST /api/runs/:runId/assets/queue`
+
+Behavior:
+
+1. Reads `asset-manifest.json`, run approvals, provider settings, and the production package.
+2. Writes `generation-queue.json` with per-item provider, model, expected path, status, and blockers.
+3. Promotes only fully approved and configured items to `pending_generation`.
+4. Keeps blocked items in `pending_approval` and records the exact missing approval, provider, prompt, or QA condition.
+5. Updates `production-package.json.asset_manifest` with ready and blocked counts.
+6. Does not call image, video, TTS, subtitle, or BGM providers; external spend remains a later adapter step.
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.

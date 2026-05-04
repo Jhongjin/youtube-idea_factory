@@ -26,6 +26,7 @@ import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
 import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
+import { GenerationQueueButton } from "@/app/components/generation-queue-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
@@ -425,6 +426,14 @@ function Inspector({
                     : "pending"}
                 </span>
               </div>
+              <div className="detail-row">
+                <span>Ready queue</span>
+                <span>{run.package.asset_manifest?.ready_for_generation ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>Queue blocked</span>
+                <span>{run.package.asset_manifest?.blocked ?? 0}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -478,6 +487,7 @@ export default async function Home({
               <StoryboardDraftButton runId={activeRun.id} />
               <MediaPromptDraftButton runId={activeRun.id} />
               <AssetManifestButton runId={activeRun.id} />
+              <GenerationQueueButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>

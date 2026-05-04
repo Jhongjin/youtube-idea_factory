@@ -157,6 +157,12 @@ The dashboard `Build Assets` action creates `asset-manifest.json` for the active
 
 API route: `POST /api/runs/:runId/assets/manifest`.
 
+## Prepare Generation Queue
+
+The dashboard `Prep Queue` action creates `generation-queue.json` for the active run. It checks the asset manifest against approval gates and provider settings, marks ready items as `pending_generation`, and records blockers for anything that still needs approval, provider configuration, prompts, or QA cleanup.
+
+API route: `POST /api/runs/:runId/assets/queue`.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.
