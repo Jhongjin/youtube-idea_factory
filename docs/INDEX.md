@@ -13,6 +13,7 @@ This folder is the system of record for the project. Keep `AGENTS.md` short and 
 - `MVP_ROADMAP.md`: staged build plan
 - `TECH_DECISIONS.md`: decisions and open technology choices
 - `PHASE1_RUN_WORKFLOW.md`: manual-seed run generation workflow
+- `ADAPTERS.md`: provider adapter contracts and current implementation notes
 
 ## Templates
 

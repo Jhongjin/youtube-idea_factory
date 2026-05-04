@@ -51,6 +51,16 @@ python .\scripts\enrich_sources.py <run-id>
 
 This uses YouTube oEmbed to fill basic title/channel metadata without an API key.
 
+## Configure YouTube Finder
+
+Copy `.env.example` to `.env.local` and set:
+
+```powershell
+YOUTUBE_API_KEY=...
+```
+
+Then use the dashboard `YouTube Finder` panel or call `POST /api/youtube/search`.
+
 ## Run Dashboard
 
 ```powershell

@@ -240,6 +240,10 @@ a {
   margin-bottom: 16px;
 }
 
+.finder-panel {
+  margin-bottom: 16px;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -392,6 +396,107 @@ a {
   color: var(--red);
   font-size: 12px;
   font-weight: 750;
+}
+
+.finder-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 150px 96px 92px 112px 118px auto;
+  gap: 8px;
+  align-items: end;
+}
+
+.finder-form label {
+  display: grid;
+  gap: 5px;
+}
+
+.finder-form label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.finder-form input,
+.finder-form select {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 8px 10px;
+  outline: none;
+}
+
+.finder-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  border-radius: 8px;
+  background: var(--amber-soft);
+  color: var(--amber);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.finder-results {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.finder-result {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.finder-rank {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: #536174;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.finder-result h4 {
+  margin: 0 0 3px;
+  font-size: 13px;
+}
+
+.finder-result p {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.finder-result a {
+  display: inline-block;
+  max-width: 520px;
+  overflow: hidden;
+  color: var(--blue);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finder-metrics {
+  display: grid;
+  gap: 4px;
+  color: #455366;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
 }
 
 .inspector {
@@ -741,6 +846,23 @@ a {
   .summary-grid,
   .workspace-grid {
     grid-template-columns: 1fr;
+  }
+
+  .finder-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .finder-query {
+    grid-column: 1 / -1;
+  }
+
+  .finder-result {
+    grid-template-columns: 32px minmax(0, 1fr);
+  }
+
+  .finder-metrics {
+    grid-column: 2;
+    text-align: left;
   }
 
   .artifact-layout {
