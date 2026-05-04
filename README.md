@@ -60,6 +60,7 @@ YOUTUBE_API_KEY=...
 ```
 
 Then use the dashboard `YouTube Finder` panel or call `POST /api/youtube/search`.
+Finder results can be imported into the active run with `POST /api/runs/:runId/sources/import`.
 
 ## Run Dashboard
 

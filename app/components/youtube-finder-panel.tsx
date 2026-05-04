@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AlertTriangle, Copy, Loader2, Search } from "lucide-react";
+import { AlertTriangle, Copy, Loader2, Plus, Search } from "lucide-react";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
 
 function formatNumber(value: number) {
@@ -17,9 +17,16 @@ function formatDuration(seconds: number) {
   return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
 
-export function YouTubeFinderPanel({ defaultQuery }: { defaultQuery: string }) {
+export function YouTubeFinderPanel({
+  defaultQuery,
+  runId,
+}: {
+  defaultQuery: string;
+  runId: string;
+}) {
   const [candidates, setCandidates] = useState<YouTubeCandidate[]>([]);
   const [loading, setLoading] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,6 +72,25 @@ export function YouTubeFinderPanel({ defaultQuery }: { defaultQuery: string }) {
     window.setTimeout(() => setCopied(false), 1400);
   }
 
+  async function importCandidates() {
+    setImporting(true);
+    setError("");
+    const response = await fetch(`/api/runs/${runId}/sources/import`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ candidates, mode: "append" }),
+    });
+
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setError(body?.error ?? "Source import failed.");
+      setImporting(false);
+      return;
+    }
+
+    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+  }
+
   return (
     <section className="panel finder-panel">
       <div className="panel-header">
@@ -73,10 +99,16 @@ export function YouTubeFinderPanel({ defaultQuery }: { defaultQuery: string }) {
           <p className="panel-subtitle">Search candidates with the YouTube Data API adapter.</p>
         </div>
         {candidates.length > 0 ? (
-          <button className="text-button" onClick={copyUrls} type="button">
-            <Copy size={15} />
-            {copied ? "Copied" : "Copy URLs"}
-          </button>
+          <div className="toolbar">
+            <button className="text-button" onClick={copyUrls} type="button">
+              <Copy size={15} />
+              {copied ? "Copied" : "Copy URLs"}
+            </button>
+            <button className="text-button primary" disabled={importing} onClick={importCandidates} type="button">
+              {importing ? <Loader2 className="spin" size={15} /> : <Plus size={15} />}
+              Import
+            </button>
+          </div>
         ) : null}
       </div>
       <div className="panel-body">
@@ -150,4 +182,3 @@ export function YouTubeFinderPanel({ defaultQuery }: { defaultQuery: string }) {
     </section>
   );
 }
-

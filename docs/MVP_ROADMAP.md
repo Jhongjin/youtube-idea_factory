@@ -33,7 +33,7 @@ Build:
 
 - YouTube Data API adapter or approved search provider: started with `POST /api/youtube/search`
 - transcript fetch adapter
-- source ranking logic
+- source ranking logic: started with finder result import and duplicate URL skipping
 - failure and quota handling
 
 ## Phase 3: Dashboard App

@@ -402,7 +402,7 @@ export default async function Home({
 
           <SummaryGrid run={activeRun} />
 
-          <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} />
+          <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
 
           <div className="workspace-grid">
             <PipelinePanel run={activeRun} />
