@@ -111,6 +111,22 @@ Behavior:
 3. Writes fact-check candidate rows to `03-claim-ledger.md` using simple deterministic claim heuristics.
 4. Leaves final interpretation to `youtube-video-analysis` and `youtube-fact-check`.
 
+## LLM Analysis Refinement
+
+Status: optional provider-backed refinement implemented.
+
+Route:
+
+- `POST /api/runs/:runId/analysis/refine`
+
+Behavior:
+
+1. Reads `production-package.json`, transcripts, `02-video-analysis.md`, and `03-claim-ledger.md`.
+2. Uses the selected `llm` provider from `/settings`.
+3. Requires the model output to include `---FILE:02-video-analysis.md---` and `---FILE:03-claim-ledger.md---` markers before saving.
+4. Rewrites both artifacts and syncs parsed claim rows into `production-package.json`.
+5. Does not permit supported claim escalation without provided evidence/source context; human review remains required.
+
 ## Script Draft
 
 Status: deterministic starter draft implemented.

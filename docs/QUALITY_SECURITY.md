@@ -13,6 +13,7 @@
 - Every factual claim has a status.
 - Claims without reliable sources are excluded or labeled as opinion.
 - Dates, numbers, names, studies, legal/medical/financial statements, and news claims require explicit evidence.
+- LLM-refined claim ledgers must not mark claims as supported without evidence/source context.
 
 ### G3 Script Quality
 

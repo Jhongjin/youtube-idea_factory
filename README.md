@@ -104,6 +104,17 @@ The dashboard `Draft Analysis` action creates deterministic starter drafts for:
 
 It uses source metadata and available transcript text. The API route is `POST /api/runs/:runId/analysis/draft`.
 
+## Refine Analysis With LLM
+
+The dashboard `Refine Analysis` action uses the selected LLM provider from `/settings` to rewrite:
+
+- `02-video-analysis.md`
+- `03-claim-ledger.md`
+
+API route: `POST /api/runs/:runId/analysis/refine`.
+
+The response must include both required file markers before anything is saved. It also syncs parsed claim rows back into `production-package.json`.
+
 ## Draft Script
 
 The dashboard `Draft Script` action creates a deterministic starter draft for `04-script-plan.md` from the brief, source metadata, analysis notes, and claim ledger.

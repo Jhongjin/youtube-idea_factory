@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
+import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
@@ -455,6 +456,7 @@ export default async function Home({
               </Link>
               <RunDraftFlowButton runId={activeRun.id} />
               <AnalysisDraftButton runId={activeRun.id} />
+              <AnalysisRefineButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />
               <ScriptRefineButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />
