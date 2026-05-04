@@ -392,10 +392,17 @@ a {
   gap: 8px;
 }
 
-.source-action span {
+.source-action span,
+.draft-action span {
   color: var(--red);
   font-size: 12px;
   font-weight: 750;
+}
+
+.draft-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .transcript-panel {

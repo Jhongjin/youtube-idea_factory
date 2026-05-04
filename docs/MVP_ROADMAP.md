@@ -35,6 +35,7 @@ Build:
 - transcript fetch adapter: manual transcript storage slot implemented first
 - source ranking logic: started with finder result import and duplicate URL skipping
 - failure and quota handling
+- deterministic analysis draft from source metadata and manual transcripts
 
 ## Phase 3: Dashboard App
 

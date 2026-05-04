@@ -69,6 +69,15 @@ The dashboard Sources panel can store manual transcripts per source video. The A
 - `GET /api/runs/:runId/transcripts/:sourceKey`
 - `PUT /api/runs/:runId/transcripts/:sourceKey`
 
+## Draft Analysis
+
+The dashboard `Draft Analysis` action creates deterministic starter drafts for:
+
+- `02-video-analysis.md`
+- `03-claim-ledger.md`
+
+It uses source metadata and available transcript text. The API route is `POST /api/runs/:runId/analysis/draft`.
+
 ## Run Dashboard
 
 ```powershell

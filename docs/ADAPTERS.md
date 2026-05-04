@@ -50,3 +50,18 @@ Behavior:
 1. Stores transcript text under `runs/:runId/transcripts/:sourceKey.txt`.
 2. Updates `sources.json` and `production-package.json` with transcript status and path.
 3. Keeps collection provider-agnostic until a compliant transcript adapter is chosen.
+
+## Analysis Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/analysis/draft`
+
+Behavior:
+
+1. Reads `sources.json` and any available `transcripts/*.txt`.
+2. Writes starter content to `02-video-analysis.md`.
+3. Writes fact-check candidate rows to `03-claim-ledger.md` using simple deterministic claim heuristics.
+4. Leaves final interpretation to `youtube-video-analysis` and `youtube-fact-check`.

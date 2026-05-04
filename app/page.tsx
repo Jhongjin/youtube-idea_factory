@@ -19,6 +19,7 @@ import {
   Wand2,
 } from "lucide-react";
 import Link from "next/link";
+import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { NewRunForm } from "@/app/components/new-run-form";
@@ -395,6 +396,7 @@ export default async function Home({
               <button className="icon-button" title="Open media queue" type="button">
                 <Megaphone size={16} />
               </button>
+              <AnalysisDraftButton runId={activeRun.id} />
               <button className="text-button primary" type="button">
                 <Rocket size={16} />
                 QA Gate
