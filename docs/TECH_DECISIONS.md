@@ -26,6 +26,12 @@ Decision: Phase 1 starts with manually supplied YouTube URLs instead of live You
 
 Reason: This stabilizes run folders, package schemas, QA gates, and dashboard-facing artifacts before API credentials, quotas, scraping policy, and ranking logic are introduced.
 
+### D005: Run Next Through A Realpath Wrapper
+
+Decision: Use `scripts/next-realpath.cjs` for `npm run dev`, `npm run build`, `npm run start`, and Next type generation.
+
+Reason: On this Windows workspace, the visible project path and Node's real path can differ. Running Next after changing into the real path prevents mixed `C:\...` and `D:\...` route manifest paths.
+
 ## Open Decisions
 
 ### O001: Dashboard Stack

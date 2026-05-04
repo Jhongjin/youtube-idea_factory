@@ -891,6 +891,53 @@ a {
   font-weight: 800;
 }
 
+.approval-list {
+  display: grid;
+  gap: 10px;
+}
+
+.approval-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.approval-card input[type="text"],
+.approval-card input:not([type]),
+.approval-card textarea {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 9px;
+  outline: none;
+}
+
+.approval-card input:disabled {
+  background: #eef2f6;
+  color: var(--muted);
+}
+
+.approval-card textarea {
+  resize: vertical;
+}
+
+.approval-card small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.settings-message.compact {
+  margin-top: 10px;
+  padding: 8px 10px;
+}
+
 .validation-banner {
   display: flex;
   align-items: center;

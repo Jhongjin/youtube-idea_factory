@@ -4,7 +4,7 @@ Adapters keep the dashboard independent from provider-specific payloads.
 
 ## Approval Gate Contract
 
-Status: deterministic guard implemented.
+Status: deterministic guard and dashboard editor implemented.
 
 Before any external adapter spends credits, renders, uploads, schedules, or publishes, it must pass:
 
@@ -15,6 +15,18 @@ python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
 ```
 
 Run-level approvals live in `runs/:runId/approvals.json`, copied from `docs/templates/approvals.json`.
+
+Dashboard routes:
+
+- `GET /api/runs/:runId/approvals`
+- `PUT /api/runs/:runId/approvals`
+
+Behavior:
+
+1. The dashboard inspector shows generation, render, and publish gates for the active run.
+2. Each gate records approved status, approver, approval timestamp, and notes.
+3. The API normalizes untrusted input and stores approvals only under the selected run folder.
+4. Generation, render, and publishing adapters should still run the deterministic script preflight before spending credits or changing external state.
 
 ## Provider Settings
 

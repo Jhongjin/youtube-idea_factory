@@ -48,6 +48,7 @@ Build:
 - optional LLM-backed analysis and claim-ledger refinement from selected provider
 - optional LLM-backed script refinement from selected provider
 - provider-agnostic asset manifest for image, video, thumbnail, voice, subtitles, and BGM
+- dashboard approval gate editor for generation, render, and publishing gates
 
 ## Phase 3: Dashboard App
 
@@ -62,7 +63,7 @@ Candidate stack:
 
 Decision remains open until MVP data contracts settle.
 
-Initial dashboard work has started with a Next.js operator workspace that reads local run packages from `runs/`, creates manual-seed runs through a local API route, and edits allowlisted markdown artifacts from the run folder.
+Initial dashboard work has started with a Next.js operator workspace that reads local run packages from `runs/`, creates manual-seed runs through a local API route, edits allowlisted markdown artifacts from the run folder, exposes provider API settings, and manages run-level approval gates.
 
 ## Phase 4: Media Generation Adapters
 

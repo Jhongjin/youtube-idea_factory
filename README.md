@@ -53,6 +53,11 @@ python .\scripts\check_approval_gate.py .\runs\<run-id> --gate render
 python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
 ```
 
+The dashboard inspector also includes an `Approval Gates` panel. It reads and writes `runs/:runId/approvals.json` through:
+
+- `GET /api/runs/:runId/approvals`
+- `PUT /api/runs/:runId/approvals`
+
 ## Provider API Settings
 
 Open `http://localhost:3000/settings` to choose providers and register API keys for LLM, image generation, video generation, TTS, subtitles, BGM, and YouTube adapters.
@@ -180,6 +185,8 @@ npm run dev
 ```
 
 Then open `http://localhost:3000`.
+
+The npm scripts run Next through `scripts/next-realpath.cjs`. This keeps Next's project root stable when Windows resolves the workspace through a different real path.
 
 The dashboard reads local packages from `runs/` and can create new manual-seed runs through `POST /api/runs`.
 It also exposes a markdown artifact editor for `01-research.md` through `08-qa.md` using allowlisted local API routes.

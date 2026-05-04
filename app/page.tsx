@@ -32,11 +32,13 @@ import { PackageValidationPanel } from "@/app/components/package-validation-pane
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
+import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { ScriptRefineButton } from "@/app/components/script-refine-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
+import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
@@ -275,10 +277,12 @@ function Inspector({
   run,
   validation,
   providerSettings,
+  approvals,
 }: {
   run: RunSummary;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
+  approvals: RunApprovals;
 }) {
   const brief = run.package.brief;
   const readyProviderCount = providerRoles.filter((role) => {
@@ -299,6 +303,8 @@ function Inspector({
         </section>
 
         <PackageValidationPanel initialResult={validation} runId={run.id} />
+
+        <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
 
         <section className="panel">
           <div className="panel-header">
@@ -438,6 +444,7 @@ export default async function Home({
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
   const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
+  const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
 
   return (
     <div className="shell">
@@ -491,7 +498,12 @@ export default async function Home({
         <EmptyState />
       )}
       {activeRun ? (
-        <Inspector run={activeRun} validation={validation!} providerSettings={providerSettings} />
+        <Inspector
+          approvals={approvals!}
+          providerSettings={providerSettings}
+          run={activeRun}
+          validation={validation!}
+        />
       ) : (
         <aside className="inspector">
           <section className="panel">

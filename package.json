@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "typecheck": "next typegen && tsc --noEmit"
+    "dev": "node scripts/next-realpath.cjs dev",
+    "build": "node scripts/next-realpath.cjs build",
+    "start": "node scripts/next-realpath.cjs start",
+    "typecheck": "node scripts/next-realpath.cjs typegen && tsc --noEmit"
   },
   "dependencies": {
     "lucide-react": "1.14.0",
