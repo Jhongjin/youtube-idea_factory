@@ -35,6 +35,7 @@ Use LLM/agent workflows when:
 - `.agents/skills/` stores reusable workflow behavior.
 - `runs/` stores per-content execution records.
 - `artifacts/` stores generated media and manifests.
+- deployed production should move durable run state to Supabase or another persistence adapter.
 
 ## Skills
 
@@ -76,6 +77,8 @@ Keep providers behind adapter interfaces:
 - `subtitle_generate`
 - `timeline_render`
 - `youtube_publish`
+- `run_storage`
+- `artifact_storage`
 
 The dashboard should depend on internal data contracts, not provider-specific payloads.
 
@@ -90,4 +93,3 @@ Sources:
 - https://developers.openai.com/codex/skills
 - https://developers.openai.com/codex/guides/agents-md
 - https://developers.openai.com/codex/hooks
-

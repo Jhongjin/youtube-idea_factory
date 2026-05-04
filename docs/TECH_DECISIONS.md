@@ -32,6 +32,12 @@ Decision: Use `scripts/next-realpath.cjs` for `npm run dev`, `npm run build`, `n
 
 Reason: On this Windows workspace, the visible project path and Node's real path can differ. Running Next after changing into the real path prevents mixed `C:\...` and `D:\...` route manifest paths.
 
+### D006: Treat Vercel Local Filesystem As Non-Durable
+
+Decision: Keep local `runs/` and `artifacts/` storage for harness development, but require Supabase or another durable adapter before Vercel production operations.
+
+Reason: Vercel serverless deployments should not rely on application filesystem writes for persistent production run state or generated media.
+
 ## Open Decisions
 
 ### O001: Dashboard Stack
@@ -53,7 +59,7 @@ Options:
 - SQLite
 - Postgres
 
-Current leaning: JSON files for Phase 1, SQLite once dashboard state becomes interactive.
+Current leaning: JSON files for local Phase 1, Supabase Postgres for deployed production persistence.
 
 ### O003: First Content Format
 

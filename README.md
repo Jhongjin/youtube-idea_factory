@@ -72,6 +72,18 @@ python .\scripts\check_provider_ready.py --role tts
 python .\scripts\check_provider_ready.py --role youtube --require-key
 ```
 
+## Deployment Readiness
+
+Vercel/Supabase deployment notes live in `docs/DEPLOYMENT.md`.
+
+Check local deployment readiness without printing secrets:
+
+```powershell
+python .\scripts\check_deployment_ready.py --target vercel
+```
+
+The dashboard also exposes `GET /api/health/deployment`. Vercel production should use durable storage such as Supabase; `APP_STORAGE_MODE=local` is only for local harness work.
+
 ## Enrich Source Metadata
 
 ```powershell

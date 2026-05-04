@@ -14,11 +14,13 @@ This folder is the system of record for the project. Keep `AGENTS.md` short and 
 - `TECH_DECISIONS.md`: decisions and open technology choices
 - `PHASE1_RUN_WORKFLOW.md`: manual-seed run generation workflow
 - `ADAPTERS.md`: provider adapter contracts and current implementation notes
+- `DEPLOYMENT.md`: Vercel/Supabase deployment, persistence, and environment readiness
 
 ## Templates
 
 - `templates/run-brief.md`: content run input brief
 - `templates/production-package.schema.json`: seed schema for normalized run output
+- `templates/supabase-schema.sql`: seed Supabase tables for durable run state
 
 ## References
 
