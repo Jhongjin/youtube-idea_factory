@@ -20,6 +20,7 @@
 - The script has a clear viewer payoff.
 - Competitor insights are transformed, not copied.
 - Claims map back to evidence.
+- LLM-refined scripts still require human review and must not convert unresolved claim rows into factual narration.
 
 ### G4 Media Readiness
 

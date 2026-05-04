@@ -45,6 +45,7 @@ Build:
 - approval gate script and run-level approvals template for paid adapters
 - provider API registration page and local provider settings storage
 - provider readiness preflight script for adapter roles
+- optional LLM-backed script refinement from selected provider
 
 ## Phase 3: Dashboard App
 

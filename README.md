@@ -110,6 +110,19 @@ The dashboard `Draft Script` action creates a deterministic starter draft for `0
 
 API route: `POST /api/runs/:runId/script/draft`.
 
+## Refine Script With LLM
+
+The dashboard `Refine Script` action uses the selected LLM provider from `/settings` to rewrite `04-script-plan.md` from the current analysis, claim ledger, and deterministic script draft.
+
+API route: `POST /api/runs/:runId/script/refine`.
+
+Supported LLM adapter modes:
+
+- `OpenAI`: Responses API
+- `OpenRouter` or `Custom`: OpenAI-compatible chat completions endpoint
+
+This action fails safely when the LLM provider is disabled, missing a model, or missing an API key.
+
 ## Draft Storyboard
 
 The dashboard `Draft Storyboard` action creates a deterministic starter storyboard for `05-storyboard.md` from the current script plan.

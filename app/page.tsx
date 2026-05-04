@@ -31,6 +31,7 @@ import { PublishingDraftButton } from "@/app/components/publishing-draft-button"
 import { QaDraftButton } from "@/app/components/qa-draft-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
+import { ScriptRefineButton } from "@/app/components/script-refine-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
@@ -455,6 +456,7 @@ export default async function Home({
               <RunDraftFlowButton runId={activeRun.id} />
               <AnalysisDraftButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />
+              <ScriptRefineButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />
               <MediaPromptDraftButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />

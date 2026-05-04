@@ -125,6 +125,24 @@ Behavior:
 2. Writes a starter `04-script-plan.md` with strategy, angle candidates, hook options, beat map, and revision checklist.
 3. Keeps final writing and judgment for `youtube-script-architect`.
 
+## LLM Script Refinement
+
+Status: optional provider-backed refinement implemented.
+
+Route:
+
+- `POST /api/runs/:runId/script/refine`
+
+Behavior:
+
+1. Reads `production-package.json`, `02-video-analysis.md`, `03-claim-ledger.md`, and the current `04-script-plan.md`.
+2. Uses the selected `llm` provider from `/settings`.
+3. Supports OpenAI through the Responses API.
+4. Supports OpenRouter or Custom providers through an OpenAI-compatible chat completions endpoint.
+5. Rewrites `04-script-plan.md` and records provider/model metadata in the artifact and package notes.
+6. Fails before network calls when the LLM provider is disabled, missing a model, or missing an API key.
+7. Keeps unsupported claims constrained by the claim ledger; human review is still required before storyboard, media generation, render, or publishing.
+
 ## Storyboard Draft
 
 Status: deterministic starter draft implemented.
