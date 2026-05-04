@@ -78,6 +78,12 @@ The dashboard `Draft Analysis` action creates deterministic starter drafts for:
 
 It uses source metadata and available transcript text. The API route is `POST /api/runs/:runId/analysis/draft`.
 
+## Draft Script
+
+The dashboard `Draft Script` action creates a deterministic starter draft for `04-script-plan.md` from the brief, source metadata, analysis notes, and claim ledger.
+
+API route: `POST /api/runs/:runId/script/draft`.
+
 ## Run Dashboard
 
 ```powershell

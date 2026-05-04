@@ -36,6 +36,7 @@ Build:
 - source ranking logic: started with finder result import and duplicate URL skipping
 - failure and quota handling
 - deterministic analysis draft from source metadata and manual transcripts
+- deterministic script plan draft from analysis and claim ledger
 
 ## Phase 3: Dashboard App
 

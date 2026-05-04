@@ -24,6 +24,7 @@ import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
+import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -397,6 +398,7 @@ export default async function Home({
                 <Megaphone size={16} />
               </button>
               <AnalysisDraftButton runId={activeRun.id} />
+              <ScriptDraftButton runId={activeRun.id} />
               <button className="text-button primary" type="button">
                 <Rocket size={16} />
                 QA Gate

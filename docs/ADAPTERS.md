@@ -65,3 +65,17 @@ Behavior:
 2. Writes starter content to `02-video-analysis.md`.
 3. Writes fact-check candidate rows to `03-claim-ledger.md` using simple deterministic claim heuristics.
 4. Leaves final interpretation to `youtube-video-analysis` and `youtube-fact-check`.
+
+## Script Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/script/draft`
+
+Behavior:
+
+1. Reads `production-package.json`, `02-video-analysis.md`, and `03-claim-ledger.md`.
+2. Writes a starter `04-script-plan.md` with strategy, angle candidates, hook options, beat map, and revision checklist.
+3. Keeps final writing and judgment for `youtube-script-architect`.
