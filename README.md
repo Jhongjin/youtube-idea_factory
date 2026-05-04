@@ -165,6 +165,8 @@ API route: `POST /api/runs/:runId/assets/queue`.
 
 The inspector `Generation Console` lists queue status and can invoke the guarded OpenAI image and TTS adapters for ready assets.
 
+It can also register an already-created file under `artifacts/:runId` against any asset ID. This keeps external image, video, voice, subtitle, or BGM tools usable before every provider-specific adapter exists.
+
 ## Generate Image Assets
 
 Direct image generation is available as a guarded adapter route for OpenAI only:

@@ -998,6 +998,38 @@ a {
   gap: 7px;
 }
 
+.asset-register {
+  display: grid;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: end;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.asset-register label {
+  display: grid;
+  gap: 5px;
+}
+
+.asset-register span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.asset-register input,
+.asset-register select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 9px;
+  outline: none;
+}
+
 .asset-action-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
@@ -1305,6 +1337,7 @@ a {
   }
 
   .asset-control-grid,
+  .asset-register,
   .asset-action-row {
     grid-template-columns: 1fr;
   }

@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, Image as ImageIcon, Loader2, Mic2 } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  FilePlus2,
+  Image as ImageIcon,
+  Loader2,
+  Mic2,
+} from "lucide-react";
 import type { AssetGenerationState, AssetGenerationStateItem } from "@/lib/asset-generation-state";
 
 const imageConfirmToken = "GENERATE_IMAGE";
@@ -34,6 +41,8 @@ export function AssetGenerationConsole({
   const [voice, setVoice] = useState("alloy");
   const [instructions, setInstructions] = useState("");
   const [narration, setNarration] = useState(defaultNarration);
+  const [registerAssetId, setRegisterAssetId] = useState(state.items[0]?.id ?? "");
+  const [registerPath, setRegisterPath] = useState("");
   const [loadingId, setLoadingId] = useState("");
   const [message, setMessage] = useState("");
 
@@ -57,6 +66,28 @@ export function AssetGenerationConsole({
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
       setMessage(body?.error ?? "Image generation failed.");
+      setLoadingId("");
+      return;
+    }
+    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+  }
+
+  async function registerAsset() {
+    setMessage("");
+    setLoadingId("manual-register");
+    const response = await fetch(`/api/runs/${runId}/assets/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        artifactPath: registerPath,
+        assetId: registerAssetId,
+        model: "external-file",
+        provider: "manual",
+      }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error ?? "Asset registration failed.");
       setLoadingId("");
       return;
     }
@@ -175,6 +206,40 @@ export function AssetGenerationConsole({
             </button>
           </div>
         ) : null}
+      </div>
+
+      <div className="asset-register">
+        <label>
+          <span>Asset</span>
+          <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
+            {state.items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.id} / {item.kind}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span>File path</span>
+          <input
+            placeholder={`artifacts/${runId}/...`}
+            value={registerPath}
+            onChange={(event) => setRegisterPath(event.target.value)}
+          />
+        </label>
+        <button
+          className="text-button"
+          disabled={!registerAssetId || !registerPath.trim() || Boolean(loadingId)}
+          onClick={registerAsset}
+          type="button"
+        >
+          {loadingId === "manual-register" ? (
+            <Loader2 className="spin" size={15} />
+          ) : (
+            <FilePlus2 size={15} />
+          )}
+          Register
+        </button>
       </div>
 
       {message ? <p className="form-error">{message}</p> : null}

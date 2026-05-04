@@ -240,7 +240,30 @@ Dashboard:
 - The inspector `Generation Console` reads `asset-manifest.json` and `generation-queue.json`.
 - Ready image/thumbnail assets can call the guarded image adapter.
 - Ready voice assets can call the guarded TTS adapter with editable narration and voice settings.
+- Any asset can register an already-created file under `artifacts/:runId` without provider spend.
 - Each direct adapter still requires its explicit confirmation token.
+
+## Manual Asset Registration
+
+Status: local file registration implemented.
+
+Route:
+
+- `POST /api/runs/:runId/assets/register`
+
+Required request body:
+
+- `assetId`: existing asset ID from `asset-manifest.json`
+- `artifactPath`: file path under `artifacts/:runId`
+
+Behavior:
+
+1. Validates the selected asset exists in `asset-manifest.json`.
+2. Validates the supplied file stays inside `artifacts/:runId`.
+3. Validates the file exists.
+4. Marks the asset as `generated`, records `actual_path`, provider `manual`, and model `external-file` by default.
+5. Updates `production-package.json.asset_manifest`.
+6. Attempts to refresh `render-manifest.json` so externally generated video, image, voice, subtitle, or BGM assets can flow into assembly.
 
 ## OpenAI Image Generation
 
