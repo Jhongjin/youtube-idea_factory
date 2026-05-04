@@ -108,6 +108,14 @@ The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.
 
 API route: `POST /api/runs/:runId/qa/draft`.
 
+## Run Draft Flow
+
+The dashboard `Run Draft Flow` action runs the deterministic draft sequence for the active run:
+
+`analysis -> script -> storyboard -> media -> publishing -> qa`
+
+This is the current no-spend, no-upload baseline for one-click production package generation.
+
 ## Run Dashboard
 
 ```powershell

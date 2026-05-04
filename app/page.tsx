@@ -27,6 +27,7 @@ import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
+import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
@@ -401,6 +402,7 @@ export default async function Home({
               <button className="icon-button" title="Open media queue" type="button">
                 <Megaphone size={16} />
               </button>
+              <RunDraftFlowButton runId={activeRun.id} />
               <AnalysisDraftButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />

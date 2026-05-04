@@ -41,6 +41,7 @@ Build:
 - deterministic media prompt draft from storyboard, with structured prompt records
 - deterministic publishing package draft from script plan and media prompts
 - deterministic QA gate draft with blockers, warnings, fix list, and approval checklist
+- dashboard one-click draft flow for analysis through QA
 
 ## Phase 3: Dashboard App
 
