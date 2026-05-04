@@ -31,6 +31,7 @@
 - Paid generation requires approval.
 - Run `scripts/check_approval_gate.py --gate generation` before calling image, video, TTS, subtitle, or BGM providers.
 - `generation-queue.json` must be prepared and reviewed before any provider adapter consumes asset-manifest items.
+- Direct image generation requires an explicit spend confirmation token in the API body in addition to the run approval gate.
 
 ### G5 Final Package
 

@@ -17,6 +17,12 @@ export type AssetManifestItem = {
   aspect_ratio?: string;
   duration_seconds?: number;
   expected_path: string;
+  actual_path?: string;
+  provider?: string;
+  model?: string;
+  generated_at?: string;
+  request_id?: string;
+  error?: string;
   safety_notes?: string;
 };
 

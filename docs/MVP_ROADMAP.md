@@ -50,6 +50,7 @@ Build:
 - provider-agnostic asset manifest for image, video, thumbnail, voice, subtitles, and BGM
 - dashboard approval gate editor for generation, render, and publishing gates
 - provider-agnostic generation queue preflight from asset manifest, approvals, and provider settings
+- guarded OpenAI image generation adapter route for approved queued image assets
 
 ## Phase 3: Dashboard App
 

@@ -235,6 +235,36 @@ Behavior:
 5. Updates `production-package.json.asset_manifest` with ready and blocked counts.
 6. Does not call image, video, TTS, subtitle, or BGM providers; external spend remains a later adapter step.
 
+## OpenAI Image Generation
+
+Status: guarded adapter route implemented, not part of the one-click draft flow.
+
+Route:
+
+- `POST /api/runs/:runId/assets/generate-image`
+
+Required request body:
+
+- `assetId`: image or thumbnail asset ID from `asset-manifest.json`
+- `confirmSpend`: must equal `GENERATE_IMAGE`
+- `quality`: optional `low`, `medium`, `high`, or `auto`; default is `low`
+- `size`: optional OpenAI image size; defaults from asset aspect ratio
+
+Behavior:
+
+1. Rebuilds the generation queue before spending.
+2. Requires the selected Image provider to be `OpenAI`.
+3. Requires a configured image model and API key from `/settings`.
+4. Requires the target asset status to be `pending_generation`.
+5. Calls OpenAI Image API `POST /v1/images/generations`.
+6. Saves the returned base64 image to the asset `expected_path`.
+7. Updates `asset-manifest.json`, `production-package.json.asset_manifest`, and `asset-generation-log.json`.
+
+Official references:
+
+- https://developers.openai.com/api/docs/guides/image-generation
+- https://developers.openai.com/api/reference/overview
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.
