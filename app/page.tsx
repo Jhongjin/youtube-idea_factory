@@ -26,6 +26,7 @@ import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
+import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
@@ -399,6 +400,7 @@ export default async function Home({
               </button>
               <AnalysisDraftButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />
+              <StoryboardDraftButton runId={activeRun.id} />
               <button className="text-button primary" type="button">
                 <Rocket size={16} />
                 QA Gate

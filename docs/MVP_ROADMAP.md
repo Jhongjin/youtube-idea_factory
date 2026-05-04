@@ -37,6 +37,7 @@ Build:
 - failure and quota handling
 - deterministic analysis draft from source metadata and manual transcripts
 - deterministic script plan draft from analysis and claim ledger
+- deterministic storyboard draft from script plan
 
 ## Phase 3: Dashboard App
 

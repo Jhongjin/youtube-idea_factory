@@ -84,6 +84,12 @@ The dashboard `Draft Script` action creates a deterministic starter draft for `0
 
 API route: `POST /api/runs/:runId/script/draft`.
 
+## Draft Storyboard
+
+The dashboard `Draft Storyboard` action creates a deterministic starter storyboard for `05-storyboard.md` from the current script plan.
+
+API route: `POST /api/runs/:runId/storyboard/draft`.
+
 ## Run Dashboard
 
 ```powershell

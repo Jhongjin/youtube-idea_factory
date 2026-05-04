@@ -79,3 +79,17 @@ Behavior:
 1. Reads `production-package.json`, `02-video-analysis.md`, and `03-claim-ledger.md`.
 2. Writes a starter `04-script-plan.md` with strategy, angle candidates, hook options, beat map, and revision checklist.
 3. Keeps final writing and judgment for `youtube-script-architect`.
+
+## Storyboard Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/storyboard/draft`
+
+Behavior:
+
+1. Reads `production-package.json` and `04-script-plan.md`.
+2. Writes starter scene cards to `05-storyboard.md`.
+3. Keeps final visual direction for `youtube-storyboard`.
