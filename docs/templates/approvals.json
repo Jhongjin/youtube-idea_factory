@@ -1,0 +1,20 @@
+{
+  "generation": {
+    "approved": false,
+    "approved_by": "",
+    "approved_at": "",
+    "notes": "Required before paid image, video, TTS, subtitle, or BGM generation."
+  },
+  "render": {
+    "approved": false,
+    "approved_by": "",
+    "approved_at": "",
+    "notes": "Required before final video assembly or render spend."
+  },
+  "publish": {
+    "approved": false,
+    "approved_by": "",
+    "approved_at": "",
+    "notes": "Required before YouTube upload, scheduling, or public publishing."
+  }
+}

@@ -26,6 +26,7 @@
 - Every scene has a visual plan.
 - Prompt packs include aspect ratio, style, continuity, negative prompts, and safety notes.
 - Paid generation requires approval.
+- Run `scripts/check_approval_gate.py --gate generation` before calling image, video, TTS, subtitle, or BGM providers.
 
 ### G5 Final Package
 
@@ -33,12 +34,15 @@
 - Subtitles and voice match script.
 - Render manifest exists.
 - Publishing checklist is complete.
+- Run `scripts/check_approval_gate.py --gate render` before final assembly or render spend.
+- Run `scripts/check_approval_gate.py --gate publish` before upload, scheduling, or public publishing.
 
 ## Security Rules
 
 - Store credentials outside committed files.
 - Do not log API keys, OAuth tokens, cookies, or paid provider secrets.
 - Do not run upload/publish actions without explicit human approval.
+- Do not run paid generation or render actions without explicit human approval.
 - Keep destructive file operations scoped to this project directory.
 - Keep generated media provenance and provider metadata in manifests.
 
@@ -55,4 +59,3 @@
 - Keep raw provider responses only when useful and safe.
 - Summarize failures in run manifests.
 - Add deterministic checks when the same mistake happens twice.
-

@@ -2,6 +2,20 @@
 
 Adapters keep the dashboard independent from provider-specific payloads.
 
+## Approval Gate Contract
+
+Status: deterministic guard implemented.
+
+Before any external adapter spends credits, renders, uploads, schedules, or publishes, it must pass:
+
+```powershell
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate generation
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate render
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
+```
+
+Run-level approvals live in `runs/:runId/approvals.json`, copied from `docs/templates/approvals.json`.
+
 ## YouTube Finder
 
 Status: initial implementation.

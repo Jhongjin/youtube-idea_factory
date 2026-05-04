@@ -42,6 +42,7 @@ Build:
 - deterministic publishing package draft from script plan and media prompts
 - deterministic QA gate draft with blockers, warnings, fix list, and approval checklist
 - dashboard one-click draft flow for analysis through QA
+- approval gate script and run-level approvals template for paid adapters
 
 ## Phase 3: Dashboard App
 

@@ -43,6 +43,16 @@ python .\scripts\create_run.py `
 python .\scripts\validate_package.py .\runs\<run-id>
 ```
 
+## Check Approval Gates
+
+Copy `docs/templates/approvals.json` into a run folder as `approvals.json`, fill the relevant approval fields, then check a gate before calling any paid or publishing adapter:
+
+```powershell
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate generation
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate render
+python .\scripts\check_approval_gate.py .\runs\<run-id> --gate publish
+```
+
 ## Enrich Source Metadata
 
 ```powershell
