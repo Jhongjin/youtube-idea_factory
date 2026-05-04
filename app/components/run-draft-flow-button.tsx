@@ -4,12 +4,13 @@ import { useState } from "react";
 import { Loader2, Rocket } from "lucide-react";
 
 const draftSteps = [
-  "analysis",
-  "script",
-  "storyboard",
-  "media",
-  "publishing",
-  "qa",
+  { label: "analysis", path: "analysis/draft" },
+  { label: "script", path: "script/draft" },
+  { label: "storyboard", path: "storyboard/draft" },
+  { label: "media", path: "media/draft" },
+  { label: "assets", path: "assets/manifest" },
+  { label: "publishing", path: "publishing/draft" },
+  { label: "qa", path: "qa/draft" },
 ] as const;
 
 export function RunDraftFlowButton({ runId }: { runId: string }) {
@@ -22,11 +23,11 @@ export function RunDraftFlowButton({ runId }: { runId: string }) {
     setError("");
 
     for (const step of draftSteps) {
-      setCurrentStep(step);
-      const response = await fetch(`/api/runs/${runId}/${step}/draft`, { method: "POST" });
+      setCurrentStep(step.label);
+      const response = await fetch(`/api/runs/${runId}/${step.path}`, { method: "POST" });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
-        setError(body?.error ?? `${step} draft failed.`);
+        setError(body?.error ?? `${step.label} step failed.`);
         setLoading(false);
         return;
       }

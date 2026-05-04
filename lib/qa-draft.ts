@@ -92,6 +92,7 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   const storyboardScenes = Math.max(pkg.storyboard.length, countStoryboardScenes(storyboard));
   const imagePrompts = pkg.media_prompts.image_prompts?.length ?? 0;
   const videoPrompts = pkg.media_prompts.video_prompts?.length ?? 0;
+  const assetManifestItems = pkg.asset_manifest?.items ?? 0;
   const titleCount = pkg.publishing_package.title_candidates?.length ?? 0;
   const missingTranscriptCount = pkg.sources.filter(
     (source) => source.transcript_status !== "manual_transcript",
@@ -131,6 +132,11 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   if (imagePrompts + videoPrompts === 0 || mediaPrompts.trim().length === 0) {
     blockers.push("Media prompts are not ready.");
     fixList.push("06-media-prompts.md: generate and review image/video prompts before paid generation.");
+  }
+
+  if (imagePrompts + videoPrompts > 0 && assetManifestItems === 0) {
+    blockers.push("Asset manifest is not built yet.");
+    fixList.push("Build asset-manifest.json before calling paid generation adapters.");
   }
 
   if (titleCount === 0 || !hasText(pkg.publishing_package.description)) {
@@ -212,6 +218,7 @@ ${approvalChecklist.map((item) => `- [ ] ${item}`).join("\n")}
 - Storyboard scenes: ${storyboardScenes}
 - Image prompts: ${imagePrompts}
 - Video prompts: ${videoPrompts}
+- Asset manifest items: ${assetManifestItems}
 - Title candidates: ${titleCount}
 
 ## Policy Notes

@@ -146,6 +146,12 @@ The dashboard `Draft Media` action creates deterministic starter prompts for `06
 
 API route: `POST /api/runs/:runId/media/draft`.
 
+## Build Asset Manifest
+
+The dashboard `Build Assets` action creates `asset-manifest.json` for the active run. It maps image, video, thumbnail, voice, subtitle, and BGM assets to provider roles, approval gates, prompt IDs, expected output paths, and pending statuses.
+
+API route: `POST /api/runs/:runId/assets/manifest`.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.
@@ -162,7 +168,7 @@ API route: `POST /api/runs/:runId/qa/draft`.
 
 The dashboard `Run Draft Flow` action runs the deterministic draft sequence for the active run:
 
-`analysis -> script -> storyboard -> media -> publishing -> qa`
+`analysis -> script -> storyboard -> media -> assets -> publishing -> qa`
 
 This is the current no-spend, no-upload baseline for one-click production package generation.
 

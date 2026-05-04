@@ -47,6 +47,7 @@ Build:
 - provider readiness preflight script for adapter roles
 - optional LLM-backed analysis and claim-ledger refinement from selected provider
 - optional LLM-backed script refinement from selected provider
+- provider-agnostic asset manifest for image, video, thumbnail, voice, subtitles, and BGM
 
 ## Phase 3: Dashboard App
 

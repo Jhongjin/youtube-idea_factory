@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
 import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
+import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
@@ -410,6 +411,14 @@ function Inspector({
                 <span>Render</span>
                 <span>pending</span>
               </div>
+              <div className="detail-row">
+                <span>Asset manifest</span>
+                <span>
+                  {run.package.asset_manifest
+                    ? `${run.package.asset_manifest.items} items`
+                    : "pending"}
+                </span>
+              </div>
             </div>
           </div>
         </section>
@@ -461,6 +470,7 @@ export default async function Home({
               <ScriptRefineButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />
               <MediaPromptDraftButton runId={activeRun.id} />
+              <AssetManifestButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>

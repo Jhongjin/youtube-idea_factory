@@ -189,6 +189,23 @@ Behavior:
 4. Includes style bible, negative prompts, safety notes, continuity notes, thumbnail concepts, and a generation manifest.
 5. Keeps paid generation behind human approval and final review by `youtube-production-qa`.
 
+## Asset Manifest
+
+Status: provider-agnostic manifest implemented.
+
+Route:
+
+- `POST /api/runs/:runId/assets/manifest`
+
+Behavior:
+
+1. Reads `production-package.json` media prompts and publishing thumbnail prompt.
+2. Writes `asset-manifest.json` into the run folder.
+3. Creates pending asset records for image, video, thumbnail, voice, subtitles, and BGM.
+4. Assigns provider roles and expected output paths under `artifacts/:runId/`.
+5. Marks assets as `pending_approval` so generation adapters can require `check_approval_gate.py --gate generation` before spending credits.
+6. Updates `production-package.json` with manifest item counts and pending approval count.
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.

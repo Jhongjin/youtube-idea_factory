@@ -44,6 +44,12 @@ export type ProductionPackage = {
     tags?: string[];
     thumbnail_prompt?: string;
   };
+  asset_manifest?: {
+    path: string;
+    items: number;
+    pending_approval: number;
+    updated_at: string;
+  };
   qa: {
     status: "pass" | "blocked" | "needs_review";
     blockers: string[];
