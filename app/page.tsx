@@ -22,6 +22,7 @@ import Link from "next/link";
 import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
+import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
@@ -401,6 +402,7 @@ export default async function Home({
               <AnalysisDraftButton runId={activeRun.id} />
               <ScriptDraftButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />
+              <MediaPromptDraftButton runId={activeRun.id} />
               <button className="text-button primary" type="button">
                 <Rocket size={16} />
                 QA Gate

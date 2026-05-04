@@ -93,3 +93,19 @@ Behavior:
 1. Reads `production-package.json` and `04-script-plan.md`.
 2. Writes starter scene cards to `05-storyboard.md`.
 3. Keeps final visual direction for `youtube-storyboard`.
+
+## Media Prompt Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/media/draft`
+
+Behavior:
+
+1. Reads `production-package.json` and `05-storyboard.md`.
+2. Writes provider-agnostic starter content to `06-media-prompts.md`.
+3. Updates `production-package.json` with structured image and video prompt records.
+4. Includes style bible, negative prompts, safety notes, continuity notes, thumbnail concepts, and a generation manifest.
+5. Keeps paid generation behind human approval and final review by `youtube-production-qa`.

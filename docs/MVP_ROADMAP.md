@@ -38,6 +38,7 @@ Build:
 - deterministic analysis draft from source metadata and manual transcripts
 - deterministic script plan draft from analysis and claim ledger
 - deterministic storyboard draft from script plan
+- deterministic media prompt draft from storyboard, with structured prompt records
 
 ## Phase 3: Dashboard App
 

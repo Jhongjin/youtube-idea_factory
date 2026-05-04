@@ -90,6 +90,12 @@ The dashboard `Draft Storyboard` action creates a deterministic starter storyboa
 
 API route: `POST /api/runs/:runId/storyboard/draft`.
 
+## Draft Media
+
+The dashboard `Draft Media` action creates deterministic starter prompts for `06-media-prompts.md` from the current storyboard. It also updates `production-package.json` with structured `media_prompts` counts so the pipeline state reflects generated prompt assets.
+
+API route: `POST /api/runs/:runId/media/draft`.
+
 ## Run Dashboard
 
 ```powershell
