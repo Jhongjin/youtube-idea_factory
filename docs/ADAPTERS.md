@@ -109,3 +109,19 @@ Behavior:
 3. Updates `production-package.json` with structured image and video prompt records.
 4. Includes style bible, negative prompts, safety notes, continuity notes, thumbnail concepts, and a generation manifest.
 5. Keeps paid generation behind human approval and final review by `youtube-production-qa`.
+
+## Publishing Draft
+
+Status: deterministic starter draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/publishing/draft`
+
+Behavior:
+
+1. Reads `production-package.json`, `04-script-plan.md`, `06-media-prompts.md`, and `03-claim-ledger.md`.
+2. Writes title candidates, description draft, tags, thumbnail prompt, and upload checklist to `07-publishing-package.md`.
+3. Updates `production-package.json` with the structured publishing package.
+4. Flags needs-evidence rows in the description draft so upload approval cannot ignore unresolved claims.
+5. Keeps upload, scheduling, and public publishing behind a human approval gate.

@@ -96,6 +96,12 @@ The dashboard `Draft Media` action creates deterministic starter prompts for `06
 
 API route: `POST /api/runs/:runId/media/draft`.
 
+## Draft Publishing
+
+The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.
+
+API route: `POST /api/runs/:runId/publishing/draft`.
+
 ## Run Dashboard
 
 ```powershell

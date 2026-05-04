@@ -25,6 +25,7 @@ import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
+import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
@@ -403,6 +404,7 @@ export default async function Home({
               <ScriptDraftButton runId={activeRun.id} />
               <StoryboardDraftButton runId={activeRun.id} />
               <MediaPromptDraftButton runId={activeRun.id} />
+              <PublishingDraftButton runId={activeRun.id} />
               <button className="text-button primary" type="button">
                 <Rocket size={16} />
                 QA Gate
