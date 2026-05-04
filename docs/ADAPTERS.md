@@ -297,6 +297,23 @@ Official reference:
 
 - https://developers.openai.com/api/docs/guides/text-to-speech
 
+## Subtitle Draft
+
+Status: deterministic subtitle draft implemented.
+
+Route:
+
+- `POST /api/runs/:runId/subtitles/draft`
+
+Behavior:
+
+1. Reads `05-storyboard.md`, `production-package.json`, and `asset-manifest.json`.
+2. Parses storyboard Scene Cards narration and time ranges, with package storyboard fallback.
+3. Writes `artifacts/:runId/subtitles/subtitles-primary.srt`.
+4. Marks the subtitle asset as `generated` with deterministic provider metadata.
+5. Rebuilds render manifest after subtitle generation when possible.
+6. Does not call an external subtitle provider; speech-to-text alignment remains a later adapter.
+
 ## Render Manifest
 
 Status: deterministic render preflight implemented.
@@ -311,10 +328,11 @@ Behavior:
 2. Writes `render-manifest.json` with resolution, fps, output paths, timeline items, voice, subtitles, BGM, and render approval snapshot.
 3. Chooses generated scene video when present, then generated image, then pending scene video/image as a blocked placeholder.
 4. Checks generated asset files exist under `artifacts/:runId`.
-5. Blocks render readiness when QA is blocked, render approval is incomplete, scene assets are not generated, voice/subtitles/BGM are missing, or referenced files do not exist.
-6. Updates `production-package.json.render_manifest` with timeline counts, blocker count, and `render_ready`.
-7. `scripts/check_approval_gate.py --gate render` and `--gate publish` require `render_ready: true`.
-8. Does not render video; actual assembly remains a separate adapter behind the render approval gate.
+5. Blocks render readiness when QA is blocked, render approval is incomplete, scene assets are not generated, voice/subtitles are missing, or referenced files do not exist.
+6. Treats BGM as optional; generated BGM is checked, but missing or pending BGM does not block render readiness.
+7. Updates `production-package.json.render_manifest` with timeline counts, blocker count, and `render_ready`.
+8. `scripts/check_approval_gate.py --gate render` and `--gate publish` require `render_ready: true`.
+9. Does not render video; actual assembly remains a separate adapter behind the render approval gate.
 
 ## Publishing Draft
 

@@ -39,6 +39,7 @@ import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { ScriptRefineButton } from "@/app/components/script-refine-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
+import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -493,6 +494,7 @@ export default async function Home({
               <MediaPromptDraftButton runId={activeRun.id} />
               <AssetManifestButton runId={activeRun.id} />
               <GenerationQueueButton runId={activeRun.id} />
+              <SubtitleDraftButton runId={activeRun.id} />
               <RenderManifestButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />

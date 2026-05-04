@@ -179,6 +179,12 @@ Direct voice generation is available as a guarded adapter route for OpenAI only:
 
 It requires the voice asset ID, selected TTS provider `OpenAI`, a configured model such as `gpt-4o-mini-tts`, stored API key, generation approval, prepared queue status, explicit narration text, voice, and `confirmSpend: "GENERATE_TTS"`.
 
+## Draft Subtitles
+
+The dashboard `Draft Subs` action creates `subtitles-primary.srt` from storyboard narration and updates the subtitle asset in `asset-manifest.json`. It is deterministic and does not call an external provider.
+
+API route: `POST /api/runs/:runId/subtitles/draft`.
+
 ## Build Render Manifest
 
 The dashboard `Render Plan` action creates `render-manifest.json` for the active run. It maps scene assets, voice, subtitles, BGM, resolution, timeline timing, render output paths, render approval status, and file-level blockers before any final assembly work.

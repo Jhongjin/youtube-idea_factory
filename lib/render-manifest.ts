@@ -217,11 +217,12 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
   const voice = assetByKind(manifest, "voice");
   const subtitles = assetByKind(manifest, "subtitles");
   const bgm = assetByKind(manifest, "bgm");
-  const [voiceBlockers, subtitleBlockers, bgmBlockers] = await Promise.all([
+  const [voiceBlockers, subtitleBlockers, rawBgmBlockers] = await Promise.all([
     assetBlockers(voice, "voice"),
     assetBlockers(subtitles, "subtitles"),
     assetBlockers(bgm, "bgm"),
   ]);
+  const bgmBlockers = bgm?.status === "generated" ? rawBgmBlockers : [];
   const renderApproval = approvals.render;
   const approvalBlockers =
     renderApproval.approved && renderApproval.approved_by.trim() && renderApproval.approved_at.trim()

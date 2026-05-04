@@ -33,6 +33,7 @@
 - `generation-queue.json` must be prepared and reviewed before any provider adapter consumes asset-manifest items.
 - Direct image generation requires an explicit spend confirmation token in the API body in addition to the run approval gate.
 - Direct TTS generation requires explicit narration text, voice choice, AI-voice disclosure, and a spend confirmation token.
+- Deterministic subtitle drafts must still be checked against the final voice track before rendering.
 
 ### G5 Final Package
 
@@ -40,6 +41,7 @@
 - Subtitles and voice match script.
 - Render manifest exists.
 - Render manifest must report `render_ready: true` before a render adapter starts.
+- BGM is optional; if present, license/provenance and mix level still need review.
 - Publishing checklist is complete.
 - Run `scripts/check_approval_gate.py --gate render` before final assembly or render spend.
 - Run `scripts/check_approval_gate.py --gate publish` before upload, scheduling, or public publishing.
