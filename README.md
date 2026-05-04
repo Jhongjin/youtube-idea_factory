@@ -211,6 +211,12 @@ The dashboard `Draft Publish` action creates a deterministic starter upload pack
 
 API route: `POST /api/runs/:runId/publishing/draft`.
 
+## Build Publishing Handoff
+
+The dashboard `Publish Check` action creates `publish-handoff.json`. It checks the final rendered video, generated thumbnail, title, description, QA readiness, publish approval, and deterministic publish gate before any YouTube upload adapter is allowed to run.
+
+API route: `POST /api/runs/:runId/publishing/handoff`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

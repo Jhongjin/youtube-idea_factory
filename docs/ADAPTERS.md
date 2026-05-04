@@ -381,6 +381,25 @@ Behavior:
 4. Flags needs-evidence rows in the description draft so upload approval cannot ignore unresolved claims.
 5. Keeps upload, scheduling, and public publishing behind a human approval gate.
 
+## Publishing Handoff
+
+Status: deterministic publish preflight implemented.
+
+Route:
+
+- `POST /api/runs/:runId/publishing/handoff`
+
+Behavior:
+
+1. Reads `production-package.json`, `asset-manifest.json`, `render-manifest.json`, and run approvals.
+2. Writes `publish-handoff.json` with final video, thumbnail, metadata, QA, and publish approval status.
+3. Checks that a final rendered mp4 path exists under `artifacts/:runId`.
+4. Checks that the thumbnail asset is generated and points to an existing file.
+5. Checks title, description, QA pass state, `qa.publish_readiness`, and publish approval.
+6. Runs `scripts/check_approval_gate.py --gate publish` and includes any deterministic gate failures as blockers.
+7. Updates `production-package.json.publishing_handoff`.
+8. Does not upload, schedule, or publish to YouTube.
+
 ## QA Draft
 
 Status: deterministic starter draft implemented.

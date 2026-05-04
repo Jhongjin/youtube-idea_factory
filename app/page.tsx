@@ -33,6 +33,7 @@ import { LocalRenderButton } from "@/app/components/local-render-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
+import { PublishingHandoffButton } from "@/app/components/publishing-handoff-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
 import { RenderManifestButton } from "@/app/components/render-manifest-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
@@ -471,6 +472,10 @@ function Inspector({
                 <span>Render blockers</span>
                 <span>{run.package.render_manifest?.blockers ?? 0}</span>
               </div>
+              <div className="detail-row">
+                <span>Publish handoff</span>
+                <span>{run.package.publishing_handoff?.ready ? "ready" : "pending"}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -530,6 +535,7 @@ export default async function Home({
               <RenderManifestButton runId={activeRun.id} />
               <LocalRenderButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
+              <PublishingHandoffButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>

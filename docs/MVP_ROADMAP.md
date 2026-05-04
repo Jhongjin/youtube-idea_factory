@@ -55,6 +55,7 @@ Build:
 - deterministic storyboard-to-SRT subtitle draft route
 - deterministic render manifest and file-level preflight before assembly
 - guarded local ffmpeg render adapter for approved ready manifests
+- deterministic publishing handoff manifest before YouTube upload
 
 ## Phase 3: Dashboard App
 

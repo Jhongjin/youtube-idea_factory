@@ -44,6 +44,7 @@
 - Local ffmpeg render also requires the explicit `RENDER_VIDEO` confirmation token and the render approval gate script.
 - BGM is optional; if present, license/provenance and mix level still need review.
 - Publishing checklist is complete.
+- `publish-handoff.json` must show final video, thumbnail, metadata, QA, and publish approval blockers before upload.
 - Run `scripts/check_approval_gate.py --gate render` before final assembly or render spend.
 - Run `scripts/check_approval_gate.py --gate publish` before upload, scheduling, or public publishing.
 

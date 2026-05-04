@@ -44,6 +44,12 @@ export type ProductionPackage = {
     tags?: string[];
     thumbnail_prompt?: string;
   };
+  publishing_handoff?: {
+    path: string;
+    ready: boolean;
+    blockers: number;
+    updated_at: string;
+  };
   asset_manifest?: {
     path: string;
     items: number;
