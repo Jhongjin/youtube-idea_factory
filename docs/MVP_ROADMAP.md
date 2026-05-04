@@ -51,6 +51,7 @@ Build:
 - dashboard approval gate editor for generation, render, and publishing gates
 - provider-agnostic generation queue preflight from asset manifest, approvals, and provider settings
 - guarded OpenAI image generation adapter route for approved queued image assets
+- guarded OpenAI TTS adapter route for approved queued voice assets
 
 ## Phase 3: Dashboard App
 

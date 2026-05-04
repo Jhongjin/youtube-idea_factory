@@ -171,6 +171,14 @@ Direct image generation is available as a guarded adapter route for OpenAI only:
 
 It requires an image or thumbnail asset ID, selected Image provider `OpenAI`, a configured model such as `gpt-image-2`, stored API key, generation approval, prepared queue status, and an explicit body field `confirmSpend: "GENERATE_IMAGE"`.
 
+## Generate Voice Assets
+
+Direct voice generation is available as a guarded adapter route for OpenAI only:
+
+- `POST /api/runs/:runId/assets/generate-voice`
+
+It requires the voice asset ID, selected TTS provider `OpenAI`, a configured model such as `gpt-4o-mini-tts`, stored API key, generation approval, prepared queue status, explicit narration text, voice, and `confirmSpend: "GENERATE_TTS"`.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.

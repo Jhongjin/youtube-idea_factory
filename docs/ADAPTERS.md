@@ -265,6 +265,38 @@ Official references:
 - https://developers.openai.com/api/docs/guides/image-generation
 - https://developers.openai.com/api/reference/overview
 
+## OpenAI TTS Generation
+
+Status: guarded adapter route implemented, not part of the one-click draft flow.
+
+Route:
+
+- `POST /api/runs/:runId/assets/generate-voice`
+
+Required request body:
+
+- `assetId`: voice asset ID from `asset-manifest.json`
+- `confirmSpend`: must equal `GENERATE_TTS`
+- `text`: final narration text to synthesize
+- `voice`: OpenAI voice name or eligible custom voice ID
+- `instructions`: optional speech direction
+- `responseFormat`: optional `mp3`, `opus`, `aac`, `flac`, `wav`, or `pcm`; default is `wav`
+
+Behavior:
+
+1. Rebuilds the generation queue before spending.
+2. Requires the selected TTS provider to be `OpenAI`.
+3. Requires a configured TTS model and API key from `/settings`.
+4. Requires the target voice asset status to be `pending_generation`.
+5. Calls OpenAI Speech API `POST /v1/audio/speech`.
+6. Saves the returned audio bytes to the asset `expected_path`.
+7. Updates `asset-manifest.json`, `production-package.json.asset_manifest`, and `asset-generation-log.json`.
+8. Requires the production workflow to disclose that generated voices are AI-generated.
+
+Official reference:
+
+- https://developers.openai.com/api/docs/guides/text-to-speech
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.
