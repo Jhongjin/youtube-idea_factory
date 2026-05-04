@@ -23,6 +23,7 @@ import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
+import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
@@ -250,6 +251,7 @@ function SourcesPanel({ run }: { run: RunSummary }) {
             ))}
           </tbody>
         </table>
+        <SourceTranscriptPanel runId={run.id} sources={run.package.sources} />
       </div>
     </section>
   );

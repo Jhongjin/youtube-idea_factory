@@ -62,6 +62,13 @@ YOUTUBE_API_KEY=...
 Then use the dashboard `YouTube Finder` panel or call `POST /api/youtube/search`.
 Finder results can be imported into the active run with `POST /api/runs/:runId/sources/import`.
 
+## Transcript Slots
+
+The dashboard Sources panel can store manual transcripts per source video. The API routes are:
+
+- `GET /api/runs/:runId/transcripts/:sourceKey`
+- `PUT /api/runs/:runId/transcripts/:sourceKey`
+
 ## Run Dashboard
 
 ```powershell

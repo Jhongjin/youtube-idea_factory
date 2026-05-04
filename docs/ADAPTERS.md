@@ -33,6 +33,20 @@ Official references:
 
 - Requires a user-provided API key.
 - Search ranking is only as representative as the YouTube Data API response.
-- It does not yet write selected candidates into a run automatically.
 - Import currently appends all returned candidates and skips duplicate URLs.
 - It does not fetch transcripts yet.
+
+## Transcript Storage
+
+Status: manual transcript slot implemented.
+
+Routes:
+
+- `GET /api/runs/:runId/transcripts/:sourceKey`
+- `PUT /api/runs/:runId/transcripts/:sourceKey`
+
+Behavior:
+
+1. Stores transcript text under `runs/:runId/transcripts/:sourceKey.txt`.
+2. Updates `sources.json` and `production-package.json` with transcript status and path.
+3. Keeps collection provider-agnostic until a compliant transcript adapter is chosen.

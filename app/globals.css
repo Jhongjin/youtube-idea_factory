@@ -398,6 +398,101 @@ a {
   font-weight: 750;
 }
 
+.transcript-panel {
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+
+.transcript-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.transcript-header h4 {
+  margin: 0 0 3px;
+  font-size: 13px;
+}
+
+.transcript-header p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.transcript-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.transcript-source-list {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.transcript-source {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  gap: 7px;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #455366;
+  padding: 7px;
+  text-align: left;
+}
+
+.transcript-source span {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transcript-source small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.transcript-source.active {
+  border-color: #a9c2ff;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.transcript-editor {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.transcript-editor textarea {
+  width: 100%;
+  min-height: 190px;
+  border: 0;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+  outline: none;
+  padding: 10px;
+  resize: vertical;
+}
+
 .finder-form {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) 150px 96px 92px 112px 118px auto;
@@ -863,6 +958,10 @@ a {
   .finder-metrics {
     grid-column: 2;
     text-align: left;
+  }
+
+  .transcript-layout {
+    grid-template-columns: 1fr;
   }
 
   .artifact-layout {

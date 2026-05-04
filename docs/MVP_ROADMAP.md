@@ -32,7 +32,7 @@ Goal: Add YouTube finder and transcript ingestion.
 Build:
 
 - YouTube Data API adapter or approved search provider: started with `POST /api/youtube/search`
-- transcript fetch adapter
+- transcript fetch adapter: manual transcript storage slot implemented first
 - source ranking logic: started with finder result import and duplicate URL skipping
 - failure and quota handling
 
