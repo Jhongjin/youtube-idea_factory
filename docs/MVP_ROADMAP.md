@@ -44,6 +44,7 @@ Build:
 - dashboard one-click draft flow for analysis through QA
 - approval gate script and run-level approvals template for paid adapters
 - provider API registration page and local provider settings storage
+- provider readiness preflight script for adapter roles
 
 ## Phase 3: Dashboard App
 

@@ -37,6 +37,14 @@ Behavior:
 4. Returns only `hasApiKey` and a masked key preview to the browser.
 5. Keeps provider-specific payloads out of the core production package until each adapter is implemented.
 
+Adapter preflight:
+
+```powershell
+python .\scripts\check_provider_ready.py --role llm
+python .\scripts\check_provider_ready.py --role image
+python .\scripts\check_provider_ready.py --role youtube --require-key
+```
+
 ## YouTube Finder
 
 Status: initial implementation.

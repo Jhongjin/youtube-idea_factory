@@ -59,6 +59,14 @@ Open `http://localhost:3000/settings` to choose providers and register API keys 
 
 Settings are stored locally in `config/provider-settings.local.json`, which is ignored by git. The API route is `GET/PUT /api/settings/providers`; GET responses only return masked key status, never raw API keys.
 
+Before running an adapter directly, check that its provider role is configured:
+
+```powershell
+python .\scripts\check_provider_ready.py --role llm
+python .\scripts\check_provider_ready.py --role tts
+python .\scripts\check_provider_ready.py --role youtube --require-key
+```
+
 ## Enrich Source Metadata
 
 ```powershell
