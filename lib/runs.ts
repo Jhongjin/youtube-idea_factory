@@ -52,6 +52,14 @@ export type ProductionPackage = {
     blocked?: number;
     updated_at: string;
   };
+  render_manifest?: {
+    path: string;
+    timeline_items: number;
+    ready_timeline_items: number;
+    blockers: number;
+    render_ready: boolean;
+    updated_at: string;
+  };
   qa: {
     status: "pass" | "blocked" | "needs_review";
     blockers: string[];

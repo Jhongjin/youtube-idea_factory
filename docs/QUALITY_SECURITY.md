@@ -39,6 +39,7 @@
 - Thumbnail/title/description align with the content and avoid deceptive claims.
 - Subtitles and voice match script.
 - Render manifest exists.
+- Render manifest must report `render_ready: true` before a render adapter starts.
 - Publishing checklist is complete.
 - Run `scripts/check_approval_gate.py --gate render` before final assembly or render spend.
 - Run `scripts/check_approval_gate.py --gate publish` before upload, scheduling, or public publishing.

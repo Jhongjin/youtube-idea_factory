@@ -93,6 +93,17 @@
         "updated_at": { "type": "string" }
       }
     },
+    "render_manifest": {
+      "type": "object",
+      "properties": {
+        "path": { "type": "string" },
+        "timeline_items": { "type": "integer", "minimum": 0 },
+        "ready_timeline_items": { "type": "integer", "minimum": 0 },
+        "blockers": { "type": "integer", "minimum": 0 },
+        "render_ready": { "type": "boolean" },
+        "updated_at": { "type": "string" }
+      }
+    },
     "qa": {
       "type": "object",
       "required": ["status", "blockers"],

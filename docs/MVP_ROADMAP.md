@@ -52,6 +52,7 @@ Build:
 - provider-agnostic generation queue preflight from asset manifest, approvals, and provider settings
 - guarded OpenAI image generation adapter route for approved queued image assets
 - guarded OpenAI TTS adapter route for approved queued voice assets
+- deterministic render manifest and file-level preflight before assembly
 
 ## Phase 3: Dashboard App
 

@@ -297,6 +297,25 @@ Official reference:
 
 - https://developers.openai.com/api/docs/guides/text-to-speech
 
+## Render Manifest
+
+Status: deterministic render preflight implemented.
+
+Route:
+
+- `POST /api/runs/:runId/render/manifest`
+
+Behavior:
+
+1. Reads `production-package.json`, `asset-manifest.json`, and run approvals.
+2. Writes `render-manifest.json` with resolution, fps, output paths, timeline items, voice, subtitles, BGM, and render approval snapshot.
+3. Chooses generated scene video when present, then generated image, then pending scene video/image as a blocked placeholder.
+4. Checks generated asset files exist under `artifacts/:runId`.
+5. Blocks render readiness when QA is blocked, render approval is incomplete, scene assets are not generated, voice/subtitles/BGM are missing, or referenced files do not exist.
+6. Updates `production-package.json.render_manifest` with timeline counts, blocker count, and `render_ready`.
+7. `scripts/check_approval_gate.py --gate render` and `--gate publish` require `render_ready: true`.
+8. Does not render video; actual assembly remains a separate adapter behind the render approval gate.
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.

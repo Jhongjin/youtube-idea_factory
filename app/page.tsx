@@ -32,6 +32,7 @@ import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
+import { RenderManifestButton } from "@/app/components/render-manifest-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
@@ -416,7 +417,7 @@ function Inspector({
               </div>
               <div className="detail-row">
                 <span>Render</span>
-                <span>pending</span>
+                <span>{run.package.render_manifest?.render_ready ? "ready" : "pending"}</span>
               </div>
               <div className="detail-row">
                 <span>Asset manifest</span>
@@ -433,6 +434,10 @@ function Inspector({
               <div className="detail-row">
                 <span>Queue blocked</span>
                 <span>{run.package.asset_manifest?.blocked ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>Render blockers</span>
+                <span>{run.package.render_manifest?.blockers ?? 0}</span>
               </div>
             </div>
           </div>
@@ -488,6 +493,7 @@ export default async function Home({
               <MediaPromptDraftButton runId={activeRun.id} />
               <AssetManifestButton runId={activeRun.id} />
               <GenerationQueueButton runId={activeRun.id} />
+              <RenderManifestButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>

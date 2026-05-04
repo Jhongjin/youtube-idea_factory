@@ -47,6 +47,7 @@ def package_failures(package: dict[str, Any], gate: str) -> list[str]:
     qa = package.get("qa", {})
     media_prompts = package.get("media_prompts", {})
     publishing = package.get("publishing_package", {})
+    render_manifest = package.get("render_manifest", {})
 
     if not isinstance(qa, dict):
         return ["package.qa must be an object"]
@@ -60,6 +61,8 @@ def package_failures(package: dict[str, Any], gate: str) -> list[str]:
         failures.append("media prompts are empty")
 
     if gate in {"render", "publish"}:
+        if not isinstance(render_manifest, dict) or render_manifest.get("render_ready") is not True:
+            failures.append("render_manifest.render_ready must be true")
         title_count = (
             len(publishing.get("title_candidates", [])) if isinstance(publishing, dict) else 0
         )

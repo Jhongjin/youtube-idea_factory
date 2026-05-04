@@ -179,6 +179,14 @@ Direct voice generation is available as a guarded adapter route for OpenAI only:
 
 It requires the voice asset ID, selected TTS provider `OpenAI`, a configured model such as `gpt-4o-mini-tts`, stored API key, generation approval, prepared queue status, explicit narration text, voice, and `confirmSpend: "GENERATE_TTS"`.
 
+## Build Render Manifest
+
+The dashboard `Render Plan` action creates `render-manifest.json` for the active run. It maps scene assets, voice, subtitles, BGM, resolution, timeline timing, render output paths, render approval status, and file-level blockers before any final assembly work.
+
+API route: `POST /api/runs/:runId/render/manifest`.
+
+`scripts/check_approval_gate.py --gate render` and `--gate publish` require `production-package.json.render_manifest.render_ready` to be true.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.
