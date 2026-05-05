@@ -266,6 +266,7 @@ npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD 
 
 The upload worker needs `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`, and `YOUTUBE_OAUTH_REFRESH_TOKEN` with YouTube upload scope. Jobs default to private visibility unless the upload job explicitly requests another privacy status.
 Full worker setup lives in `docs/YOUTUBE_UPLOAD_WORKER.md`.
+The dashboard inspector reads `render-worker-job.json`, `render-log.json`, `youtube-upload-job.json`, and `youtube-upload-log.json` into an operations status panel so failures and final YouTube URLs are visible without opening raw JSON.
 
 ## Draft QA
 

@@ -96,6 +96,7 @@ Build:
 - render validation
 - thumbnail export
 - YouTube upload job handoff and external OAuth worker: started
+- dashboard operations panel for render/upload worker status: started
 - schedule/publish approval gate
 
 ## Phase 6: Feedback Loop

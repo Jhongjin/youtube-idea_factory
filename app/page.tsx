@@ -48,6 +48,7 @@ import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { YouTubeUploadJobButton } from "@/app/components/youtube-upload-job-button";
 import { YouTubeUploadWorkerPanel } from "@/app/components/youtube-upload-worker-panel";
+import { WorkerStatusPanel } from "@/app/components/worker-status-panel";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -55,6 +56,7 @@ import { validateProductionPackage, type PackageValidationResult } from "@/lib/p
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
+import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
 
 export const dynamic = "force-dynamic";
 
@@ -338,6 +340,7 @@ function Inspector({
   approvals,
   generationState,
   storageMode,
+  workerStatus,
 }: {
   run: RunSummary;
   validation: PackageValidationResult;
@@ -345,6 +348,7 @@ function Inspector({
   approvals: RunApprovals;
   generationState: AssetGenerationState;
   storageMode: string;
+  workerStatus: RunWorkerStatus;
 }) {
   const brief = run.package.brief;
   const readyProviderCount = providerRoles.filter((role) => {
@@ -530,6 +534,7 @@ function Inspector({
                 <span>업로드 작업</span>
                 <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
               </div>
+              <WorkerStatusPanel status={workerStatus} />
               <YouTubeUploadWorkerPanel
                 runId={run.id}
                 storageMode={storageMode}
@@ -556,6 +561,7 @@ export default async function Home({
   const generationState = activeRun ? await getAssetGenerationState(activeRun.id) : null;
   const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
   const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
+  const workerStatus = activeRun ? await getRunWorkerStatus(activeRun.id, activeRun.package) : null;
   const storageMode = process.env.APP_STORAGE_MODE?.trim() || "local";
 
   return (
@@ -625,6 +631,7 @@ export default async function Home({
           run={activeRun}
           storageMode={storageMode}
           validation={validation!}
+          workerStatus={workerStatus!}
         />
       ) : (
         <aside className="inspector">

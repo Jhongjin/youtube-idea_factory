@@ -63,5 +63,8 @@ The worker writes:
 - updated `youtube-upload-job.json`
 - updated `production-package.json`
 
+The dashboard operations panel reads those files and shows upload status, failure messages,
+thumbnail status, and the final YouTube URL when the upload completes.
+
 The upload job defaults to `private` visibility. If a scheduled publish time is set, the worker
 forces YouTube privacy to `private` because YouTube requires scheduled uploads to be private first.
