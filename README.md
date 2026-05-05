@@ -12,6 +12,7 @@
 - `scripts/create_run.py`: 수동 seed URL 기반 production run 생성기
 - `scripts/validate_package.py`: production package 구조 검증기
 - `scripts/validate-harness.ps1`: 하네스 문서/스킬 기본 검증
+- `docs/PROVIDER_CATALOG.md`: LLM, 이미지, 영상, TTS, 자막, BGM 제공자 후보와 어댑터 상태
 - `runs/`: 콘텐츠 제작 실행 단위별 작업 기록 위치
 - `artifacts/`: 생성 이미지, 음성, 영상, 자막 등 산출물 위치
 

@@ -22,6 +22,7 @@ Build a YouTube automation dashboard that can turn a category or topic into a re
 - Agent and skill orchestration: `docs/AGENT_ORCHESTRATION.md`
 - Quality, security, and policy gates: `docs/QUALITY_SECURITY.md`
 - Dashboard UX direction: `docs/DASHBOARD_UX.md`
+- Provider catalog and adapter status: `docs/PROVIDER_CATALOG.md`
 - MVP sequence: `docs/MVP_ROADMAP.md`
 - Decision log: `docs/TECH_DECISIONS.md`
 - Data contract seed: `docs/templates/production-package.schema.json`
@@ -52,4 +53,3 @@ powershell -ExecutionPolicy Bypass -File .\scripts\validate-harness.ps1
 - The workspace currently lives under a broader user-home git root. Keep edits scoped to `Documents/Codex/yuotube_idea_factory`.
 - Prefer project-local `.agents/skills` for workflow skills so the harness travels with the project folder.
 - Treat YouTube API access, scraping, media generation, and publishing integrations as adapters until credentials and provider choices are decided.
-
