@@ -100,6 +100,7 @@ When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of l
 - `POST /api/runs/:runId/sources/enrich`
 - `GET/PUT /api/runs/:runId/transcripts/:sourceKey`
 - `GET /api/runs/:runId/worker-jobs`
+- `PATCH /api/runs/:runId/worker-jobs/:jobId`
 - text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, generation queue, image/TTS generation, manual media registration, and render manifest checks
 - render/upload job queue creation records in `worker_jobs` when the table exists
 

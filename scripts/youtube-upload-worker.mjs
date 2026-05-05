@@ -754,7 +754,7 @@ async function runQueuedMode(args, storageMode) {
     }
 
     try {
-      await runUploadJob({ args, runId: claimed.run_id, storageMode });
+      await runUploadJob({ args: { ...args, force: "true" }, runId: claimed.run_id, storageMode });
       processed += 1;
     } catch (error) {
       await patchWorkerJobRecord(storageMode, claimed, {

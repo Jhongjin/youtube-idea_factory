@@ -51,6 +51,8 @@ export type UpsertWorkerJobRecordInput = {
   workerType?: string;
 };
 
+export type WorkerJobAction = "cancel" | "retry";
+
 const localQueueFile = "worker-jobs.json";
 
 function asRecord(value: unknown): WorkerJobRecord | null {
@@ -155,4 +157,81 @@ export async function upsertWorkerJobRecord(input: UpsertWorkerJobRecordInput) {
   const next = [record, ...records.filter((item) => item.id !== record.id)];
   await writeRunJson(input.runId, localQueueFile, next);
   return record;
+}
+
+function actionPatch(record: WorkerJobRecord, action: WorkerJobAction) {
+  const now = new Date().toISOString();
+  if (action === "cancel") {
+    if (record.status !== "queued") {
+      throw new Error("Only queued worker jobs can be cancelled.");
+    }
+    return {
+      completed_at: now,
+      last_error: "cancelled by operator",
+      status: "cancelled" as const,
+      updated_at: now,
+    };
+  }
+
+  if (record.status !== "failed" && record.status !== "cancelled") {
+    throw new Error("Only failed or cancelled worker jobs can be retried.");
+  }
+  return {
+    completed_at: null,
+    last_error: "",
+    queued_at: now,
+    started_at: null,
+    status: "queued" as const,
+    updated_at: now,
+  };
+}
+
+export async function updateWorkerJobAction(
+  runId: string,
+  jobId: string,
+  action: WorkerJobAction,
+): Promise<WorkerJobRecord> {
+  if (action !== "cancel" && action !== "retry") {
+    throw new Error("Unsupported worker job action.");
+  }
+
+  if (getAppStorageMode() === "supabase") {
+    const rows = await supabaseRest<WorkerJobRecord[]>("worker_jobs", {
+      query: {
+        id: supabaseEq(jobId),
+        limit: 1,
+        run_id: supabaseEq(runId),
+        select: "*",
+      },
+    });
+    const record = rows[0];
+    if (!record) {
+      throw new Error("Worker job was not found.");
+    }
+    const patch = actionPatch(record, action);
+    const updated = await supabaseRest<WorkerJobRecord[]>("worker_jobs", {
+      method: "PATCH",
+      body: patch,
+      prefer: "return=representation",
+      query: {
+        id: supabaseEq(jobId),
+        run_id: supabaseEq(runId),
+      },
+    });
+    return updated[0] ?? { ...record, ...patch };
+  }
+
+  const records = await readLocalRecords(runId);
+  const record = records.find((item) => item.id === jobId);
+  if (!record) {
+    throw new Error("Worker job was not found.");
+  }
+  const patch = actionPatch(record, action);
+  const nextRecord = { ...record, ...patch };
+  await writeRunJson(
+    runId,
+    localQueueFile,
+    records.map((item) => (item.id === jobId ? nextRecord : item)),
+  );
+  return nextRecord;
 }

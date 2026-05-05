@@ -71,5 +71,7 @@ npm run youtube:upload-worker -- --poll --confirm RUN_YOUTUBE_UPLOAD --storage s
 - `--poll` keeps checking the queue; use `--max-jobs <n>` for bounded worker runs.
 - Queue mode marks a row `running` before processing to reduce duplicate claims.
 - `--dry-run` is supported only with explicit `--run-id`, because queue mode claims real work.
+- The dashboard operations panel can cancel `queued` jobs and retry `failed` or `cancelled` jobs.
+- Queue actions are exposed through `PATCH /api/runs/:runId/worker-jobs/:jobId`.
 - Workers still require the same environment variables documented in `DEPLOYMENT.md` and
   `YOUTUBE_UPLOAD_WORKER.md`.

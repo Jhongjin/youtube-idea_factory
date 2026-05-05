@@ -2,7 +2,7 @@ import type { ProductionPackage } from "@/lib/runs";
 import { readRunFileIfExists } from "@/lib/run-store";
 import { getWorkerJobRecords, type WorkerJobKind, type WorkerJobRecord } from "@/lib/worker-job-records";
 
-export type WorkerStageStatus = "pending" | "queued" | "running" | "completed" | "failed" | "unknown";
+export type WorkerStageStatus = "pending" | "queued" | "running" | "completed" | "failed" | "cancelled" | "unknown";
 
 export type WorkerStageStatusView = {
   completedAt: string;
@@ -15,6 +15,7 @@ export type WorkerStageStatusView = {
   logPath: string;
   queue: {
     attempts: number;
+    id: string;
     lastError: string;
     status: string;
     updatedAt: string;
@@ -45,7 +46,7 @@ function asBoolean(value: unknown) {
 }
 
 function asStatus(value: unknown): WorkerStageStatus {
-  if (value === "queued" || value === "running" || value === "completed" || value === "failed") {
+  if (value === "queued" || value === "running" || value === "completed" || value === "failed" || value === "cancelled") {
     return value;
   }
   return value ? "unknown" : "pending";
@@ -80,6 +81,7 @@ function queueView(record: WorkerJobRecord | null) {
   return record
     ? {
         attempts: record.attempts,
+        id: record.id,
         lastError: record.last_error,
         status: record.status,
         updatedAt: record.updated_at,
@@ -93,7 +95,7 @@ function renderStatus(
   log: JsonObject | null,
   record: WorkerJobRecord | null,
 ): WorkerStageStatusView {
-  const status = asStatus(job?.status ?? pkg.render_manifest?.worker_job_status ?? record?.status);
+  const status = asStatus(record?.status ?? job?.status ?? pkg.render_manifest?.worker_job_status);
   const outputPath = asString(log?.output_path) || asString(job?.output_path) || pkg.render_manifest?.rendered_path || "";
   return {
     completedAt: asString(job?.completed_at) || asString(log?.rendered_at) || pkg.render_manifest?.rendered_at || "",
@@ -122,7 +124,7 @@ function uploadStatus(
   record: WorkerJobRecord | null,
 ): WorkerStageStatusView {
   const metadata = asObject(job?.metadata);
-  const status = asStatus(job?.status ?? pkg.publishing_handoff?.upload_job_status ?? record?.status);
+  const status = asStatus(record?.status ?? job?.status ?? pkg.publishing_handoff?.upload_job_status);
   const videoUrl = asString(log?.video_url) || asString(job?.video_url) || pkg.publishing_handoff?.uploaded_video_url || "";
   const videoId = asString(log?.video_id) || asString(job?.video_id) || pkg.publishing_handoff?.uploaded_video_id || "";
   return {

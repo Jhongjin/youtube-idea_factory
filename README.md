@@ -284,6 +284,7 @@ Full worker setup lives in `docs/YOUTUBE_UPLOAD_WORKER.md`.
 The dashboard inspector reads `render-worker-job.json`, `render-log.json`, `youtube-upload-job.json`, and `youtube-upload-log.json` into an operations status panel so failures and final YouTube URLs are visible without opening raw JSON.
 When the `worker_jobs` Supabase table exists, upload job creation and worker execution also update that durable queue record. If the table is not applied yet, the JSON artifact flow still works.
 Queue records are also readable at `GET /api/runs/:runId/worker-jobs`.
+Queued jobs can be cancelled, and failed or cancelled jobs can be retried from the dashboard operations panel.
 
 ## Draft QA
 

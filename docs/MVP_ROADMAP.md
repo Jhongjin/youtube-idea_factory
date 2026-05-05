@@ -99,6 +99,7 @@ Build:
 - dashboard operations panel for render/upload worker status: started
 - Supabase worker_jobs queue record foundation: started
 - external worker queue polling mode: started
+- dashboard worker job cancel/retry controls: started
 - schedule/publish approval gate
 
 ## Phase 6: Feedback Loop

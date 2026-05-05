@@ -936,6 +936,19 @@ a {
   color: var(--muted);
 }
 
+.worker-job-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.worker-job-actions span {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .detail-row {
   display: flex;
   justify-content: space-between;

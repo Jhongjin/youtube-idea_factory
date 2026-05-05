@@ -534,7 +534,7 @@ function Inspector({
                 <span>업로드 작업</span>
                 <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
               </div>
-              <WorkerStatusPanel status={workerStatus} />
+              <WorkerStatusPanel runId={run.id} status={workerStatus} />
               <YouTubeUploadWorkerPanel
                 runId={run.id}
                 storageMode={storageMode}
