@@ -207,6 +207,12 @@ a {
   color: #ffffff;
 }
 
+.text-button.danger {
+  border-color: #f0bbb8;
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -718,6 +724,13 @@ a {
   color: var(--red);
   font-size: 13px;
   font-weight: 750;
+}
+
+.run-delete-action {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
 }
 
 .settings-page {

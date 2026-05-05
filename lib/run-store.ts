@@ -38,6 +38,7 @@ type RunArtifactRow = {
 };
 
 const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
+const artifactsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "artifacts");
 
 export function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
@@ -223,6 +224,22 @@ export async function createRunWorkspace(input: RunWorkspaceInput): Promise<RunS
     path: path.relative(/* turbopackIgnore: true */ process.cwd(), runDir),
     updatedAt: input.createdAt,
   };
+}
+
+export async function deleteRunWorkspace(runId: string) {
+  assertSafeRunId(runId);
+  if (getAppStorageMode() === "supabase") {
+    await supabaseRest("production_runs", {
+      method: "DELETE",
+      query: { id: supabaseEq(runId) },
+    });
+    return;
+  }
+
+  await Promise.all([
+    fs.rm(getLocalRunDir(runId), { force: true, recursive: true }),
+    fs.rm(path.join(artifactsDir, runId), { force: true, recursive: true }),
+  ]);
 }
 
 export async function readRunFile(runId: string, filePath: string): Promise<string> {

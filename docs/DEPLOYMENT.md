@@ -66,6 +66,7 @@ Initial policy:
 When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of local files:
 
 - `GET/POST /api/runs`
+- `DELETE /api/runs/:runId`
 - `GET/PUT /api/runs/:runId/artifacts/:artifactId`
 - `GET /api/runs/:runId/artifacts`
 - `GET/PUT /api/runs/:runId/approvals`

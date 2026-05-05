@@ -36,6 +36,7 @@ import { PublishingDraftButton } from "@/app/components/publishing-draft-button"
 import { PublishingHandoffButton } from "@/app/components/publishing-handoff-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
 import { RenderManifestButton } from "@/app/components/render-manifest-button";
+import { RunDeleteButton } from "@/app/components/run-delete-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
@@ -443,6 +444,7 @@ function Inspector({
                 <span>길이</span>
                 <span>{brief.target_duration_seconds ?? 0}s</span>
               </div>
+              <RunDeleteButton runId={run.id} topic={brief.topic} />
             </div>
           </div>
         </section>

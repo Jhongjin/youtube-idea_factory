@@ -1,6 +1,6 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { validateProductionPackage } from "@/lib/package-validation";
+import { readRunJson } from "@/lib/run-store";
+import type { ProductionPackage } from "@/lib/runs";
 
 export const dynamic = "force-dynamic";
 
@@ -18,14 +18,8 @@ export async function GET(_request: Request, context: RouteContext) {
   try {
     const { runId } = await context.params;
     assertSafeRunId(runId);
-    const packagePath = path.join(
-      /* turbopackIgnore: true */ process.cwd(),
-      "runs",
-      runId,
-      "production-package.json",
-    );
-    const raw = await fs.readFile(packagePath, "utf-8");
-    const result = validateProductionPackage(JSON.parse(raw));
+    const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
+    const result = validateProductionPackage(pkg);
     return Response.json({ result });
   } catch (error) {
     return Response.json(
@@ -34,4 +28,3 @@ export async function GET(_request: Request, context: RouteContext) {
     );
   }
 }
-
