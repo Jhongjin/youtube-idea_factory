@@ -45,6 +45,7 @@ Build:
 - approval gate script and run-level approvals template for paid adapters
 - provider API registration page and local provider settings storage
 - provider readiness preflight script for adapter roles
+- dashboard provider and external worker readiness matrix
 - optional LLM-backed analysis and claim-ledger refinement from selected provider
 - optional LLM-backed script refinement from selected provider
 - provider-agnostic asset manifest for image, video, thumbnail, voice, subtitles, and BGM

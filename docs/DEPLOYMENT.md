@@ -128,6 +128,8 @@ Runtime API:
 GET /api/health/deployment
 ```
 
+The `/settings` page renders the same readiness model with Supabase tables, provider role status, and the external render/upload worker command requirements.
+
 The readiness check intentionally blocks Vercel production operations while `APP_STORAGE_MODE=local`, because local run and artifact writes are not durable in serverless production.
 
 ## References

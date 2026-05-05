@@ -1,8 +1,17 @@
-import { AlertTriangle, ArrowLeft, CheckCircle2, Database, ShieldCheck } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Database,
+  RadioTower,
+  ServerCog,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { ProviderSettingsForm } from "@/app/components/provider-settings-form";
 import { getDeploymentReadiness, type DeploymentReadiness } from "@/lib/deployment-readiness";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
+import { providerRoles } from "@/lib/provider-settings-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +120,70 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
             ))}
           </ul>
         ) : null}
+
+        <div className="readiness-section">
+          <div className="readiness-section-header">
+            <div>
+              <h3>제공자 준비도</h3>
+              <p>현재 선택한 역할별 제공자가 직접 실행 가능한지, 수동 워크플로인지 확인합니다.</p>
+            </div>
+            <RadioTower size={18} />
+          </div>
+          <div className="provider-readiness-grid">
+            {providerRoles.map((role) => {
+              const item = readiness.providers.roles[role.id];
+              return (
+                <div className="provider-readiness-card" key={role.id}>
+                  <div>
+                    <strong>{role.label}</strong>
+                    <span>{item.provider || "미선택"}</span>
+                  </div>
+                  <span className={`readiness-chip ${item.status}`}>{item.message}</span>
+                  <p>
+                    {item.hasApiKey ? "키 저장됨" : "키 없음"}
+                    {item.model ? ` · ${item.model}` : ""}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="readiness-section">
+          <div className="readiness-section-header">
+            <div>
+              <h3>외부 워커 준비도</h3>
+              <p>Vercel 밖에서 렌더링과 YouTube 업로드 큐를 처리할 워커 요구사항입니다.</p>
+            </div>
+            <ServerCog size={18} />
+          </div>
+          <div className="worker-readiness-grid">
+            <div className="worker-readiness-card">
+              <div className="worker-readiness-title">
+                <strong>ffmpeg 렌더 워커</strong>
+                <span className={`readiness-chip ${readiness.workers.render.ready ? "ready" : "missing-key"}`}>
+                  {readiness.workers.render.ready ? "큐 처리 가능" : "환경 확인 필요"}
+                </span>
+              </div>
+              <code>{readiness.workers.render.command}</code>
+              <p>{readiness.workers.render.requirements.join(" · ")}</p>
+            </div>
+            <div className="worker-readiness-card">
+              <div className="worker-readiness-title">
+                <strong>YouTube 업로드 워커</strong>
+                <span
+                  className={`readiness-chip ${
+                    readiness.workers.youtubeUpload.ready ? "ready" : "missing-key"
+                  }`}
+                >
+                  {readiness.workers.youtubeUpload.ready ? "OAuth 준비됨" : "OAuth/큐 확인 필요"}
+                </span>
+              </div>
+              <code>{readiness.workers.youtubeUpload.command}</code>
+              <p>{readiness.workers.youtubeUpload.requirements.join(" · ")}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -1168,6 +1168,127 @@ a {
   color: var(--muted);
 }
 
+.readiness-section {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.readiness-section-header,
+.worker-readiness-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.readiness-section-header h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.readiness-section-header p,
+.worker-readiness-card p,
+.provider-readiness-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.provider-readiness-grid,
+.worker-readiness-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.provider-readiness-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.worker-readiness-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.provider-readiness-card,
+.worker-readiness-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.provider-readiness-card {
+  display: grid;
+  gap: 9px;
+}
+
+.provider-readiness-card strong,
+.provider-readiness-card span {
+  display: block;
+}
+
+.provider-readiness-card strong,
+.worker-readiness-title strong {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.provider-readiness-card div > span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.worker-readiness-card {
+  display: grid;
+  gap: 10px;
+}
+
+.worker-readiness-card code {
+  display: block;
+  overflow-x: auto;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #dbeafe;
+  padding: 9px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.readiness-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-height: 24px;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.readiness-chip.ready,
+.readiness-chip.manual {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.readiness-chip.disabled,
+.readiness-chip.adapter-pending {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.readiness-chip.missing-key,
+.readiness-chip.missing-model {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 .settings-summary {
   display: flex;
   align-items: flex-start;
@@ -1804,6 +1925,8 @@ a {
   .workspace-grid,
   .provider-grid,
   .deployment-status-grid,
+  .provider-readiness-grid,
+  .worker-readiness-grid,
   .schema-grid {
     grid-template-columns: 1fr;
   }

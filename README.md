@@ -86,7 +86,7 @@ Check local deployment readiness without printing secrets:
 python .\scripts\check_deployment_ready.py --target vercel
 ```
 
-The dashboard also exposes `GET /api/health/deployment`. Vercel production should use durable storage such as Supabase; `APP_STORAGE_MODE=local` is only for local harness work.
+The dashboard also exposes `GET /api/health/deployment`. The `/settings` page shows the same readiness signal, including Supabase tables, provider role readiness, and external render/upload worker requirements. Vercel production should use durable storage such as Supabase; `APP_STORAGE_MODE=local` is only for local harness work.
 
 When `APP_STORAGE_MODE=supabase`, the dashboard persists run records, editable run artifacts, approval gates, and provider API settings through Supabase tables. Generated binary media and local ffmpeg rendering are still adapter-specific and should move to Supabase Storage or another object store before unattended production use.
 
