@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type MediaPromptDraftResult = {
@@ -28,20 +27,10 @@ type SceneRow = {
   notes: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function parseStoryboardRows(storyboard: string): SceneRow[] {
@@ -137,10 +126,8 @@ function videoPromptMarkdown(scene: SceneRow, prompt: MediaPrompt) {
 
 export async function createMediaPromptDraft(runId: string): Promise<MediaPromptDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
-  const storyboard = await fs.readFile(path.join(runDir, "05-storyboard.md"), "utf-8").catch(() => "");
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
+  const storyboard = (await readRunFileIfExists(runId, "05-storyboard.md")) ?? "";
   const scenes = parseStoryboardRows(storyboard);
   const promptScenes =
     scenes.length > 0
@@ -214,8 +201,8 @@ ${promptScenes.map((scene, index) => videoPromptMarkdown(scene, videoPrompts[ind
 `;
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "06-media-prompts.md"), markdown, "utf-8"),
-    writeJson(packagePath, pkg),
+    writeRunFile(runId, "06-media-prompts.md", markdown),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

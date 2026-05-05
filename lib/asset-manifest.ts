@@ -1,5 +1,6 @@
-import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getAppStorageMode } from "@/lib/storage-mode";
+import { readRunJson, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type AssetKind = "image" | "video" | "thumbnail" | "voice" | "subtitles" | "bgm";
@@ -52,21 +53,12 @@ type MediaPrompt = {
   safety_notes?: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 const artifactsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "artifacts");
 
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function asMediaPrompts(value: unknown): MediaPrompt[] {
@@ -170,9 +162,7 @@ function supportingAssets(runId: string, pkg: ProductionPackage): AssetManifestI
 
 export async function createAssetManifest(runId: string): Promise<AssetManifestResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const now = new Date().toISOString();
   const imagePrompts = asMediaPrompts(pkg.media_prompts.image_prompts);
   const videoPrompts = asMediaPrompts(pkg.media_prompts.video_prompts);
@@ -191,8 +181,11 @@ export async function createAssetManifest(runId: string): Promise<AssetManifestR
     items,
   };
 
-  await fs.mkdir(path.join(artifactsDir, runId), { recursive: true });
-  await writeJson(path.join(runDir, "asset-manifest.json"), manifest);
+  if (getAppStorageMode() === "local") {
+    const { promises: fs } = await import("node:fs");
+    await fs.mkdir(path.join(artifactsDir, runId), { recursive: true });
+  }
+  await writeRunJson(runId, "asset-manifest.json", manifest);
 
   pkg.asset_manifest = {
     path: "asset-manifest.json",
@@ -200,7 +193,7 @@ export async function createAssetManifest(runId: string): Promise<AssetManifestR
     pending_approval: items.filter((item) => item.status === "pending_approval").length,
     updated_at: now,
   };
-  await writeJson(packagePath, pkg);
+  await writeRunJson(runId, "production-package.json", pkg);
 
   return {
     file: "asset-manifest.json",

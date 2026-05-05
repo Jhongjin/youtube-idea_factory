@@ -5,6 +5,7 @@ import { promisify } from "node:util";
 import { getRunApprovals } from "@/lib/approvals";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 type MinimalRenderManifest = {
   output?: {
@@ -161,6 +162,9 @@ async function gateScriptBlockers(runDir: string) {
 
 export async function createPublishingHandoff(runId: string): Promise<PublishingHandoffResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("Publishing handoff currently checks local render and thumbnail files. Supabase Storage support is next.");
+  }
   const runDir = path.join(runsDir, runId);
   const packagePath = path.join(runDir, "production-package.json");
   const [pkg, assetManifest, renderManifest, approvals] = await Promise.all([

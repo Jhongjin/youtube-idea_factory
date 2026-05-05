@@ -10,6 +10,8 @@ export type DeploymentReadiness = {
     anonKey: boolean;
     serviceRoleKey: boolean;
     readyForServerAdapters: boolean;
+    durableRunStateEnabled: boolean;
+    providerSettingsEnabled: boolean;
   };
   providers: {
     youtubeApiKey: boolean;
@@ -30,6 +32,8 @@ export function getDeploymentReadiness(): DeploymentReadiness {
     serviceRoleKey: hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
     readyForServerAdapters:
       hasEnv("NEXT_PUBLIC_SUPABASE_URL") && hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    durableRunStateEnabled: appStorageMode === "supabase",
+    providerSettingsEnabled: appStorageMode === "supabase",
   };
   const vercel = Boolean(process.env.VERCEL);
   const blockers: string[] = [];
@@ -49,6 +53,9 @@ export function getDeploymentReadiness(): DeploymentReadiness {
   }
   if (!hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")) {
     warnings.push("NEXT_PUBLIC_SUPABASE_ANON_KEY is missing; browser-side Supabase features should remain disabled.");
+  }
+  if (appStorageMode === "supabase") {
+    warnings.push("Generated binary media and local ffmpeg rendering still need object storage or a render worker before unattended production use.");
   }
 
   return {

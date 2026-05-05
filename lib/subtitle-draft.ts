@@ -3,6 +3,7 @@ import path from "node:path";
 import type { AssetManifest } from "@/lib/asset-manifest";
 import { createRenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 type SubtitleCue = {
   scene_id: string;
@@ -153,6 +154,9 @@ function relativeArtifactPath(runId: string) {
 
 export async function createSubtitleDraft(runId: string): Promise<SubtitleDraftResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("Subtitle asset files currently use local artifact storage. Supabase Storage support is next.");
+  }
   const runDir = path.join(runsDir, runId);
   const packagePath = path.join(runDir, "production-package.json");
   const manifestPath = path.join(runDir, "asset-manifest.json");

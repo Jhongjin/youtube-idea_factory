@@ -62,7 +62,7 @@ The dashboard inspector also includes an `Approval Gates` panel. It reads and wr
 
 Open `http://localhost:3000/settings` to choose providers and register API keys for LLM, image generation, video generation, TTS, subtitles, BGM, and YouTube adapters.
 
-Settings are stored locally in `config/provider-settings.local.json`, which is ignored by git. The API route is `GET/PUT /api/settings/providers`; GET responses only return masked key status, never raw API keys.
+In local mode, settings are stored in `config/provider-settings.local.json`, which is ignored by git. In `APP_STORAGE_MODE=supabase`, settings are stored server-side in the Supabase `provider_settings` table. The API route is `GET/PUT /api/settings/providers`; GET responses only return masked key status, never raw API keys.
 
 Before running an adapter directly, check that its provider role is configured:
 
@@ -83,6 +83,8 @@ python .\scripts\check_deployment_ready.py --target vercel
 ```
 
 The dashboard also exposes `GET /api/health/deployment`. Vercel production should use durable storage such as Supabase; `APP_STORAGE_MODE=local` is only for local harness work.
+
+When `APP_STORAGE_MODE=supabase`, the dashboard persists run records, editable run artifacts, approval gates, and provider API settings through Supabase tables. Generated binary media and local ffmpeg rendering are still adapter-specific and should move to Supabase Storage or another object store before unattended production use.
 
 The repository includes `vercel.json` to pin the project to the Next.js preset and clear custom Output Directory overrides. If a Vercel project setting points Output Directory to `public`, the deployment can fail after a successful Next build.
 

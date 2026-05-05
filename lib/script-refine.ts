@@ -1,6 +1,5 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { generateLlmText } from "@/lib/llm-adapter";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type ScriptRefineResult = {
@@ -10,20 +9,10 @@ export type ScriptRefineResult = {
   file: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function truncate(content: string, limit: number) {
@@ -104,13 +93,11 @@ Create an improved 04-script-plan.md with these sections:
 
 export async function refineScriptWithLlm(runId: string): Promise<ScriptRefineResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [analysis, claimLedger, currentScript] = await Promise.all([
-    fs.readFile(path.join(runDir, "02-video-analysis.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "03-claim-ledger.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "04-script-plan.md"), "utf-8").catch(() => ""),
+    readRunFileIfExists(runId, "02-video-analysis.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "04-script-plan.md").then((value) => value ?? ""),
   ]);
 
   const result = await generateLlmText({
@@ -138,8 +125,8 @@ LLM refinement record:
   };
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "04-script-plan.md"), markdown, "utf-8"),
-    writeJson(packagePath, pkg),
+    writeRunFile(runId, "04-script-plan.md", markdown),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

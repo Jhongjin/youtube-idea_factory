@@ -62,6 +62,21 @@ def vercel_config_failures() -> list[str]:
     return failures
 
 
+def supabase_schema_failures() -> list[str]:
+    path = ROOT / "docs" / "templates" / "supabase-schema.sql"
+    if not path.exists():
+        return ["Missing deployment file: docs/templates/supabase-schema.sql"]
+
+    schema = path.read_text(encoding="utf-8")
+    required_tables = [
+        "public.production_runs",
+        "public.run_artifacts",
+        "public.run_approvals",
+        "public.provider_settings",
+    ]
+    return [f"Supabase schema missing {table}" for table in required_tables if table not in schema]
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check deployment readiness.")
     parser.add_argument("--target", choices=["local", "vercel"], default="vercel")
@@ -90,6 +105,7 @@ def main(argv: list[str]) -> int:
         if not (ROOT / relative).exists():
             blockers.append(f"Missing deployment file: {relative}")
     blockers.extend(vercel_config_failures())
+    blockers.extend(supabase_schema_failures())
 
     if args.target == "vercel" and storage_mode == "local":
         blockers.append("APP_STORAGE_MODE=local is not durable on Vercel; use supabase before production operations.")

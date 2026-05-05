@@ -3,6 +3,7 @@ import path from "node:path";
 import type { AssetManifest } from "@/lib/asset-manifest";
 import { createRenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 export type RegisterAssetRequest = {
   assetId: string;
@@ -63,6 +64,9 @@ export async function registerManualAsset(
   request: RegisterAssetRequest,
 ): Promise<RegisterAssetResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("Manual asset registration currently requires local artifact storage. Supabase Storage support is next.");
+  }
   const assetId = request.assetId?.trim();
   if (!assetId) {
     throw new Error("assetId is required.");

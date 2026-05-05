@@ -1,5 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getAppStorageMode } from "@/lib/storage-mode";
+import { supabaseRest } from "@/lib/supabase-rest";
 import {
   isProviderRoleId,
   providerRoles,
@@ -13,6 +15,17 @@ import {
 
 const configDir = path.join(/* turbopackIgnore: true */ process.cwd(), "config");
 const providerSettingsPath = path.join(configDir, "provider-settings.local.json");
+
+type SupabaseProviderSettingsRow = {
+  api_key: string | null;
+  base_url: string;
+  enabled: boolean;
+  model: string;
+  notes: string;
+  provider: string;
+  role: ProviderRoleId;
+  updated_at: string | null;
+};
 
 function defaultRoleSetting(role: ProviderRoleId): ProviderRoleSetting {
   const metadata = providerRoles.find((item) => item.id === role);
@@ -86,6 +99,31 @@ function normalizeSettings(input: Partial<StoredProviderSettings>): StoredProvid
 }
 
 export async function getProviderSettings(): Promise<StoredProviderSettings> {
+  if (getAppStorageMode() === "supabase") {
+    const rows = await supabaseRest<SupabaseProviderSettingsRow[]>("provider_settings", {
+      query: {
+        select: "role,enabled,provider,model,api_key,base_url,notes,updated_at",
+      },
+    });
+    const settings = createDefaultSettings();
+    for (const row of rows) {
+      if (!isProviderRoleId(row.role)) {
+        continue;
+      }
+      settings.roles[row.role] = {
+        apiKey: row.api_key ?? undefined,
+        baseUrl: row.base_url,
+        enabled: row.enabled,
+        model: row.model,
+        notes: row.notes,
+        provider: row.provider,
+        role: row.role,
+        updatedAt: row.updated_at ?? undefined,
+      };
+    }
+    return normalizeSettings(settings);
+  }
+
   if (!(await exists(providerSettingsPath))) {
     return createDefaultSettings();
   }
@@ -113,7 +151,10 @@ function toSafeRoleSetting(setting: ProviderRoleSetting): SafeProviderRoleSettin
 export function toSafeProviderSettings(settings: StoredProviderSettings): SafeProviderSettings {
   return {
     version: 1,
-    configPath: path.relative(/* turbopackIgnore: true */ process.cwd(), providerSettingsPath),
+    configPath:
+      getAppStorageMode() === "supabase"
+        ? "supabase:provider_settings"
+        : path.relative(/* turbopackIgnore: true */ process.cwd(), providerSettingsPath),
     roles: Object.fromEntries(
       providerRoles.map((role) => [role.id, toSafeRoleSetting(settings.roles[role.id])]),
     ) as SafeProviderSettings["roles"],
@@ -152,6 +193,28 @@ export async function updateProviderSettings(
       notes: incoming.notes === undefined ? current.notes : normalizeText(incoming.notes, 1000),
       updatedAt: now,
     };
+  }
+
+  if (getAppStorageMode() === "supabase") {
+    await supabaseRest<SupabaseProviderSettingsRow[]>("provider_settings", {
+      method: "POST",
+      body: providerRoles.map((role) => {
+        const setting = settings.roles[role.id];
+        return {
+          api_key: setting.apiKey ?? null,
+          base_url: setting.baseUrl,
+          enabled: setting.enabled,
+          model: setting.model,
+          notes: setting.notes,
+          provider: setting.provider,
+          role: role.id,
+          updated_at: now,
+        };
+      }),
+      query: { on_conflict: "role" },
+      prefer: "resolution=merge-duplicates,return=representation",
+    });
+    return settings;
   }
 
   await writeJson(providerSettingsPath, settings);

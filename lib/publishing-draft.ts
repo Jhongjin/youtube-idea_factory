@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type PublishingDraftResult = {
@@ -8,20 +7,10 @@ export type PublishingDraftResult = {
   file: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function extractClaimStatusCount(claimLedger: string, status: string) {
@@ -101,13 +90,11 @@ function buildThumbnailPrompt(pkg: ProductionPackage) {
 
 export async function createPublishingDraft(runId: string): Promise<PublishingDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [scriptPlan, mediaPrompts, claimLedger] = await Promise.all([
-    fs.readFile(path.join(runDir, "04-script-plan.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "06-media-prompts.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "03-claim-ledger.md"), "utf-8").catch(() => ""),
+    readRunFileIfExists(runId, "04-script-plan.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "06-media-prompts.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
   ]);
 
   const needsEvidenceCount = extractClaimStatusCount(claimLedger, "needs_evidence");
@@ -170,8 +157,8 @@ ${mediaPrompts.slice(0, 1500) || "Media prompts not available yet."}
 `;
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "07-publishing-package.md"), markdown, "utf-8"),
-    writeJson(packagePath, pkg),
+    writeRunFile(runId, "07-publishing-package.md", markdown),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

@@ -1,5 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { getAppStorageMode } from "@/lib/storage-mode";
+import { supabaseEq, supabaseRest } from "@/lib/supabase-rest";
 
 export type ApprovalGate = "generation" | "render" | "publish";
 
@@ -14,6 +16,14 @@ export type RunApprovals = Record<ApprovalGate, ApprovalRecord>;
 
 export type RunApprovalsUpdate = {
   approvals: Partial<Record<ApprovalGate, Partial<ApprovalRecord>>>;
+};
+
+type SupabaseApprovalRow = {
+  approved: boolean;
+  approved_at: string | null;
+  approved_by: string;
+  gate: ApprovalGate;
+  notes: string;
 };
 
 const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
@@ -88,6 +98,26 @@ function normalizeApprovals(input: unknown): RunApprovals {
 }
 
 export async function getRunApprovals(runId: string): Promise<RunApprovals> {
+  assertSafeRunId(runId);
+  if (getAppStorageMode() === "supabase") {
+    const rows = await supabaseRest<SupabaseApprovalRow[]>("run_approvals", {
+      query: {
+        run_id: supabaseEq(runId),
+        select: "gate,approved,approved_by,approved_at,notes",
+      },
+    });
+    const approvals = cloneDefaults();
+    for (const row of rows) {
+      approvals[row.gate] = {
+        approved: row.approved === true,
+        approved_at: normalizeText(row.approved_at, 80),
+        approved_by: normalizeText(row.approved_by, 120),
+        notes: normalizeText(row.notes, 1000) || approvals[row.gate].notes,
+      };
+    }
+    return approvals;
+  }
+
   const filePath = approvalsPath(runId);
   if (!(await exists(filePath))) {
     return cloneDefaults();
@@ -122,6 +152,24 @@ export async function updateRunApprovals(
   }
 
   const filePath = approvalsPath(runId);
+  if (getAppStorageMode() === "supabase") {
+    await supabaseRest<SupabaseApprovalRow[]>("run_approvals", {
+      method: "POST",
+      body: (Object.keys(approvals) as ApprovalGate[]).map((gate) => ({
+        approved: approvals[gate].approved,
+        approved_at: approvals[gate].approved_at || null,
+        approved_by: approvals[gate].approved_by,
+        gate,
+        notes: approvals[gate].notes,
+        run_id: runId,
+        updated_at: now,
+      })),
+      query: { on_conflict: "run_id,gate" },
+      prefer: "resolution=merge-duplicates,return=representation",
+    });
+    return approvals;
+  }
+
   await fs.writeFile(filePath, `${JSON.stringify(approvals, null, 2)}\n`, "utf-8");
   return approvals;
 }

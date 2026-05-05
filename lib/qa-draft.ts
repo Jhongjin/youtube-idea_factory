@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type QaDraftResult = {
@@ -9,20 +8,10 @@ export type QaDraftResult = {
   file: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function countClaimStatusFromPackage(pkg: ProductionPackage, status: string) {
@@ -74,15 +63,13 @@ function bulletList(items: string[]) {
 
 export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [claimLedger, scriptPlan, storyboard, mediaPrompts, publishingPackage] = await Promise.all([
-    fs.readFile(path.join(runDir, "03-claim-ledger.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "04-script-plan.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "05-storyboard.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "06-media-prompts.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "07-publishing-package.md"), "utf-8").catch(() => ""),
+    readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "04-script-plan.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "05-storyboard.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "06-media-prompts.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "07-publishing-package.md").then((value) => value ?? ""),
   ]);
 
   const supported = countClaimStatus(pkg, claimLedger, "supported");
@@ -229,8 +216,8 @@ ${approvalChecklist.map((item) => `- [ ] ${item}`).join("\n")}
 `;
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "08-qa.md"), markdown, "utf-8"),
-    writeJson(packagePath, pkg),
+    writeRunFile(runId, "08-qa.md", markdown),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

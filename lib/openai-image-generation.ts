@@ -4,6 +4,7 @@ import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { createGenerationQueue } from "@/lib/generation-queue";
 import { getProviderSettings } from "@/lib/provider-settings";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 export type GenerateImageRequest = {
   assetId: string;
@@ -111,6 +112,9 @@ export async function generateOpenAIImage(
   request: GenerateImageRequest,
 ): Promise<GenerateImageResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("OpenAI image generation currently writes local artifact files. Supabase Storage support is next.");
+  }
   if (request.confirmSpend !== confirmToken) {
     throw new Error(`External spend requires confirmSpend="${confirmToken}".`);
   }

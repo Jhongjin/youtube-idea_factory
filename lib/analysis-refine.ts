@@ -1,6 +1,5 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { generateLlmText } from "@/lib/llm-adapter";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type AnalysisRefineResult = {
@@ -19,7 +18,6 @@ type ClaimRecord = {
   notes?: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 const claimStatuses = new Set<ClaimRecord["status"]>([
   "supported",
   "needs_evidence",
@@ -38,17 +36,9 @@ function getSourceKey(source: SourceVideo) {
   return source.video_id || `source-${source.rank ?? 0}`;
 }
 
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
-}
-
-async function readTranscript(runDir: string, source: SourceVideo) {
+async function readTranscript(runId: string, source: SourceVideo) {
   const sourceKey = getSourceKey(source);
-  return fs.readFile(path.join(runDir, "transcripts", `${sourceKey}.txt`), "utf-8").catch(() => "");
+  return (await readRunFileIfExists(runId, `transcripts/${sourceKey}.txt`)) ?? "";
 }
 
 function truncate(content: string, limit: number) {
@@ -176,16 +166,14 @@ The 03 claim ledger must use this table:
 
 export async function refineAnalysisWithLlm(runId: string): Promise<AnalysisRefineResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const pkg = await loadJson<ProductionPackage>(packagePath);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [analysis, claimLedger, transcripts] = await Promise.all([
-    fs.readFile(path.join(runDir, "02-video-analysis.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "03-claim-ledger.md"), "utf-8").catch(() => ""),
+    readRunFileIfExists(runId, "02-video-analysis.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
     Promise.all(
       pkg.sources.map(async (source) => ({
         source,
-        transcript: await readTranscript(runDir, source),
+        transcript: await readTranscript(runId, source),
       })),
     ),
   ]);
@@ -211,9 +199,9 @@ export async function refineAnalysisWithLlm(runId: string): Promise<AnalysisRefi
   };
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "02-video-analysis.md"), `${refinedAnalysis}${record}`, "utf-8"),
-    fs.writeFile(path.join(runDir, "03-claim-ledger.md"), `${refinedClaimLedger}${record}`, "utf-8"),
-    writeJson(packagePath, pkg),
+    writeRunFile(runId, "02-video-analysis.md", `${refinedAnalysis}${record}`),
+    writeRunFile(runId, "03-claim-ledger.md", `${refinedClaimLedger}${record}`),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

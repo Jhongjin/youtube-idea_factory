@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile } from "@/lib/run-store";
 import type { SourceVideo } from "@/lib/runs";
 
 export type AnalysisDraftResult = {
@@ -8,8 +7,6 @@ export type AnalysisDraftResult = {
   claimCandidates: number;
   files: string[];
 };
-
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
@@ -21,14 +18,9 @@ function getSourceKey(source: SourceVideo) {
   return source.video_id || `source-${source.rank ?? 0}`;
 }
 
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function readTranscript(runDir: string, source: SourceVideo) {
+async function readTranscript(runId: string, source: SourceVideo) {
   const sourceKey = getSourceKey(source);
-  const transcriptPath = path.join(runDir, "transcripts", `${sourceKey}.txt`);
-  return fs.readFile(transcriptPath, "utf-8").catch(() => "");
+  return (await readRunFileIfExists(runId, `transcripts/${sourceKey}.txt`)) ?? "";
 }
 
 function firstNonEmptyLines(content: string, limit: number) {
@@ -125,15 +117,12 @@ function claimLedgerRows(claimsBySource: Array<{ source: SourceVideo; claims: st
 
 export async function createAnalysisDraft(runId: string): Promise<AnalysisDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const sources = await loadJson<Array<SourceVideo & Record<string, unknown>>>(
-    path.join(runDir, "sources.json"),
-  );
+  const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
 
   const transcriptPairs = await Promise.all(
     sources.map(async (source) => ({
       source,
-      transcript: await readTranscript(runDir, source),
+      transcript: await readTranscript(runId, source),
     })),
   );
 
@@ -173,8 +162,8 @@ Allowed statuses: \`supported\`, \`needs_evidence\`, \`opinion\`, \`high_risk\`,
 `;
 
   await Promise.all([
-    fs.writeFile(path.join(runDir, "02-video-analysis.md"), analysisMarkdown, "utf-8"),
-    fs.writeFile(path.join(runDir, "03-claim-ledger.md"), claimMarkdown, "utf-8"),
+    writeRunFile(runId, "02-video-analysis.md", analysisMarkdown),
+    writeRunFile(runId, "03-claim-ledger.md", claimMarkdown),
   ]);
 
   return {
@@ -184,4 +173,3 @@ Allowed statuses: \`supported\`, \`needs_evidence\`, \`opinion\`, \`high_risk\`,
     files: ["02-video-analysis.md", "03-claim-ledger.md"],
   };
 }
-

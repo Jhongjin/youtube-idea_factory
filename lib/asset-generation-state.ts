@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists } from "@/lib/run-store";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import type { GenerationQueue } from "@/lib/generation-queue";
 
@@ -21,31 +20,22 @@ export type AssetGenerationState = {
   items: AssetGenerationStateItem[];
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
 }
 
-async function loadJsonIfExists<T>(filePath: string): Promise<T | null> {
-  try {
-    return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return null;
-    }
-    throw error;
-  }
+async function loadRunJsonIfExists<T>(runId: string, filePath: string): Promise<T | null> {
+  const content = await readRunFileIfExists(runId, filePath);
+  return content ? (JSON.parse(content) as T) : null;
 }
 
 export async function getAssetGenerationState(runId: string): Promise<AssetGenerationState> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
   const [manifest, queue] = await Promise.all([
-    loadJsonIfExists<AssetManifest>(path.join(runDir, "asset-manifest.json")),
-    loadJsonIfExists<GenerationQueue>(path.join(runDir, "generation-queue.json")),
+    loadRunJsonIfExists<AssetManifest>(runId, "asset-manifest.json"),
+    loadRunJsonIfExists<GenerationQueue>(runId, "generation-queue.json"),
   ]);
   const queueBlockers = new Map(
     (queue?.items ?? []).map((item) => [item.id, item.blockers] as const),

@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { listRunSummaries } from "@/lib/run-store";
 
 export type SourceVideo = {
   rank?: number;
@@ -86,49 +85,8 @@ export type RunSummary = {
   updatedAt: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
-async function exists(filePath: string) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function getRuns(): Promise<RunSummary[]> {
-  if (!(await exists(runsDir))) {
-    return [];
-  }
-
-  const entries = await fs.readdir(runsDir, { withFileTypes: true });
-  const runDirs = entries.filter((entry) => entry.isDirectory());
-  const runs = await Promise.all(
-    runDirs.map(async (entry) => {
-      const runPath = path.join(runsDir, entry.name);
-      const packagePath = path.join(runPath, "production-package.json");
-      if (!(await exists(packagePath))) {
-        return null;
-      }
-
-      const [raw, stat] = await Promise.all([
-        fs.readFile(packagePath, "utf-8"),
-        fs.stat(packagePath),
-      ]);
-
-      return {
-        id: entry.name,
-        path: path.relative(/* turbopackIgnore: true */ process.cwd(), runPath),
-        package: JSON.parse(raw) as ProductionPackage,
-        updatedAt: stat.mtime.toISOString(),
-      };
-    }),
-  );
-
-  return runs
-    .filter((run): run is RunSummary => run !== null)
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  return listRunSummaries();
 }
 
 export function getStageState(pkg: ProductionPackage) {

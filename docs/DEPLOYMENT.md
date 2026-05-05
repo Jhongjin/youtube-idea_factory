@@ -2,13 +2,27 @@
 
 ## Current State
 
-Vercel and Supabase can host the production version, but the MVP still defaults to local filesystem storage:
+Vercel and Supabase can host the production version. The MVP still defaults to local filesystem storage for local harness work:
 
 - `runs/` stores production package JSON and markdown artifacts.
 - `artifacts/` stores generated media files.
 - `config/provider-settings.local.json` stores local provider settings and is ignored by git.
 
-This is correct for local harness work, but not durable on Vercel serverless functions. Vercel can run the dashboard, but writes to the application filesystem should not be treated as persistent production data.
+This is correct for local harness work, but not durable on Vercel serverless functions. Set `APP_STORAGE_MODE=supabase` in Vercel when production run state should be persisted.
+
+Implemented Supabase-backed state:
+
+- production run list and run package records
+- markdown/JSON run artifacts through `run_artifacts`
+- approval gates through `run_approvals`
+- provider API settings through `provider_settings`
+
+Still local or adapter-specific:
+
+- generated binary media files under `artifacts/`
+- local ffmpeg rendering
+- final YouTube upload adapter
+- provider-specific video generation adapters
 
 ## Vercel Notes
 
@@ -34,7 +48,7 @@ Keep provider API keys either in Vercel Environment Variables or the dashboard p
 
 ## Supabase Notes
 
-Use Supabase for durable run state, approvals, logs, and later media storage pointers. The seed schema lives at:
+Use Supabase for durable run state, approvals, provider settings, logs, and later media storage pointers. The seed schema lives at:
 
 - `docs/templates/supabase-schema.sql`
 
@@ -44,7 +58,29 @@ Initial policy:
 2. Keep row level security enabled.
 3. Do not add public table policies until the auth model is decided.
 4. Use `SUPABASE_SERVICE_ROLE_KEY` only from server-side adapters.
-5. Store large binary media in Supabase Storage or object storage, with table rows tracking storage paths and provenance.
+5. Treat `provider_settings.api_key` as server-only secret material. Move to Supabase Vault or a dedicated secrets manager before multi-user operation.
+6. Store large binary media in Supabase Storage or object storage, with table rows tracking storage paths and provenance.
+
+When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of local files:
+
+- `GET/POST /api/runs`
+- `GET/PUT /api/runs/:runId/artifacts/:artifactId`
+- `GET /api/runs/:runId/artifacts`
+- `GET/PUT /api/runs/:runId/approvals`
+- `GET/PUT /api/settings/providers`
+- `POST /api/runs/:runId/sources/import`
+- `POST /api/runs/:runId/sources/enrich`
+- `GET/PUT /api/runs/:runId/transcripts/:sourceKey`
+- text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, and generation queue
+
+These routes remain local-artifact-only and return explicit errors in Supabase mode until object storage/render workers are added:
+
+- image/TTS generation adapters
+- manual asset registration
+- subtitle asset file generation
+- render manifest file checks
+- local MP4 render
+- publishing handoff file checks
 
 ## Readiness Checks
 

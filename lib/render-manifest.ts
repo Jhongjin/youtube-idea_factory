@@ -3,6 +3,7 @@ import path from "node:path";
 import { getRunApprovals } from "@/lib/approvals";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 type StoryboardScene = {
   scene_id?: string;
@@ -173,6 +174,9 @@ function sceneDuration(
 
 export async function createRenderManifest(runId: string): Promise<RenderManifestResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("Render manifest file checks currently require local artifact storage. Supabase Storage support is next.");
+  }
   const runDir = path.join(runsDir, runId);
   const packagePath = path.join(runDir, "production-package.json");
   const manifestPath = path.join(runDir, "asset-manifest.json");

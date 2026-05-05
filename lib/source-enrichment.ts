@@ -1,5 +1,9 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import {
+  readRunFileIfExists,
+  readRunJson,
+  writeRunFile,
+  writeRunJson,
+} from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type SourceEnrichmentResult = {
@@ -8,20 +12,10 @@ export type SourceEnrichmentResult = {
   sources: SourceVideo[];
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, payload: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
 }
 
 function sourceRows(sources: SourceVideo[]) {
@@ -46,9 +40,8 @@ function sourceRows(sources: SourceVideo[]) {
   return lines.join("\n");
 }
 
-async function updateResearchMarkdown(runDir: string, sources: SourceVideo[]) {
-  const researchPath = path.join(runDir, "01-research.md");
-  const content = await fs.readFile(researchPath, "utf-8").catch(() => "");
+async function updateResearchMarkdown(runId: string, sources: SourceVideo[]) {
+  const content = (await readRunFileIfExists(runId, "01-research.md")) ?? "";
   const marker = "## Source Videos";
   const nextMarker = "\n## Research Summary";
   if (!content.includes(marker) || !content.includes(nextMarker)) {
@@ -57,11 +50,7 @@ async function updateResearchMarkdown(runDir: string, sources: SourceVideo[]) {
 
   const [before] = content.split(marker, 1);
   const [, after] = content.split(nextMarker, 2);
-  await fs.writeFile(
-    researchPath,
-    `${before}${marker}\n\n${sourceRows(sources)}\n${nextMarker}${after}`,
-    "utf-8",
-  );
+  await writeRunFile(runId, "01-research.md", `${before}${marker}\n\n${sourceRows(sources)}\n${nextMarker}${after}`);
 }
 
 async function fetchOEmbed(url: string) {
@@ -86,11 +75,8 @@ async function fetchOEmbed(url: string) {
 
 export async function enrichSources(runId: string): Promise<SourceEnrichmentResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const sourcesPath = path.join(runDir, "sources.json");
-  const packagePath = path.join(runDir, "production-package.json");
-  const sources = await loadJson<Array<SourceVideo & Record<string, unknown>>>(sourcesPath);
-  const productionPackage = await loadJson<ProductionPackage>(packagePath);
+  const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
+  const productionPackage = await readRunJson<ProductionPackage>(runId, "production-package.json");
 
   let updatedFields = 0;
   const failures: string[] = [];
@@ -120,11 +106,10 @@ export async function enrichSources(runId: string): Promise<SourceEnrichmentResu
 
   productionPackage.sources = sources;
   await Promise.all([
-    writeJson(sourcesPath, sources),
-    writeJson(packagePath, productionPackage),
-    updateResearchMarkdown(runDir, sources),
+    writeRunJson(runId, "sources.json", sources),
+    writeRunJson(runId, "production-package.json", productionPackage),
+    updateResearchMarkdown(runId, sources),
   ]);
 
   return { updatedFields, failures, sources };
 }
-

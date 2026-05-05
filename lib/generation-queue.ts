@@ -1,8 +1,7 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { getRunApprovals, type ApprovalGate, type RunApprovals } from "@/lib/approvals";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { getProviderSettings } from "@/lib/provider-settings";
+import { readRunJson, writeRunJson } from "@/lib/run-store";
 import type { ProviderRoleId, ProviderRoleSetting } from "@/lib/provider-settings-shared";
 import type { ProductionPackage } from "@/lib/runs";
 
@@ -47,20 +46,10 @@ export type GenerationQueueResult = {
   failed: number;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
 function providerAllowsNoKey(provider: string) {
@@ -127,16 +116,10 @@ function terminalStatus(status: AssetManifestItem["status"]) {
 
 export async function createGenerationQueue(runId: string): Promise<GenerationQueueResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const manifestPath = path.join(runDir, "asset-manifest.json");
   const [pkg, manifest, approvals, providerSettings] = await Promise.all([
-    loadJson<ProductionPackage>(packagePath),
-    loadJson<AssetManifest>(manifestPath).catch((error: NodeJS.ErrnoException) => {
-      if (error.code === "ENOENT") {
-        throw new Error("Asset manifest not found. Build assets first.");
-      }
-      throw error;
+    readRunJson<ProductionPackage>(runId, "production-package.json"),
+    readRunJson<AssetManifest>(runId, "asset-manifest.json").catch(() => {
+      throw new Error("Asset manifest not found. Build assets first.");
     }),
     getRunApprovals(runId),
     getProviderSettings(),
@@ -197,8 +180,8 @@ export async function createGenerationQueue(runId: string): Promise<GenerationQu
   };
 
   await Promise.all([
-    writeJson(manifestPath, manifest),
-    writeJson(path.join(runDir, "generation-queue.json"), queue),
+    writeRunJson(runId, "asset-manifest.json", manifest),
+    writeRunJson(runId, "generation-queue.json", queue),
   ]);
 
   pkg.asset_manifest = {
@@ -209,7 +192,7 @@ export async function createGenerationQueue(runId: string): Promise<GenerationQu
     blocked: queue.summary.blocked,
     updated_at: now,
   };
-  await writeJson(packagePath, pkg);
+  await writeRunJson(runId, "production-package.json", pkg);
 
   return {
     file: "generation-queue.json",

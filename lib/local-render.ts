@@ -4,6 +4,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { createRenderManifest, type RenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
+import { isSupabaseStorageMode } from "@/lib/storage-mode";
 
 export type LocalRenderRequest = {
   confirmRender?: string;
@@ -229,6 +230,9 @@ export async function renderLocalVideo(
   request: LocalRenderRequest,
 ): Promise<LocalRenderResult> {
   assertSafeRunId(runId);
+  if (isSupabaseStorageMode()) {
+    throw new Error("Local MP4 rendering requires local artifact files. Use local storage mode until render workers/object storage are added.");
+  }
   if (request.confirmRender !== confirmToken) {
     throw new Error(`Local render requires confirmRender="${confirmToken}".`);
   }

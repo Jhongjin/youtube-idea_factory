@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 export type StoryboardDraftResult = {
@@ -7,16 +6,10 @@ export type StoryboardDraftResult = {
   file: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
 }
 
 function formatSceneRows(duration: number) {
@@ -78,9 +71,8 @@ function formatSceneRows(duration: number) {
 
 export async function createStoryboardDraft(runId: string): Promise<StoryboardDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const pkg = await loadJson<ProductionPackage>(path.join(runDir, "production-package.json"));
-  const script = await fs.readFile(path.join(runDir, "04-script-plan.md"), "utf-8").catch(() => "");
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
+  const script = (await readRunFileIfExists(runId, "04-script-plan.md")) ?? "";
   const duration = pkg.brief.target_duration_seconds ?? 60;
 
   const markdown = `# 05 Storyboard
@@ -117,11 +109,10 @@ ${formatSceneRows(duration)}
 3. S04 evidence/check visual
 `;
 
-  await fs.writeFile(path.join(runDir, "05-storyboard.md"), markdown, "utf-8");
+  await writeRunFile(runId, "05-storyboard.md", markdown);
 
   return {
     scenes: 5,
     file: "05-storyboard.md",
   };
 }
-

@@ -66,14 +66,62 @@ create table if not exists public.run_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.provider_settings (
+  role text primary key,
+  enabled boolean not null default false,
+  provider text not null default '',
+  model text not null default '',
+  api_key text,
+  base_url text not null default '',
+  notes text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists set_production_runs_updated_at on public.production_runs;
+create trigger set_production_runs_updated_at
+before update on public.production_runs
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_run_artifacts_updated_at on public.run_artifacts;
+create trigger set_run_artifacts_updated_at
+before update on public.run_artifacts
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_run_assets_updated_at on public.run_assets;
+create trigger set_run_assets_updated_at
+before update on public.run_assets
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_run_approvals_updated_at on public.run_approvals;
+create trigger set_run_approvals_updated_at
+before update on public.run_approvals
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_provider_settings_updated_at on public.provider_settings;
+create trigger set_provider_settings_updated_at
+before update on public.provider_settings
+for each row execute function public.set_updated_at();
+
 alter table public.production_runs enable row level security;
 alter table public.run_artifacts enable row level security;
 alter table public.run_assets enable row level security;
 alter table public.run_approvals enable row level security;
 alter table public.run_events enable row level security;
+alter table public.provider_settings enable row level security;
 
 comment on table public.production_runs is 'Durable production package records for YouTube Idea Factory.';
 comment on table public.run_artifacts is 'Markdown artifacts and optional Supabase Storage pointers.';
 comment on table public.run_assets is 'Generated or externally registered media asset manifest records.';
 comment on table public.run_approvals is 'Human approval gates for generation, render, and publish.';
 comment on table public.run_events is 'Provider calls, cost estimates, render events, upload attempts, and audit notes.';
+comment on table public.provider_settings is 'Server-side provider selections and API keys for adapter roles. Access with service role only until auth policies are designed.';

@@ -1,5 +1,10 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import {
+  getRunFileInfo,
+  readRunFileIfExists,
+  readRunJson,
+  writeRunFile,
+  writeRunJson,
+} from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type TranscriptPayload = {
@@ -9,7 +14,6 @@ export type TranscriptPayload = {
   status: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 const maxTranscriptBytes = 1_000_000;
 
 function assertSafe(value: string, label: string) {
@@ -18,22 +22,9 @@ function assertSafe(value: string, label: string) {
   }
 }
 
-function getRunDir(runId: string) {
-  assertSafe(runId, "run id");
-  return path.join(runsDir, runId);
-}
-
-function getTranscriptPath(runId: string, sourceKey: string) {
+function getTranscriptPath(sourceKey: string) {
   assertSafe(sourceKey, "source key");
-  return path.join(getRunDir(runId), "transcripts", `${sourceKey}.txt`);
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, payload: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
+  return `transcripts/${sourceKey}.txt`;
 }
 
 function matchesSource(source: SourceVideo, sourceKey: string) {
@@ -41,11 +32,15 @@ function matchesSource(source: SourceVideo, sourceKey: string) {
 }
 
 async function updateSourceStatus(runId: string, sourceKey: string, content: string) {
-  const runDir = getRunDir(runId);
-  const sourcesPath = path.join(runDir, "sources.json");
-  const packagePath = path.join(runDir, "production-package.json");
-  const sources = await loadJson<Array<SourceVideo & Record<string, unknown>>>(sourcesPath);
-  const productionPackage = await loadJson<ProductionPackage>(packagePath);
+  assertSafe(runId, "run id");
+  const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(
+    runId,
+    "sources.json",
+  );
+  const productionPackage = await readRunJson<ProductionPackage>(
+    runId,
+    "production-package.json",
+  );
   const status = content.trim() ? "manual_transcript" : "not_checked";
   const transcriptPath = content.trim() ? `transcripts/${sourceKey}.txt` : "";
   const updatedAt = new Date().toISOString();
@@ -63,32 +58,39 @@ async function updateSourceStatus(runId: string, sourceKey: string, content: str
   });
 
   productionPackage.sources = updatedSources;
-  await Promise.all([writeJson(sourcesPath, updatedSources), writeJson(packagePath, productionPackage)]);
+  await Promise.all([
+    writeRunJson(runId, "sources.json", updatedSources),
+    writeRunJson(runId, "production-package.json", productionPackage),
+  ]);
 
   return { status, updatedAt };
 }
 
 export async function getTranscript(runId: string, sourceKey: string): Promise<TranscriptPayload> {
-  const transcriptPath = getTranscriptPath(runId, sourceKey);
-  const content = await fs.readFile(transcriptPath, "utf-8").catch(() => "");
-  const stat = await fs.stat(transcriptPath).catch(() => null);
+  assertSafe(runId, "run id");
+  const transcriptPath = getTranscriptPath(sourceKey);
+  const [content, info] = await Promise.all([
+    readRunFileIfExists(runId, transcriptPath),
+    getRunFileInfo(runId, transcriptPath),
+  ]);
+  const transcript = content ?? "";
   return {
     sourceKey,
-    content,
-    updatedAt: stat?.mtime.toISOString() ?? "",
-    status: content.trim() ? "manual_transcript" : "missing",
+    content: transcript,
+    updatedAt: info?.updatedAt ?? "",
+    status: transcript.trim() ? "manual_transcript" : "missing",
   };
 }
 
 export async function saveTranscript(runId: string, sourceKey: string, content: string) {
-  const transcriptPath = getTranscriptPath(runId, sourceKey);
+  assertSafe(runId, "run id");
+  const transcriptPath = getTranscriptPath(sourceKey);
   const bytes = Buffer.byteLength(content, "utf-8");
   if (bytes > maxTranscriptBytes) {
     throw new Error(`Transcript is too large. Max size is ${maxTranscriptBytes} bytes.`);
   }
 
-  await fs.mkdir(path.dirname(transcriptPath), { recursive: true });
-  await fs.writeFile(transcriptPath, content.endsWith("\n") ? content : `${content}\n`, "utf-8");
+  await writeRunFile(runId, transcriptPath, content);
   const { status, updatedAt } = await updateSourceStatus(runId, sourceKey, content);
 
   return {
@@ -98,4 +100,3 @@ export async function saveTranscript(runId: string, sourceKey: string, content: 
     status,
   };
 }
-

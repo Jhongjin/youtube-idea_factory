@@ -1,5 +1,9 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import {
+  getRunFileInfo,
+  readRunFileIfExists,
+  runExists,
+  writeRunFile,
+} from "@/lib/run-store";
 
 export type ArtifactDefinition = {
   id: string;
@@ -15,7 +19,6 @@ export type RunArtifact = ArtifactDefinition & {
   size: number;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 const maxArtifactBytes = 300_000;
 
 export const artifactDefinitions: ArtifactDefinition[] = [
@@ -91,73 +94,54 @@ function getArtifactDefinition(artifactId: string) {
   return definition;
 }
 
-function getRunDir(runId: string) {
-  assertSafeRunId(runId);
-  return path.join(runsDir, runId);
-}
-
-async function ensureRunExists(runDir: string) {
-  const stat = await fs.stat(runDir).catch(() => null);
-  if (!stat?.isDirectory()) {
+async function ensureRunExists(runId: string) {
+  if (!(await runExists(runId))) {
     throw new Error("Run not found.");
   }
 }
 
-async function readFileIfExists(filePath: string) {
-  try {
-    return await fs.readFile(filePath, "utf-8");
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return "";
-    }
-    throw error;
-  }
-}
-
 export async function getRunArtifacts(runId: string): Promise<RunArtifact[]> {
-  const runDir = getRunDir(runId);
-  await ensureRunExists(runDir);
+  assertSafeRunId(runId);
+  await ensureRunExists(runId);
 
   return Promise.all(
     artifactDefinitions.map(async (definition) => {
-      const filePath = path.join(runDir, definition.filename);
-      const [content, stat] = await Promise.all([
-        readFileIfExists(filePath),
-        fs.stat(filePath).catch(() => null),
+      const [content, info] = await Promise.all([
+        readRunFileIfExists(runId, definition.filename),
+        getRunFileInfo(runId, definition.filename),
       ]);
 
       return {
         ...definition,
-        content,
-        updatedAt: stat?.mtime.toISOString() ?? "",
-        size: stat?.size ?? 0,
+        content: content ?? "",
+        updatedAt: info?.updatedAt ?? "",
+        size: info?.size ?? 0,
       };
     }),
   );
 }
 
 export async function getRunArtifact(runId: string, artifactId: string): Promise<RunArtifact> {
-  const runDir = getRunDir(runId);
-  await ensureRunExists(runDir);
+  assertSafeRunId(runId);
+  await ensureRunExists(runId);
 
   const definition = getArtifactDefinition(artifactId);
-  const filePath = path.join(runDir, definition.filename);
-  const [content, stat] = await Promise.all([
-    readFileIfExists(filePath),
-    fs.stat(filePath).catch(() => null),
+  const [content, info] = await Promise.all([
+    readRunFileIfExists(runId, definition.filename),
+    getRunFileInfo(runId, definition.filename),
   ]);
 
   return {
     ...definition,
-    content,
-    updatedAt: stat?.mtime.toISOString() ?? "",
-    size: stat?.size ?? 0,
+    content: content ?? "",
+    updatedAt: info?.updatedAt ?? "",
+    size: info?.size ?? 0,
   };
 }
 
 export async function updateRunArtifact(runId: string, artifactId: string, content: string) {
-  const runDir = getRunDir(runId);
-  await ensureRunExists(runDir);
+  assertSafeRunId(runId);
+  await ensureRunExists(runId);
 
   const definition = getArtifactDefinition(artifactId);
   const bytes = Buffer.byteLength(content, "utf-8");
@@ -165,8 +149,7 @@ export async function updateRunArtifact(runId: string, artifactId: string, conte
     throw new Error(`Artifact is too large. Max size is ${maxArtifactBytes} bytes.`);
   }
 
-  const filePath = path.join(runDir, definition.filename);
-  await fs.writeFile(filePath, content.endsWith("\n") ? content : `${content}\n`, "utf-8");
+  await writeRunFile(runId, definition.filename, content);
 
   return getRunArtifact(runId, artifactId);
 }

@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { createRunWorkspace } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type CreateRunInput = {
@@ -12,8 +11,6 @@ export type CreateRunInput = {
   durationSeconds?: number;
   seedUrls: string[];
 };
-
-const runsDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "runs");
 
 function slugify(value: string) {
   const slug = value
@@ -133,11 +130,11 @@ function buildPackage(input: Required<CreateRunInput>, runId: string, sources: S
   return pkg;
 }
 
-async function writeJson(filePath: string, payload: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
+function jsonContent(payload: unknown) {
+  return `${JSON.stringify(payload, null, 2)}\n`;
 }
 
-async function writeMarkdownFiles(runDir: string, pkg: ProductionPackage) {
+function buildMarkdownFiles(pkg: ProductionPackage): Record<string, string> {
   const brief = pkg.brief;
   const sourceTable = markdownTable(
     ["Rank", "URL", "Video ID", "Working Title", "Reason", "Transcript"],
@@ -151,9 +148,8 @@ async function writeMarkdownFiles(runDir: string, pkg: ProductionPackage) {
     ]),
   );
 
-  await fs.writeFile(
-    path.join(runDir, "README.md"),
-    `# Run ${pkg.run_id}
+  const files: Record<string, string> = {
+    "README.md": `# Run ${pkg.run_id}
 
 ## Brief
 
@@ -177,12 +173,7 @@ async function writeMarkdownFiles(runDir: string, pkg: ProductionPackage) {
 - [ ] Generation approved
 - [ ] Publishing package approved
 `,
-    "utf-8",
-  );
-
-  await fs.writeFile(
-    path.join(runDir, "01-research.md"),
-    `# 01 Research
+    "01-research.md": `# 01 Research
 
 ## Source Videos
 
@@ -200,8 +191,7 @@ Pending.
 - Repeated claims
 - Viewer payoff
 `,
-    "utf-8",
-  );
+  };
 
   const placeholders: Array<[string, string]> = [
     ["02-video-analysis.md", "# 02 Video Analysis\n\nPending.\n"],
@@ -219,11 +209,11 @@ Pending.
     ["08-qa.md", "# 08 QA\n\n## QA Status\n\nneeds_review\n"],
   ];
 
-  await Promise.all(
-    placeholders.map(([filename, content]) =>
-      fs.writeFile(path.join(runDir, filename), content, "utf-8"),
-    ),
-  );
+  for (const [filename, content] of placeholders) {
+    files[filename] = content;
+  }
+
+  return files;
 }
 
 export async function createRun(input: CreateRunInput) {
@@ -256,10 +246,6 @@ export async function createRun(input: CreateRunInput) {
     String(now.getSeconds()).padStart(2, "0"),
   ].join("");
   const runId = `${timestamp}-${slugify(normalized.topic)}`;
-  const runDir = path.join(runsDir, runId);
-
-  await fs.mkdir(runDir, { recursive: false });
-
   const sources = normalized.seedUrls.map((url, index) => buildSource(url, index + 1));
   const pkg = buildPackage(normalized, runId, sources);
   const manifest = {
@@ -281,18 +267,17 @@ export async function createRun(input: CreateRunInput) {
     ],
   };
 
-  await Promise.all([
-    writeJson(path.join(runDir, "manifest.json"), manifest),
-    writeJson(path.join(runDir, "brief.json"), pkg.brief),
-    writeJson(path.join(runDir, "sources.json"), sources),
-    writeJson(path.join(runDir, "production-package.json"), pkg),
-    writeMarkdownFiles(runDir, pkg),
-  ]);
-
-  return {
+  return createRunWorkspace({
+    createdAt: now.toISOString(),
+    files: {
+      "manifest.json": jsonContent(manifest),
+      "brief.json": jsonContent(pkg.brief),
+      "sources.json": jsonContent(sources),
+      "production-package.json": jsonContent(pkg),
+      ...buildMarkdownFiles(pkg),
+    },
     id: runId,
-    path: path.relative(/*turbopackIgnore: true*/ process.cwd(), runDir),
     package: pkg,
-    updatedAt: now.toISOString(),
-  };
+    status: "needs_review",
+  });
 }

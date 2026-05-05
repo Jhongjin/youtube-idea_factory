@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
+import { readRunFileIfExists, readRunJson, writeRunFile } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type ScriptDraftResult = {
@@ -9,16 +8,10 @@ export type ScriptDraftResult = {
   file: string;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
 }
 
 function summarizeSources(sources: SourceVideo[]) {
@@ -154,15 +147,14 @@ Pending. End with one practical viewer takeaway and a CTA aligned with the chann
 
 export async function createScriptDraft(runId: string): Promise<ScriptDraftResult> {
   assertSafeRunId(runId);
-  const runDir = path.join(runsDir, runId);
-  const pkg = await loadJson<ProductionPackage>(path.join(runDir, "production-package.json"));
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [analysis, claimLedger] = await Promise.all([
-    fs.readFile(path.join(runDir, "02-video-analysis.md"), "utf-8").catch(() => ""),
-    fs.readFile(path.join(runDir, "03-claim-ledger.md"), "utf-8").catch(() => ""),
+    readRunFileIfExists(runId, "02-video-analysis.md").then((value) => value ?? ""),
+    readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
   ]);
   const draft = buildScriptDraft({ pkg, analysis, claimLedger });
 
-  await fs.writeFile(path.join(runDir, "04-script-plan.md"), draft.markdown, "utf-8");
+  await writeRunFile(runId, "04-script-plan.md", draft.markdown);
 
   return {
     sources: pkg.sources.length,
@@ -171,4 +163,3 @@ export async function createScriptDraft(runId: string): Promise<ScriptDraftResul
     file: "04-script-plan.md",
   };
 }
-
