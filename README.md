@@ -255,6 +255,14 @@ The dashboard `Upload Job` action creates `youtube-upload-job.json` after publis
 
 API route: `POST /api/runs/:runId/publishing/upload-job`.
 
+An external worker can process the queued upload job with:
+
+```powershell
+npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD
+```
+
+The upload worker needs `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`, and `YOUTUBE_OAUTH_REFRESH_TOKEN` with YouTube upload scope. Jobs default to private visibility unless the upload job explicitly requests another privacy status.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

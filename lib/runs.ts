@@ -50,6 +50,9 @@ export type ProductionPackage = {
     upload_job_path?: string;
     upload_job_status?: "queued" | "running" | "completed" | "failed" | string;
     upload_job_id?: string;
+    uploaded_at?: string;
+    uploaded_video_id?: string;
+    uploaded_video_url?: string;
     updated_at: string;
   };
   asset_manifest?: {

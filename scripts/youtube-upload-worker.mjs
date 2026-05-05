@@ -1,0 +1,501 @@
+#!/usr/bin/env node
+import { promises as fs } from "node:fs";
+import path from "node:path";
+
+const root = process.cwd();
+const runsDir = path.join(root, "runs");
+const artifactsDir = path.join(root, "artifacts");
+const confirmToken = "RUN_YOUTUBE_UPLOAD";
+const defaultBucket = "youtube-assets";
+
+function parseArgs(argv) {
+  const args = {};
+  for (let index = 0; index < argv.length; index += 1) {
+    const token = argv[index];
+    if (!token.startsWith("--")) {
+      continue;
+    }
+    const key = token.slice(2);
+    const next = argv[index + 1];
+    if (!next || next.startsWith("--")) {
+      args[key] = "true";
+    } else {
+      args[key] = next;
+      index += 1;
+    }
+  }
+  return args;
+}
+
+function usage() {
+  console.log(`Usage:
+  npm run youtube:upload-worker -- --run-id <runId> --confirm ${confirmToken}
+
+Required OAuth env:
+  YOUTUBE_OAUTH_CLIENT_ID
+  YOUTUBE_OAUTH_CLIENT_SECRET
+  YOUTUBE_OAUTH_REFRESH_TOKEN
+
+Options:
+  --storage local|supabase   Defaults to APP_STORAGE_MODE or local.
+  --work-dir <path>          Optional temporary upload workspace.
+  --skip-thumbnail           Upload video only.
+`);
+}
+
+function assertSafeRunId(runId) {
+  if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
+    throw new Error("Invalid run id.");
+  }
+}
+
+function encodePath(value) {
+  return value
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+function parseSupabaseUri(value) {
+  if (!value.startsWith("supabase://")) {
+    return null;
+  }
+  const rest = value.slice("supabase://".length);
+  const slashIndex = rest.indexOf("/");
+  if (slashIndex < 1 || slashIndex === rest.length - 1) {
+    throw new Error(`Invalid Supabase URI: ${value}`);
+  }
+  return {
+    bucket: rest.slice(0, slashIndex),
+    objectPath: rest.slice(slashIndex + 1),
+  };
+}
+
+function normalizeRunFilePath(filePath) {
+  const normalized = String(filePath).replace(/\\/g, "/").replace(/^\/+/, "");
+  if (!normalized || normalized.includes("\0") || normalized.split("/").includes("..")) {
+    throw new Error("Invalid run file path.");
+  }
+  return normalized;
+}
+
+function localRunFile(runId, filePath) {
+  const runDir = path.join(runsDir, runId);
+  const resolved = path.resolve(runDir, normalizeRunFilePath(filePath));
+  const rootPath = path.resolve(runDir);
+  if (resolved !== rootPath && !resolved.startsWith(`${rootPath}${path.sep}`)) {
+    throw new Error("Run file path must stay inside runs/:runId.");
+  }
+  return resolved;
+}
+
+function localArtifactFile(runId, artifactPath) {
+  const normalized = String(artifactPath).replace(/\\/g, "/").replace(/^\/+/, "");
+  const runRoot = path.resolve(artifactsDir, runId);
+  const resolved = path.resolve(root, normalized);
+  if (!normalized.startsWith(`artifacts/${runId}/`)) {
+    throw new Error(`Artifact path must start with artifacts/${runId}/`);
+  }
+  if (resolved !== runRoot && !resolved.startsWith(`${runRoot}${path.sep}`)) {
+    throw new Error("Artifact path must stay inside artifacts/:runId.");
+  }
+  return resolved;
+}
+
+function supabaseConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, "");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !key) {
+    throw new Error("Supabase worker mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+  }
+  return {
+    bucket: process.env.SUPABASE_ASSETS_BUCKET?.trim() || defaultBucket,
+    key,
+    url,
+  };
+}
+
+async function supabaseRequest(pathSuffix, init = {}) {
+  const { key, url } = supabaseConfig();
+  const response = await fetch(`${url}/${pathSuffix}`, {
+    ...init,
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      ...(init.headers ?? {}),
+    },
+  });
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`Supabase ${response.status}: ${text.slice(0, 500)}`);
+  }
+  return response;
+}
+
+async function readSupabasePackage(runId) {
+  const response = await supabaseRequest(
+    `rest/v1/production_runs?id=eq.${encodeURIComponent(runId)}&select=package&limit=1`,
+  );
+  const rows = await response.json();
+  if (!rows[0]?.package) {
+    throw new Error(`Run package not found in Supabase: ${runId}`);
+  }
+  return rows[0].package;
+}
+
+async function writeSupabasePackage(pkg, status = "needs_review") {
+  await supabaseRequest("rest/v1/production_runs?on_conflict=id", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify({
+      category: pkg.brief?.category ?? null,
+      format: pkg.brief?.format ?? "",
+      id: pkg.run_id,
+      language: pkg.brief?.language ?? "",
+      package: pkg,
+      status,
+      topic: pkg.brief?.topic ?? "",
+      updated_at: new Date().toISOString(),
+    }),
+  });
+}
+
+async function readSupabaseArtifact(runId, artifactKey) {
+  const query = new URLSearchParams({
+    artifact_key: `eq.${artifactKey}`,
+    limit: "1",
+    run_id: `eq.${runId}`,
+    select: "content",
+  });
+  const response = await supabaseRequest(`rest/v1/run_artifacts?${query}`);
+  const rows = await response.json();
+  if (!rows[0]?.content) {
+    throw new Error(`Run artifact not found in Supabase: ${artifactKey}`);
+  }
+  return JSON.parse(rows[0].content);
+}
+
+async function writeSupabaseArtifact(runId, artifactKey, data, source = "youtube-upload-worker") {
+  await supabaseRequest("rest/v1/run_artifacts?on_conflict=run_id,artifact_key", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify({
+      artifact_key: artifactKey,
+      content: `${JSON.stringify(data, null, 2)}\n`,
+      filename: path.posix.basename(artifactKey),
+      metadata: { source },
+      run_id: runId,
+      updated_at: new Date().toISOString(),
+    }),
+  });
+}
+
+async function readRunJson(storageMode, runId, filePath) {
+  if (storageMode === "supabase") {
+    if (filePath === "production-package.json") {
+      return readSupabasePackage(runId);
+    }
+    return readSupabaseArtifact(runId, normalizeRunFilePath(filePath));
+  }
+  return JSON.parse(await fs.readFile(localRunFile(runId, filePath), "utf-8"));
+}
+
+async function writeRunJson(storageMode, runId, filePath, data) {
+  if (storageMode === "supabase") {
+    if (filePath === "production-package.json") {
+      await writeSupabasePackage(data);
+      return;
+    }
+    await writeSupabaseArtifact(runId, normalizeRunFilePath(filePath), data);
+    return;
+  }
+  const output = localRunFile(runId, filePath);
+  await fs.mkdir(path.dirname(output), { recursive: true });
+  await fs.writeFile(output, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
+}
+
+async function downloadSupabaseObject(bucket, objectPath, outputPath) {
+  const response = await supabaseRequest(
+    `storage/v1/object/${encodeURIComponent(bucket)}/${encodePath(objectPath)}`,
+    { method: "GET" },
+  );
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  await fs.writeFile(outputPath, Buffer.from(await response.arrayBuffer()));
+}
+
+function contentTypeFor(filePath, fallback) {
+  const extension = path.extname(filePath).toLowerCase();
+  if (extension === ".mp4") {
+    return "video/mp4";
+  }
+  if (extension === ".mov") {
+    return "video/quicktime";
+  }
+  if (extension === ".jpg" || extension === ".jpeg") {
+    return "image/jpeg";
+  }
+  if (extension === ".png") {
+    return "image/png";
+  }
+  if (extension === ".webp") {
+    return "image/webp";
+  }
+  return fallback;
+}
+
+async function resolveInputAsset({ runId, storageMode, assetPath, workDir, label }) {
+  if (!assetPath) {
+    throw new Error(`${label} path is missing.`);
+  }
+  const parsed = parseSupabaseUri(assetPath);
+  if (parsed) {
+    const outputPath = path.join(workDir, "inputs", label, path.basename(parsed.objectPath));
+    await downloadSupabaseObject(parsed.bucket, parsed.objectPath, outputPath);
+    return outputPath;
+  }
+  if (storageMode === "supabase") {
+    const { bucket } = supabaseConfig();
+    const objectPath = assetPath.replace(/\\/g, "/").replace(/^\/+/, "");
+    const outputPath = path.join(workDir, "inputs", label, path.basename(objectPath));
+    await downloadSupabaseObject(bucket, objectPath, outputPath);
+    return outputPath;
+  }
+  return localArtifactFile(runId, assetPath);
+}
+
+function youtubeOAuthConfig() {
+  const clientId = process.env.YOUTUBE_OAUTH_CLIENT_ID?.trim();
+  const clientSecret = process.env.YOUTUBE_OAUTH_CLIENT_SECRET?.trim();
+  const refreshToken = process.env.YOUTUBE_OAUTH_REFRESH_TOKEN?.trim();
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error(
+      "YouTube upload worker requires YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET, and YOUTUBE_OAUTH_REFRESH_TOKEN.",
+    );
+  }
+  return { clientId, clientSecret, refreshToken };
+}
+
+async function getAccessToken() {
+  const { clientId, clientSecret, refreshToken } = youtubeOAuthConfig();
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.access_token) {
+    throw new Error(body?.error_description ?? body?.error ?? `OAuth refresh failed with ${response.status}`);
+  }
+  return body.access_token;
+}
+
+function categoryId(value) {
+  const trimmed = String(value ?? "").trim();
+  return /^\d+$/.test(trimmed) ? trimmed : undefined;
+}
+
+function uploadMetadata(job) {
+  const scheduledAt = job.metadata.scheduled_at?.trim();
+  const privacyStatus = scheduledAt ? "private" : job.metadata.privacy_status;
+  return {
+    snippet: {
+      title: job.metadata.title,
+      description: job.metadata.description,
+      tags: job.metadata.tags,
+      categoryId: categoryId(job.metadata.category),
+      defaultLanguage: job.metadata.language || undefined,
+    },
+    status: {
+      privacyStatus,
+      publishAt: scheduledAt || undefined,
+      selfDeclaredMadeForKids: Boolean(job.metadata.made_for_kids),
+    },
+  };
+}
+
+async function uploadVideo({ accessToken, job, videoPath }) {
+  const bytes = await fs.readFile(videoPath);
+  const contentType = contentTypeFor(videoPath, "video/mp4");
+  const metadata = uploadMetadata(job);
+  const initiate = await fetch(
+    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Length": String(bytes.byteLength),
+        "X-Upload-Content-Type": contentType,
+      },
+      body: JSON.stringify(metadata),
+    },
+  );
+  if (!initiate.ok) {
+    const text = await initiate.text().catch(() => "");
+    throw new Error(`YouTube upload initiation failed with ${initiate.status}: ${text.slice(0, 800)}`);
+  }
+  const location = initiate.headers.get("location");
+  if (!location) {
+    throw new Error("YouTube upload initiation did not return a resumable session URL.");
+  }
+
+  const upload = await fetch(location, {
+    method: "PUT",
+    headers: {
+      "Content-Length": String(bytes.byteLength),
+      "Content-Range": `bytes 0-${bytes.byteLength - 1}/${bytes.byteLength}`,
+      "Content-Type": contentType,
+    },
+    body: bytes,
+  });
+  const body = await upload.json().catch(async () => ({ raw: await upload.text().catch(() => "") }));
+  if (!upload.ok || !body?.id) {
+    throw new Error(`YouTube video upload failed with ${upload.status}: ${JSON.stringify(body).slice(0, 800)}`);
+  }
+  return {
+    response: body,
+    videoId: body.id,
+    videoUrl: `https://www.youtube.com/watch?v=${body.id}`,
+  };
+}
+
+async function uploadThumbnail({ accessToken, thumbnailPath, videoId }) {
+  const bytes = await fs.readFile(thumbnailPath);
+  const contentType = contentTypeFor(thumbnailPath, "image/png");
+  const response = await fetch(
+    `https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=${encodeURIComponent(videoId)}&uploadType=media`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Length": String(bytes.byteLength),
+        "Content-Type": contentType,
+      },
+      body: bytes,
+    },
+  );
+  const body = await response.json().catch(async () => ({ raw: await response.text().catch(() => "") }));
+  if (!response.ok) {
+    throw new Error(`YouTube thumbnail upload failed with ${response.status}: ${JSON.stringify(body).slice(0, 800)}`);
+  }
+  return body;
+}
+
+async function markJob(storageMode, runId, job, pkg, status, patch = {}) {
+  const now = new Date().toISOString();
+  const { package_patch: packagePatch, ...jobPatch } = patch;
+  const nextJob = { ...job, ...jobPatch, status, updated_at: now };
+  const nextPackage = {
+    ...pkg,
+    publishing_handoff: {
+      ...(pkg.publishing_handoff ?? {}),
+      upload_job_id: job.job_id,
+      upload_job_path: "youtube-upload-job.json",
+      upload_job_status: status,
+      updated_at: now,
+      ...(packagePatch ?? {}),
+    },
+  };
+  await Promise.all([
+    writeRunJson(storageMode, runId, "youtube-upload-job.json", nextJob),
+    writeRunJson(storageMode, runId, "production-package.json", nextPackage),
+  ]);
+  return { job: nextJob, pkg: nextPackage };
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const runId = args["run-id"];
+  const storageMode = args.storage || process.env.APP_STORAGE_MODE || "local";
+  if (!runId || args.confirm !== confirmToken) {
+    usage();
+    process.exitCode = 2;
+    return;
+  }
+  if (storageMode !== "local" && storageMode !== "supabase") {
+    throw new Error("--storage must be local or supabase.");
+  }
+  assertSafeRunId(runId);
+
+  let job = await readRunJson(storageMode, runId, "youtube-upload-job.json");
+  let pkg = await readRunJson(storageMode, runId, "production-package.json");
+  if (job.status !== "queued" && args.force !== "true") {
+    throw new Error(`Upload job status must be queued. Current status: ${job.status}`);
+  }
+
+  const baseWorkDir =
+    args["work-dir"] ||
+    path.join(artifactsDir, runId, "youtube-upload-worker", String(job.job_id || "job"));
+  await fs.mkdir(baseWorkDir, { recursive: true });
+  ({ job, pkg } = await markJob(storageMode, runId, job, pkg, "running"));
+
+  try {
+    const [accessToken, videoPath, thumbnailPath] = await Promise.all([
+      getAccessToken(),
+      resolveInputAsset({
+        assetPath: job.video.path,
+        label: "video",
+        runId,
+        storageMode,
+        workDir: baseWorkDir,
+      }),
+      args["skip-thumbnail"] === "true"
+        ? Promise.resolve("")
+        : resolveInputAsset({
+            assetPath: job.thumbnail.path,
+            label: "thumbnail",
+            runId,
+            storageMode,
+            workDir: baseWorkDir,
+          }),
+    ]);
+    const video = await uploadVideo({ accessToken, job, videoPath });
+    const thumbnail = thumbnailPath
+      ? await uploadThumbnail({ accessToken, thumbnailPath, videoId: video.videoId })
+      : null;
+    const now = new Date().toISOString();
+    const uploadLog = {
+      uploaded_at: now,
+      worker_job_id: job.job_id,
+      video_id: video.videoId,
+      video_url: video.videoUrl,
+      privacy_status: video.response?.status?.privacyStatus ?? job.metadata.privacy_status,
+      thumbnail_uploaded: Boolean(thumbnail),
+      thumbnail_response: thumbnail,
+    };
+    await writeRunJson(storageMode, runId, "youtube-upload-log.json", uploadLog);
+    await markJob(storageMode, runId, job, pkg, "completed", {
+      completed_at: now,
+      video_id: video.videoId,
+      video_url: video.videoUrl,
+      thumbnail_uploaded: Boolean(thumbnail),
+      package_patch: {
+        uploaded_at: now,
+        uploaded_video_id: video.videoId,
+        uploaded_video_url: video.videoUrl,
+      },
+    });
+    console.log(JSON.stringify({ status: "completed", videoId: video.videoId, videoUrl: video.videoUrl }, null, 2));
+  } catch (error) {
+    await markJob(storageMode, runId, job, pkg, "failed", {
+      error: error instanceof Error ? error.message : String(error),
+    }).catch(() => null);
+    throw error;
+  }
+}
+
+main().catch((error) => {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exitCode = 1;
+});

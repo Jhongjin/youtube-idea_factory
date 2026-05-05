@@ -550,7 +550,7 @@ Behavior:
 
 ## YouTube Upload Job
 
-Status: upload handoff manifest implemented. The actual YouTube upload worker is still pending because upload requires OAuth credentials and YouTube upload scope, not only a Data API key.
+Status: upload handoff manifest and external CLI worker implemented. Upload requires OAuth credentials and YouTube upload scope, not only a Data API key.
 
 Route:
 
@@ -570,6 +570,19 @@ Behavior:
 3. Writes `youtube-upload-job.json` containing final video path, thumbnail path, title, description, tags, language, category, privacy, and YouTube OAuth worker requirements.
 4. Updates `production-package.json.publishing_handoff.upload_job_*`.
 5. Does not perform the upload inside Vercel.
+6. The worker CLI can consume this job:
+
+```powershell
+npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD
+```
+
+The worker refreshes an OAuth access token, starts a resumable `videos.insert` upload, uploads the video bytes, optionally sets the thumbnail, then writes `youtube-upload-log.json`, updates `youtube-upload-job.json`, and records the uploaded video ID/URL in `production-package.json`.
+
+Required worker environment:
+
+- `YOUTUBE_OAUTH_CLIENT_ID`
+- `YOUTUBE_OAUTH_CLIENT_SECRET`
+- `YOUTUBE_OAUTH_REFRESH_TOKEN`
 
 ## QA Draft
 

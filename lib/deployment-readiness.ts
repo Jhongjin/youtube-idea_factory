@@ -130,7 +130,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     warnings.push("NEXT_PUBLIC_SUPABASE_ANON_KEY is missing; browser-side Supabase features should remain disabled.");
   }
   if (appStorageMode === "supabase") {
-    warnings.push("Unattended production rendering requires an external worker to consume render-worker-job.json; final YouTube upload adapter is still pending.");
+    warnings.push("Unattended render and YouTube upload jobs require external workers with ffmpeg and YouTube OAuth credentials.");
   }
 
   return {
