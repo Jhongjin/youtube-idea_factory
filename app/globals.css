@@ -750,6 +750,93 @@ a {
   margin: 0 auto;
 }
 
+.deployment-status {
+  max-width: 1180px;
+  margin: 0 auto 16px;
+  box-shadow: var(--shadow);
+}
+
+.deployment-status-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.deployment-status-card {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 70px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 10px;
+}
+
+.deployment-status-card strong,
+.deployment-status-card span {
+  display: block;
+}
+
+.deployment-status-card strong {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.deployment-status-card span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.schema-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.schema-grid span {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.schema-grid span.ready {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.schema-grid span.blocked {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.settings-message code {
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 2px 5px;
+}
+
+.deployment-message-list {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.deployment-message-list.muted-list {
+  color: var(--muted);
+}
+
 .settings-summary {
   display: flex;
   align-items: flex-start;
@@ -1321,7 +1408,9 @@ a {
 
   .summary-grid,
   .workspace-grid,
-  .provider-grid {
+  .provider-grid,
+  .deployment-status-grid,
+  .schema-grid {
     grid-template-columns: 1fr;
   }
 
