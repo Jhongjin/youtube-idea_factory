@@ -253,6 +253,7 @@ The dashboard `Publish Check` action creates `publish-handoff.json`. It checks t
 API route: `POST /api/runs/:runId/publishing/handoff`.
 
 The dashboard `Upload Job` action creates `youtube-upload-job.json` after publish handoff passes. Actual YouTube upload still needs an external OAuth-enabled worker.
+The action lets the operator choose visibility, optional scheduled publish time, and made-for-kids status before the job is queued.
 
 API route: `POST /api/runs/:runId/publishing/upload-job`.
 

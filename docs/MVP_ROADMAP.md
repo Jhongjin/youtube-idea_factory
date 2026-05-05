@@ -95,7 +95,7 @@ Build:
 - timeline assembly
 - render validation
 - thumbnail export
-- YouTube upload adapter
+- YouTube upload job handoff and external OAuth worker: started
 - schedule/publish approval gate
 
 ## Phase 6: Feedback Loop

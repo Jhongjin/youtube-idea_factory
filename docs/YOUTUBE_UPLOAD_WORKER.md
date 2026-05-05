@@ -35,7 +35,7 @@ Do not paste the OAuth refresh token into the dashboard UI or commit it to the r
 1. Finish the production package and final render.
 2. Approve the publish gate in the dashboard.
 3. Run `Publish Check`.
-4. Run `Upload Job`.
+4. Run `Upload Job` and choose visibility, optional schedule, and made-for-kids status.
 5. Run the external worker from a trusted terminal.
 
 ## Preflight

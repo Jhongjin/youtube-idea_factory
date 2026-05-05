@@ -416,6 +416,85 @@ a {
   min-width: fit-content;
 }
 
+.upload-job-action {
+  position: relative;
+}
+
+.upload-job-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  width: min(360px, 88vw);
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+
+.upload-job-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.upload-job-header strong {
+  font-size: 13px;
+}
+
+.upload-job-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.upload-job-grid label {
+  display: grid;
+  gap: 5px;
+}
+
+.upload-job-grid span,
+.upload-job-check span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.upload-job-grid input,
+.upload-job-grid select {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 9px;
+  outline: none;
+}
+
+.upload-job-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.upload-job-check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.upload-job-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .flow-action {
   order: -1;
 }
@@ -1631,8 +1710,14 @@ a {
   .asset-control-grid,
   .asset-register,
   .asset-action-row,
+  .upload-job-grid,
   .admin-access-panel {
     grid-template-columns: 1fr;
+  }
+
+  .upload-job-popover {
+    left: 0;
+    right: auto;
   }
 
   .admin-access-panel {

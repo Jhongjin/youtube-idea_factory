@@ -43,6 +43,8 @@ export type YouTubeUploadJob = {
 export type CreateYouTubeUploadJobResult = {
   file: "youtube-upload-job.json";
   jobId: string;
+  madeForKids: boolean;
+  scheduledAt: string;
   status: "queued";
   privacyStatus: string;
 };
@@ -57,6 +59,21 @@ function assertSafeRunId(runId: string) {
 
 function privacyStatus(value?: string): "private" | "unlisted" | "public" {
   return value === "unlisted" || value === "public" ? value : "private";
+}
+
+function normalizeScheduledAt(value?: string) {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const scheduled = new Date(trimmed);
+  if (Number.isNaN(scheduled.getTime())) {
+    throw new Error("Scheduled publish time is invalid.");
+  }
+  if (scheduled.getTime() <= Date.now()) {
+    throw new Error("Scheduled publish time must be in the future.");
+  }
+  return scheduled.toISOString();
 }
 
 export async function createYouTubeUploadJob(
@@ -78,6 +95,8 @@ export async function createYouTubeUploadJob(
     readRunJson<PublishingHandoff>(runId, "publish-handoff.json"),
   ]);
   const now = new Date().toISOString();
+  const scheduledAt = normalizeScheduledAt(request.scheduledAt);
+  const effectivePrivacyStatus = scheduledAt ? "private" : privacyStatus(request.privacyStatus);
   const job: YouTubeUploadJob = {
     version: 1,
     job_id: randomUUID(),
@@ -107,8 +126,8 @@ export async function createYouTubeUploadJob(
       tags: handoff.metadata.tags,
       language: handoff.metadata.language,
       category: handoff.metadata.category,
-      privacy_status: privacyStatus(request.privacyStatus),
-      scheduled_at: request.scheduledAt?.trim() ?? "",
+      privacy_status: effectivePrivacyStatus,
+      scheduled_at: scheduledAt,
       made_for_kids: request.madeForKids ?? false,
     },
   };
@@ -131,6 +150,8 @@ export async function createYouTubeUploadJob(
   return {
     file: "youtube-upload-job.json",
     jobId: job.job_id,
+    madeForKids: job.metadata.made_for_kids,
+    scheduledAt: job.metadata.scheduled_at,
     status: "queued",
     privacyStatus: job.metadata.privacy_status,
   };
