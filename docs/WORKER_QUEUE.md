@@ -30,6 +30,11 @@ npm run ops:status -- --storage supabase
 The command prints real `run-id` values and an upload dry-run example so placeholders such as
 `<run-id>` are not pasted into PowerShell.
 
+If this command reports `Supabase request failed`, first confirm the current PowerShell window has
+`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set. If worker commands only work when
+`NODE_TLS_REJECT_UNAUTHORIZED=0` is set, fix the local Windows/Node certificate trust path before
+running unattended workers.
+
 ## Render Worker
 
 Direct run:

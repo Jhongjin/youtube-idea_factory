@@ -30,18 +30,34 @@ function supabaseConfig() {
   if (!url || !key) {
     throw new Error("Supabase mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
   }
+  if (!/^https?:\/\//.test(url)) {
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL must start with https://.");
+  }
   return { key, url };
 }
 
 async function supabaseRequest(pathSuffix) {
   const { key, url } = supabaseConfig();
-  const response = await fetch(`${url}/${pathSuffix}`, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${key}`,
-      apikey: key,
-    },
-  });
+  let response;
+  try {
+    response = await fetch(`${url}/${pathSuffix}`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${key}`,
+        apikey: key,
+      },
+    });
+  } catch (error) {
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause : null;
+    const code =
+      cause && "code" in cause && typeof cause.code === "string" ? ` (${cause.code})` : "";
+    throw new Error(
+      [
+        `Supabase request failed${code}: ${cause?.message ?? (error instanceof Error ? error.message : String(error))}`,
+        "Check local network/TLS certificates and confirm the PowerShell env vars are set in this terminal.",
+      ].join("\n"),
+    );
+  }
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     throw new Error(`Supabase ${response.status}: ${text.slice(0, 500)}`);
@@ -204,5 +220,8 @@ async function main() {
 
 main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
+  if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0") {
+    console.error("Warning: NODE_TLS_REJECT_UNAUTHORIZED=0 disables TLS certificate verification.");
+  }
   process.exitCode = 1;
 });
