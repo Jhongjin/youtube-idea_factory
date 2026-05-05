@@ -21,9 +21,9 @@ Implemented Supabase-backed state:
 Still local or adapter-specific:
 
 - ffmpeg render execution should run in an external worker process, not inside Vercel
-- final YouTube upload adapter
 - provider-specific video generation adapters
 - subtitle/BGM generation adapters
+- final YouTube uploads should run through an external OAuth worker
 
 ## Vercel Notes
 
@@ -45,12 +45,24 @@ SUPABASE_SERVICE_ROLE_KEY=...
 SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_API_KEY=...
 DASHBOARD_ADMIN_TOKEN=...
+```
+
+Keep provider API keys either in Vercel Environment Variables or the dashboard provider settings. Never commit `.env.local` or `config/provider-settings.local.json`.
+YouTube upload OAuth secrets are only needed in the external upload worker environment, not in the browser dashboard.
+
+External YouTube upload worker variables:
+
+```text
+APP_STORAGE_MODE=supabase
+NEXT_PUBLIC_SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_OAUTH_CLIENT_ID=...
 YOUTUBE_OAUTH_CLIENT_SECRET=...
 YOUTUBE_OAUTH_REFRESH_TOKEN=...
 ```
 
-Keep provider API keys either in Vercel Environment Variables or the dashboard provider settings. Never commit `.env.local` or `config/provider-settings.local.json`. YouTube upload OAuth secrets are only needed in the external upload worker environment unless Vercel is only creating upload job manifests.
+See `docs/YOUTUBE_UPLOAD_WORKER.md` for the dry-run and upload commands.
 
 ## Admin Mutation Gate
 
@@ -87,11 +99,12 @@ When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of l
 - `GET/PUT /api/runs/:runId/transcripts/:sourceKey`
 - text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, generation queue, image/TTS generation, manual media registration, and render manifest checks
 
-These routes remain local-artifact-only and return explicit errors in Supabase mode until object storage/render workers are added:
+These routes remain local-worker or adapter-specific:
 
 - subtitle asset file generation
 - local MP4 render
-- publishing handoff file checks
+- external ffmpeg render worker execution
+- external YouTube upload worker execution
 
 ## Readiness Checks
 

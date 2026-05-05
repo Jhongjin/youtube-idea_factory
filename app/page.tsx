@@ -47,6 +47,7 @@ import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button"
 import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { YouTubeUploadJobButton } from "@/app/components/youtube-upload-job-button";
+import { YouTubeUploadWorkerPanel } from "@/app/components/youtube-upload-worker-panel";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -336,12 +337,14 @@ function Inspector({
   providerSettings,
   approvals,
   generationState,
+  storageMode,
 }: {
   run: RunSummary;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
   approvals: RunApprovals;
   generationState: AssetGenerationState;
+  storageMode: string;
 }) {
   const brief = run.package.brief;
   const readyProviderCount = providerRoles.filter((role) => {
@@ -527,6 +530,11 @@ function Inspector({
                 <span>업로드 작업</span>
                 <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
               </div>
+              <YouTubeUploadWorkerPanel
+                runId={run.id}
+                storageMode={storageMode}
+                uploadJobStatus={run.package.publishing_handoff?.upload_job_status}
+              />
             </div>
           </div>
         </section>
@@ -548,6 +556,7 @@ export default async function Home({
   const generationState = activeRun ? await getAssetGenerationState(activeRun.id) : null;
   const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
   const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
+  const storageMode = process.env.APP_STORAGE_MODE?.trim() || "local";
 
   return (
     <div className="shell">
@@ -614,6 +623,7 @@ export default async function Home({
           generationState={generationState!}
           providerSettings={providerSettings}
           run={activeRun}
+          storageMode={storageMode}
           validation={validation!}
         />
       ) : (

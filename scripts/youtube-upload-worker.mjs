@@ -39,6 +39,7 @@ Required OAuth env:
 Options:
   --storage local|supabase   Defaults to APP_STORAGE_MODE or local.
   --work-dir <path>          Optional temporary upload workspace.
+  --dry-run                  Check OAuth and asset readiness without uploading.
   --skip-thumbnail           Upload video only.
 `);
 }
@@ -428,9 +429,10 @@ async function main() {
   }
   assertSafeRunId(runId);
 
+  const dryRun = args["dry-run"] === "true";
   let job = await readRunJson(storageMode, runId, "youtube-upload-job.json");
   let pkg = await readRunJson(storageMode, runId, "production-package.json");
-  if (job.status !== "queued" && args.force !== "true") {
+  if (!dryRun && job.status !== "queued" && args.force !== "true") {
     throw new Error(`Upload job status must be queued. Current status: ${job.status}`);
   }
 
@@ -438,6 +440,47 @@ async function main() {
     args["work-dir"] ||
     path.join(artifactsDir, runId, "youtube-upload-worker", String(job.job_id || "job"));
   await fs.mkdir(baseWorkDir, { recursive: true });
+
+  if (dryRun) {
+    const [accessToken, videoPath, thumbnailPath] = await Promise.all([
+      getAccessToken(),
+      resolveInputAsset({
+        assetPath: job.video.path,
+        label: "video",
+        runId,
+        storageMode,
+        workDir: baseWorkDir,
+      }),
+      args["skip-thumbnail"] === "true"
+        ? Promise.resolve("")
+        : resolveInputAsset({
+            assetPath: job.thumbnail.path,
+            label: "thumbnail",
+            runId,
+            storageMode,
+            workDir: baseWorkDir,
+          }),
+    ]);
+    console.log(JSON.stringify({
+      status: "ready",
+      dryRun: true,
+      runId,
+      jobId: job.job_id,
+      jobStatus: job.status,
+      storageMode,
+      oauth: accessToken ? "access_token_refreshed" : "missing",
+      videoPath,
+      thumbnailPath: thumbnailPath || null,
+      metadata: {
+        title: job.metadata.title,
+        privacyStatus: job.metadata.scheduled_at?.trim() ? "private" : job.metadata.privacy_status,
+        scheduledAt: job.metadata.scheduled_at || null,
+        madeForKids: Boolean(job.metadata.made_for_kids),
+      },
+    }, null, 2));
+    return;
+  }
+
   ({ job, pkg } = await markJob(storageMode, runId, job, pkg, "running"));
 
   try {

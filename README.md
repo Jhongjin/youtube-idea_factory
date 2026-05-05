@@ -13,6 +13,7 @@
 - `scripts/validate_package.py`: production package 구조 검증기
 - `scripts/validate-harness.ps1`: 하네스 문서/스킬 기본 검증
 - `docs/PROVIDER_CATALOG.md`: LLM, 이미지, 영상, TTS, 자막, BGM 제공자 후보와 어댑터 상태
+- `docs/YOUTUBE_UPLOAD_WORKER.md`: OAuth 기반 YouTube 업로드 워커 실행 절차
 - `runs/`: 콘텐츠 제작 실행 단위별 작업 기록 위치
 - `artifacts/`: 생성 이미지, 음성, 영상, 자막 등 산출물 위치
 
@@ -258,10 +259,12 @@ API route: `POST /api/runs/:runId/publishing/upload-job`.
 An external worker can process the queued upload job with:
 
 ```powershell
-npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD
+npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD --storage supabase --dry-run
+npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD --storage supabase
 ```
 
 The upload worker needs `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`, and `YOUTUBE_OAUTH_REFRESH_TOKEN` with YouTube upload scope. Jobs default to private visibility unless the upload job explicitly requests another privacy status.
+Full worker setup lives in `docs/YOUTUBE_UPLOAD_WORKER.md`.
 
 ## Draft QA
 
