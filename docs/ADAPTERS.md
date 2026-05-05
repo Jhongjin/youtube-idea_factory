@@ -488,7 +488,7 @@ Behavior:
 
 ## Render Worker Job
 
-Status: worker handoff manifest implemented. A separate worker process is still required to execute the job.
+Status: worker handoff manifest and CLI worker implemented. A separate machine/process is still required to run the CLI for production jobs.
 
 Route:
 
@@ -504,7 +504,14 @@ Behavior:
 2. Requires `render_manifest.summary.render_ready` and a complete render approval gate.
 3. Writes `render-worker-job.json` with scene asset paths, voice, subtitles, optional BGM, final output path, and ffmpeg worker requirements.
 4. Updates `production-package.json.render_manifest.worker_job_*` fields.
-5. Does not run ffmpeg inside Vercel. This is the durable handoff file for a later queue or worker service.
+5. Does not run ffmpeg inside Vercel. This is the durable handoff file for a queue or worker service.
+6. The worker CLI can consume this job:
+
+```powershell
+npm run render:worker -- --run-id <run-id> --confirm RUN_RENDER_WORKER
+```
+
+For Supabase mode, the worker downloads referenced Supabase Storage assets, renders locally with ffmpeg, uploads the final MP4 back to the configured storage bucket, and updates `render-worker-job.json`, `render-log.json`, and `production-package.json`.
 
 ## Publishing Draft
 

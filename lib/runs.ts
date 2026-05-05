@@ -66,7 +66,7 @@ export type ProductionPackage = {
     rendered_path?: string;
     rendered_at?: string;
     worker_job_path?: string;
-    worker_job_status?: string;
+    worker_job_status?: "queued" | "running" | "completed" | "failed" | string;
     worker_job_id?: string;
     updated_at: string;
   };

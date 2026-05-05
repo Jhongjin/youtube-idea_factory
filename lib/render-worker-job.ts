@@ -12,7 +12,7 @@ export type RenderWorkerJob = {
   version: 1;
   job_id: string;
   run_id: string;
-  status: "queued";
+  status: "queued" | "running" | "completed" | "failed";
   created_at: string;
   approval_gate: "render";
   render_manifest_path: "render-manifest.json";

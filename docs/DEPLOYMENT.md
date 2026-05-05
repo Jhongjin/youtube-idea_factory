@@ -20,7 +20,7 @@ Implemented Supabase-backed state:
 
 Still local or adapter-specific:
 
-- local ffmpeg rendering
+- ffmpeg render execution should run in an external worker process, not inside Vercel
 - final YouTube upload adapter
 - provider-specific video generation adapters
 - subtitle/BGM generation adapters

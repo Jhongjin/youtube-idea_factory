@@ -231,6 +231,14 @@ It refreshes the render manifest, runs `scripts/check_approval_gate.py --gate re
 
 The dashboard `Render Job` action creates `render-worker-job.json` behind the same render approval expectations. This is the handoff contract for an external ffmpeg worker so Vercel can stay focused on dashboard/API work.
 
+An external worker can process the queued render job with:
+
+```powershell
+npm run render:worker -- --run-id <run-id> --confirm RUN_RENDER_WORKER
+```
+
+For Supabase-backed production runs, run the worker in an environment that has `APP_STORAGE_MODE=supabase`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_ASSETS_BUCKET`.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.
