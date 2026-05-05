@@ -1,3 +1,9 @@
+import {
+  getProviderCapability,
+  hasDirectAdapter,
+  hasManualWorkflow,
+  requiresProviderModel,
+} from "@/lib/provider-capabilities";
 import { getProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type ProviderRoleId } from "@/lib/provider-settings-shared";
 import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
@@ -73,49 +79,6 @@ function hasEnv(name: string) {
   return Boolean(process.env[name]?.trim());
 }
 
-const directAdapterProviders: Record<ProviderRoleId, string[]> = {
-  bgm: [],
-  image: ["OpenAI", "fal.ai"],
-  llm: ["OpenAI", "OpenRouter", "Custom"],
-  subtitles: ["OpenAI"],
-  tts: ["OpenAI", "Inworld"],
-  video: ["fal.ai"],
-  youtube: ["YouTube Data API"],
-};
-
-const manualWorkflowProviders = new Set([
-  "AIVIS (Avis)",
-  "Adobe Firefly",
-  "Artlist",
-  "Canva Dream Lab",
-  "CapCut",
-  "Epidemic Sound",
-  "Ideogram",
-  "InVideo AI",
-  "Leonardo AI",
-  "Local",
-  "Manual Export",
-  "Manual Library",
-  "Midjourney Manual",
-  "Naver Clova Dubbing",
-  "Reelbox",
-  "Sora",
-  "Soundraw",
-  "Suno",
-  "Typecast",
-  "Udio",
-  "Vrew",
-  "YouTube Audio Library",
-  "YouTube Auto Captions",
-]);
-
-function requiresModel(role: ProviderRoleId, provider: string) {
-  if (role === "youtube" || role === "bgm") {
-    return false;
-  }
-  return directAdapterProviders[role].includes(provider);
-}
-
 function disabledRoleReadiness(): ProviderRoleReadiness {
   return {
     enabled: false,
@@ -137,8 +100,9 @@ function roleReadiness(
   const provider = setting.provider.trim();
   const model = setting.model.trim();
   const hasApiKey = Boolean(setting.apiKey?.trim());
-  const implementedAdapter = directAdapterProviders[role].includes(provider);
-  const manualWorkflow = manualWorkflowProviders.has(provider);
+  const implementedAdapter = hasDirectAdapter(role, provider);
+  const manualWorkflow = hasManualWorkflow(provider);
+  const capability = getProviderCapability(role, provider);
   const base = {
     enabled: setting.enabled,
     provider,
@@ -152,15 +116,15 @@ function roleReadiness(
     return { ...base, ready: false, status: "disabled", message: "비활성" };
   }
   if (manualWorkflow) {
-    return { ...base, ready: true, status: "manual", message: "수동/외부 워크플로" };
+    return { ...base, ready: true, status: "manual", message: capability.label };
   }
   if (!implementedAdapter) {
-    return { ...base, ready: false, status: "adapter-pending", message: "직접 어댑터 대기" };
+    return { ...base, ready: false, status: "adapter-pending", message: capability.label };
   }
   if (!hasApiKey) {
     return { ...base, ready: false, status: "missing-key", message: "API 키 필요" };
   }
-  if (requiresModel(role, provider) && !model) {
+  if (requiresProviderModel(role, provider) && !model) {
     return { ...base, ready: false, status: "missing-model", message: "모델/프리셋 필요" };
   }
   return { ...base, ready: true, status: "ready", message: "직접 실행 가능" };

@@ -76,6 +76,16 @@ export const phaseWorkQueue: WorkQueueItem[] = [
     nextAction: "별도 워커 환경에서 render/upload worker poll 모드를 서비스로 실행합니다.",
   },
   {
+    id: "provider-capability-labels",
+    phase: "Phase 4",
+    title: "제공자 직접/수동/대기 표시",
+    status: "done",
+    owner: "codex",
+    canSkip: false,
+    reason: "선택 가능한 제공자와 즉시 자동화 가능한 제공자가 화면에서 구분되어야 합니다.",
+    nextAction: "실제 API 어댑터는 사용자가 우선 제공자를 선택한 뒤 깊게 붙입니다.",
+  },
+  {
     id: "provider-adapter-depth",
     phase: "Phase 4",
     title: "선택형 생성/TTS 제공자 어댑터 확장",

@@ -1424,10 +1424,36 @@ a {
 .provider-status {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 7px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.provider-capability {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.provider-capability.direct {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.provider-capability.manual {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.provider-capability.pending {
+  background: var(--blue-soft);
+  color: var(--blue);
 }
 
 .admin-access-panel {

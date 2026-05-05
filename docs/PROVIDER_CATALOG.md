@@ -2,6 +2,12 @@
 
 This dashboard separates provider selection from adapter implementation. A provider can be listed before a direct API adapter exists, so production runs can plan the workflow without forcing one vendor.
 
+The settings page labels every provider as `direct`, `manual`, or `pending`:
+
+- `direct`: the dashboard has a direct server adapter.
+- `manual`: the provider is useful, but the workflow is handled outside the dashboard or through file registration.
+- `pending`: the provider is selectable, but a direct adapter still needs to be built.
+
 ## LLM
 
 - OpenAI

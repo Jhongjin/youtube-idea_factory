@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { CheckCircle2, KeyRound, Loader2, Save } from "lucide-react";
+import { getProviderCapability } from "@/lib/provider-capabilities";
 import {
   providerRoles,
   type ProviderRoleId,
@@ -94,84 +95,93 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       ) : null}
 
       <div className="provider-grid">
-        {roleList.map(({ id, label, description, providers, setting }) => (
-          <section className="provider-card" key={id}>
-            <div className="provider-card-header">
-              <div>
-                <h3>{label}</h3>
-                <p>{description}</p>
+        {roleList.map(({ id, label, description, providers, setting }) => {
+          const selectedCapability = getProviderCapability(id, setting.provider);
+          return (
+            <section className="provider-card" key={id}>
+              <div className="provider-card-header">
+                <div>
+                  <h3>{label}</h3>
+                  <p>{description}</p>
+                </div>
+                <label className="provider-toggle">
+                  <input
+                    checked={setting.enabled}
+                    name={`${id}.enabled`}
+                    onChange={(event) => updateRole(id, { enabled: event.target.checked })}
+                    type="checkbox"
+                  />
+                  사용
+                </label>
               </div>
-              <label className="provider-toggle">
-                <input
-                  checked={setting.enabled}
-                  name={`${id}.enabled`}
-                  onChange={(event) => updateRole(id, { enabled: event.target.checked })}
-                  type="checkbox"
-                />
-                사용
-              </label>
-            </div>
 
-            <div className="provider-fields">
-              <label>
-                <span>제공자</span>
-                <select
-                  name={`${id}.provider`}
-                  onChange={(event) => updateRole(id, { provider: event.target.value })}
-                  value={setting.provider}
-                >
-                  {providers.map((provider) => (
-                    <option key={provider} value={provider}>
-                      {provider}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span>모델 / 프리셋</span>
-                <input
-                  name={`${id}.model`}
-                  onChange={(event) => updateRole(id, { model: event.target.value })}
-                  placeholder="모델명, 음성, 프리셋, 워크플로 ID"
-                  value={setting.model}
-                />
-              </label>
-              <label>
-                <span>API 키</span>
-                <input
-                  autoComplete="off"
-                  name={`${id}.apiKey`}
-                  placeholder={setting.hasApiKey ? setting.apiKeyPreview : "API 키 붙여넣기"}
-                  type="password"
-                />
-              </label>
-              <label>
-                <span>기본 URL</span>
-                <input
-                  name={`${id}.baseUrl`}
-                  onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
-                  placeholder="선택 사항: 커스텀 엔드포인트"
-                  value={setting.baseUrl}
-                />
-              </label>
-              <label className="provider-notes">
-                <span>메모</span>
-                <textarea
-                  name={`${id}.notes`}
-                  onChange={(event) => updateRole(id, { notes: event.target.value })}
-                  placeholder="쿼터, 계정, 안전 메모, 허용 사용 범위"
-                  rows={3}
-                  value={setting.notes}
-                />
-              </label>
-            </div>
+              <div className="provider-fields">
+                <label>
+                  <span>제공자</span>
+                  <select
+                    name={`${id}.provider`}
+                    onChange={(event) => updateRole(id, { provider: event.target.value })}
+                    value={setting.provider}
+                  >
+                    {providers.map((provider) => {
+                      const capability = getProviderCapability(id, provider);
+                      return (
+                        <option key={provider} value={provider}>
+                          {provider} · {capability.shortLabel}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+                <label>
+                  <span>모델 / 프리셋</span>
+                  <input
+                    name={`${id}.model`}
+                    onChange={(event) => updateRole(id, { model: event.target.value })}
+                    placeholder="모델명, 음성, 프리셋, 워크플로 ID"
+                    value={setting.model}
+                  />
+                </label>
+                <label>
+                  <span>API 키</span>
+                  <input
+                    autoComplete="off"
+                    name={`${id}.apiKey`}
+                    placeholder={setting.hasApiKey ? setting.apiKeyPreview : "API 키 붙여넣기"}
+                    type="password"
+                  />
+                </label>
+                <label>
+                  <span>기본 URL</span>
+                  <input
+                    name={`${id}.baseUrl`}
+                    onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
+                    placeholder="선택 사항: 커스텀 엔드포인트"
+                    value={setting.baseUrl}
+                  />
+                </label>
+                <label className="provider-notes">
+                  <span>메모</span>
+                  <textarea
+                    name={`${id}.notes`}
+                    onChange={(event) => updateRole(id, { notes: event.target.value })}
+                    placeholder="쿼터, 계정, 안전 메모, 허용 사용 범위"
+                    rows={3}
+                    value={setting.notes}
+                  />
+                </label>
+              </div>
 
-            <div className="provider-status">
-              <KeyRound size={14} />
-              {setting.hasApiKey ? `키 ${setting.apiKeyPreview}` : "저장된 키 없음"}
-            </div>
-          </section>
-        ))}
+              <div className="provider-status">
+                <KeyRound size={14} />
+                <span>{setting.hasApiKey ? `키 ${setting.apiKeyPreview}` : "저장된 키 없음"}</span>
+                <span className={`provider-capability ${selectedCapability.status}`}>
+                  {selectedCapability.label}
+                </span>
+              </div>
+            </section>
+          );
+        })}
       </div>
     </form>
   );
