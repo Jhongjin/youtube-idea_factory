@@ -21,6 +21,6 @@ This queue keeps the build loop explicit:
 | external-render-upload-workers | Phase 5 | deferred | external | no | Run render/upload worker polling in a separate long-running environment. |
 | provider-capability-labels | Phase 4 | done | codex | no | Keep direct, manual, and pending providers visible in settings. |
 | manual-provider-handoff | Phase 4 | done | codex | no | Create external generation packets for manual or adapter-pending providers. |
-| provider-adapter-depth | Phase 4 | next | codex | yes | Expand provider-specific adapters after the preferred provider order is chosen. |
+| provider-adapter-depth | Phase 4 | skipped | codex | yes | Reopen when a preferred provider needs direct API automation. |
 
 The dashboard exposes the same queue summary through `GET /api/ops/work-queue`.

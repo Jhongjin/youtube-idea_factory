@@ -99,12 +99,12 @@ export const phaseWorkQueue: WorkQueueItem[] = [
     id: "provider-adapter-depth",
     phase: "Phase 4",
     title: "선택형 생성/TTS 제공자 어댑터 확장",
-    status: "next",
+    status: "skipped",
     owner: "codex",
     canSkip: true,
     reason:
-      "현재 설정 목록과 일부 어댑터가 준비되어 있고, 추가 제공자는 사용자가 선택하는 모델부터 깊게 붙이는 편이 안전합니다.",
-    nextAction: "fal.ai 영상, Inworld/OpenAI TTS 이후 Supertone, AIVIS, 기타 선택 제공자를 어댑터로 확장합니다.",
+      "설정 목록, 직접/수동/대기 표시, 수동 핸드오프가 준비되어 있어 현재 Phase를 막지 않습니다.",
+    nextAction: "사용자가 우선 제공자를 확정하면 해당 API 직접 어댑터 작업으로 다시 엽니다.",
   },
 ];
 

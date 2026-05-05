@@ -107,6 +107,8 @@ Build:
 
 Goal: Use performance data to improve future content.
 
+Status: public-metrics MVP complete. YouTube Analytics CTR, audience retention, and traffic-source metrics are deferred until the operator grants the required Analytics OAuth scope.
+
 Build:
 
 - analytics ingestion: started with YouTube Data API performance snapshots
@@ -114,3 +116,4 @@ Build:
 - title/thumbnail A/B learning log: started with deterministic variant log
 - channel memory updates: started with per-run memory update artifacts and a global dashboard index
 - dashboard feedback loop action: started with a one-click sequence for snapshot, insights, A/B log, and channel memory
+- work queue operations: started with dashboard-visible next/deferred/skipped tracking
