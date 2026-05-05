@@ -55,6 +55,15 @@ export type ProductionPackage = {
     uploaded_video_url?: string;
     updated_at: string;
   };
+  feedback_loop?: {
+    comment_count: number;
+    fetched_at: string;
+    like_count: number;
+    path: string;
+    source: string;
+    video_id: string;
+    view_count: number;
+  };
   asset_manifest?: {
     path: string;
     items: number;

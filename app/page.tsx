@@ -32,6 +32,7 @@ import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-butt
 import { LocalRenderButton } from "@/app/components/local-render-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
+import { PerformanceSnapshotButton } from "@/app/components/performance-snapshot-button";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { PublishingHandoffButton } from "@/app/components/publishing-handoff-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
@@ -543,6 +544,41 @@ function Inspector({
             </div>
           </div>
         </section>
+
+        <section className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">피드백 루프</h3>
+            <BarChart3 size={16} />
+          </div>
+          <div className="panel-body">
+            <div className="detail-stack">
+              <div className="detail-row">
+                <span>영상 ID</span>
+                <span>{run.package.feedback_loop?.video_id ?? "대기"}</span>
+              </div>
+              <div className="detail-row">
+                <span>조회수</span>
+                <span>{run.package.feedback_loop?.view_count ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>좋아요</span>
+                <span>{run.package.feedback_loop?.like_count ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>댓글</span>
+                <span>{run.package.feedback_loop?.comment_count ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>수집 시각</span>
+                <span>{run.package.feedback_loop?.fetched_at ?? "대기"}</span>
+              </div>
+              <PerformanceSnapshotButton
+                runId={run.id}
+                videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+              />
+            </div>
+          </div>
+        </section>
       </div>
     </aside>
   );
@@ -605,6 +641,13 @@ export default async function Home({
               <PublishingDraftButton runId={activeRun.id} />
               <PublishingHandoffButton runId={activeRun.id} />
               <YouTubeUploadJobButton runId={activeRun.id} />
+              <PerformanceSnapshotButton
+                runId={activeRun.id}
+                videoId={
+                  activeRun.package.publishing_handoff?.uploaded_video_id ??
+                  activeRun.package.feedback_loop?.video_id
+                }
+              />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>

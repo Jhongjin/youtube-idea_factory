@@ -286,6 +286,12 @@ When the `worker_jobs` Supabase table exists, upload job creation and worker exe
 Queue records are also readable at `GET /api/runs/:runId/worker-jobs`.
 Queued jobs can be cancelled, and failed or cancelled jobs can be retried from the dashboard operations panel.
 
+## Performance Snapshot
+
+The dashboard `성과 스냅샷` action uses the configured YouTube API key to fetch public video statistics for the uploaded video ID and writes `09-performance-snapshot.json` plus `09-performance-snapshot.md`.
+
+API route: `POST /api/runs/:runId/analytics/snapshot`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

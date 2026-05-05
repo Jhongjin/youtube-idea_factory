@@ -59,7 +59,7 @@ type VideosResponse = {
 const searchEndpoint = "https://www.googleapis.com/youtube/v3/search";
 const videosEndpoint = "https://www.googleapis.com/youtube/v3/videos";
 
-async function getApiKey() {
+export async function getYouTubeApiKey() {
   const settings = await getProviderSettings();
   const settingsApiKey = settings.roles.youtube.enabled
     ? settings.roles.youtube.apiKey?.trim()
@@ -119,7 +119,7 @@ export async function searchYouTubeVideos(input: YouTubeSearchInput) {
     throw new Error("Search query is required.");
   }
 
-  const apiKey = await getApiKey();
+  const apiKey = await getYouTubeApiKey();
   const maxResults = clampMaxResults(input.maxResults);
   const searchUrl = new URL(searchEndpoint);
   searchUrl.searchParams.set("key", apiKey);

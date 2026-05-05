@@ -109,7 +109,7 @@ Goal: Use performance data to improve future content.
 
 Build:
 
-- analytics ingestion
+- analytics ingestion: started with YouTube Data API performance snapshots
 - retention pattern comparison
 - title/thumbnail A/B learning log
 - channel memory updates
