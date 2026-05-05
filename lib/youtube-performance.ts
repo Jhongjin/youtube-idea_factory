@@ -67,6 +67,7 @@ type UploadLog = {
 };
 
 const videosEndpoint = "https://www.googleapis.com/youtube/v3/videos";
+const historyPath = "09-performance-history.json";
 const snapshotPath = "09-performance-snapshot.json";
 const snapshotMarkdownPath = "09-performance-snapshot.md";
 
@@ -170,6 +171,24 @@ function previousSnapshot(runId: string) {
   return readRunJson<PerformanceSnapshot>(runId, snapshotPath).catch(() => null);
 }
 
+async function appendHistory(runId: string, snapshot: PerformanceSnapshot) {
+  const history = await readRunJson<{ snapshots?: PerformanceSnapshot[]; version?: 1 }>(
+    runId,
+    historyPath,
+  ).catch(() => ({ version: 1 as const, snapshots: [] }));
+  const snapshots = [
+    ...(history.snapshots ?? []).filter((item) => item.video_id === snapshot.video_id),
+    snapshot,
+  ].slice(-100);
+  await writeRunJson(runId, historyPath, {
+    latest_fetched_at: snapshot.fetched_at,
+    snapshots,
+    version: 1,
+    video_id: snapshot.video_id,
+  });
+  return snapshots.length;
+}
+
 function snapshotMarkdown(snapshot: PerformanceSnapshot) {
   const previousLine = snapshot.previous
     ? `- Previous snapshot: ${snapshot.previous.fetched_at}`
@@ -244,12 +263,15 @@ export async function createPerformanceSnapshot(
     };
   }
 
+  const snapshotCount = await appendHistory(runId, snapshot);
+
   pkg.feedback_loop = {
     comment_count: statistics.comment_count,
     fetched_at: now,
     like_count: statistics.like_count,
     path: snapshotPath,
     source: snapshot.source,
+    snapshot_count: snapshotCount,
     video_id: videoId,
     view_count: statistics.view_count,
   };

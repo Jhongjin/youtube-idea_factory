@@ -572,6 +572,10 @@ function Inspector({
                 <span>수집 시각</span>
                 <span>{run.package.feedback_loop?.fetched_at ?? "대기"}</span>
               </div>
+              <div className="detail-row">
+                <span>누적 스냅샷</span>
+                <span>{run.package.feedback_loop?.snapshot_count ?? 0}</span>
+              </div>
               <PerformanceSnapshotButton
                 runId={run.id}
                 videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}

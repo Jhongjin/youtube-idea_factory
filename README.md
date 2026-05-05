@@ -288,7 +288,7 @@ Queued jobs can be cancelled, and failed or cancelled jobs can be retried from t
 
 ## Performance Snapshot
 
-The dashboard `성과 스냅샷` action uses the configured YouTube API key to fetch public video statistics for the uploaded video ID and writes `09-performance-snapshot.json` plus `09-performance-snapshot.md`.
+The dashboard `성과 스냅샷` action uses the configured YouTube API key to fetch public video statistics for the uploaded video ID and writes `09-performance-snapshot.json`, `09-performance-history.json`, and `09-performance-snapshot.md`.
 
 API route: `POST /api/runs/:runId/analytics/snapshot`.
 

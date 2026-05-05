@@ -61,6 +61,7 @@ export type ProductionPackage = {
     like_count: number;
     path: string;
     source: string;
+    snapshot_count?: number;
     video_id: string;
     view_count: number;
   };

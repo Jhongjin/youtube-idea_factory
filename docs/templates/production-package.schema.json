@@ -96,6 +96,7 @@
       "properties": {
         "path": { "type": "string" },
         "source": { "type": "string" },
+        "snapshot_count": { "type": "integer", "minimum": 0 },
         "video_id": { "type": "string" },
         "view_count": { "type": "integer", "minimum": 0 },
         "like_count": { "type": "integer", "minimum": 0 },
