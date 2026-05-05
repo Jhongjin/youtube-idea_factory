@@ -63,7 +63,8 @@ YOUTUBE_OAUTH_CLIENT_SECRET=...
 YOUTUBE_OAUTH_REFRESH_TOKEN=...
 ```
 
-See `docs/YOUTUBE_UPLOAD_WORKER.md` for the dry-run and upload commands.
+See `docs/YOUTUBE_UPLOAD_WORKER.md` for the dry-run and upload commands, and
+`docs/WORKER_QUEUE.md` for queue polling commands.
 
 ## Admin Mutation Gate
 
@@ -108,6 +109,9 @@ These routes remain local-worker or adapter-specific:
 - local MP4 render
 - external ffmpeg render worker execution
 - external YouTube upload worker execution
+
+External workers can run one queued job with `--next` or keep polling with `--poll`. They claim
+rows from `worker_jobs` and keep the queue status in sync with the JSON job artifacts.
 
 ## Readiness Checks
 

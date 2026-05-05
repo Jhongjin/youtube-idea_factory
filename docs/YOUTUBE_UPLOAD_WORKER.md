@@ -57,6 +57,21 @@ After the dry run succeeds:
 npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD --storage supabase
 ```
 
+If `public.worker_jobs` is enabled, a worker can claim the next queued upload job without a run id:
+
+```powershell
+npm run youtube:upload-worker -- --next --confirm RUN_YOUTUBE_UPLOAD --storage supabase
+```
+
+For a long-running worker process:
+
+```powershell
+npm run youtube:upload-worker -- --poll --confirm RUN_YOUTUBE_UPLOAD --storage supabase --interval-seconds 15
+```
+
+Use `--max-jobs <n>` to stop a polling worker after a fixed number of jobs. `--dry-run` is only
+supported with explicit `--run-id`; queue mode claims work and should only be used for real uploads.
+
 The worker writes:
 
 - `youtube-upload-log.json`

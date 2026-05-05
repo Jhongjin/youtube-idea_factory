@@ -15,6 +15,7 @@ This folder is the system of record for the project. Keep `AGENTS.md` short and 
 - `PHASE1_RUN_WORKFLOW.md`: manual-seed run generation workflow
 - `ADAPTERS.md`: provider adapter contracts and current implementation notes
 - `DEPLOYMENT.md`: Vercel/Supabase deployment, persistence, and environment readiness
+- `WORKER_QUEUE.md`: Supabase worker queue and external worker polling commands
 
 ## Templates
 

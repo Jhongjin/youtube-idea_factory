@@ -35,8 +35,12 @@ function usage() {
   node scripts/render-worker.mjs --run-id <runId> --confirm ${confirmToken}
 
 Options:
+  --next                    Claim and run the next queued render job.
+  --poll                    Keep polling queued render jobs.
   --storage local|supabase   Defaults to APP_STORAGE_MODE or local.
   --work-dir <path>          Optional temporary render workspace.
+  --interval-seconds <n>     Poll interval. Defaults to 15.
+  --max-jobs <n>             Stop after n jobs. Defaults to 1 for --next, unlimited for --poll.
 `);
 }
 
@@ -279,6 +283,116 @@ async function writeWorkerJobRecord(storageMode, runId, job, status) {
   ]);
 }
 
+async function writeLocalWorkerJobRecords(runId, records) {
+  await writeRunJson("local", runId, "worker-jobs.json", records);
+}
+
+function workerRecordTimestamp(record) {
+  const value = Date.parse(record?.queued_at || record?.updated_at || "");
+  return Number.isNaN(value) ? Number.MAX_SAFE_INTEGER : value;
+}
+
+async function listLocalQueuedWorkerJobs(kind) {
+  const entries = await fs.readdir(runsDir, { withFileTypes: true }).catch(() => []);
+  const records = [];
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+    const runId = entry.name;
+    const runRecords = await readWorkerJobRecords("local", runId).catch(() => []);
+    for (const record of runRecords) {
+      if (record?.kind === kind && record?.status === "queued") {
+        records.push(record);
+      }
+    }
+  }
+  return records.sort((a, b) => workerRecordTimestamp(a) - workerRecordTimestamp(b));
+}
+
+async function patchWorkerJobRecord(storageMode, record, patch) {
+  const now = new Date().toISOString();
+  const nextPatch = { ...patch, updated_at: now };
+  if (storageMode === "supabase") {
+    const query = new URLSearchParams({
+      id: `eq.${record.id}`,
+    });
+    const response = await supabaseRequest(`rest/v1/worker_jobs?${query}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify(nextPatch),
+    });
+    const rows = await response.json();
+    return rows[0] || { ...record, ...nextPatch };
+  }
+  const records = await readWorkerJobRecords("local", record.run_id).catch(() => []);
+  const nextRecord = { ...record, ...nextPatch };
+  await writeLocalWorkerJobRecords(record.run_id, records.map((item) => (item.id === record.id ? nextRecord : item)));
+  return nextRecord;
+}
+
+async function claimSupabaseWorkerJob(kind) {
+  const query = new URLSearchParams({
+    kind: `eq.${kind}`,
+    limit: "5",
+    order: "queued_at.asc",
+    select: "*",
+    status: "eq.queued",
+  });
+  const response = await supabaseRequest(`rest/v1/worker_jobs?${query}`);
+  const rows = await response.json();
+  for (const row of rows) {
+    const now = new Date().toISOString();
+    const claimQuery = new URLSearchParams({
+      id: `eq.${row.id}`,
+      status: "eq.queued",
+    });
+    const claimResponse = await supabaseRequest(`rest/v1/worker_jobs?${claimQuery}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+      },
+      body: JSON.stringify({
+        attempts: Number(row.attempts || 0) + 1,
+        last_error: "",
+        started_at: now,
+        status: "running",
+        updated_at: now,
+      }),
+    });
+    const claimed = await claimResponse.json();
+    if (claimed[0]) {
+      return claimed[0];
+    }
+  }
+  return null;
+}
+
+async function claimLocalWorkerJob(kind) {
+  const records = await listLocalQueuedWorkerJobs(kind);
+  const record = records[0];
+  if (!record) {
+    return null;
+  }
+  return patchWorkerJobRecord("local", record, {
+    attempts: Number(record.attempts || 0) + 1,
+    last_error: "",
+    started_at: new Date().toISOString(),
+    status: "running",
+  });
+}
+
+async function claimNextWorkerJob(storageMode, kind) {
+  if (storageMode === "supabase") {
+    return claimSupabaseWorkerJob(kind);
+  }
+  return claimLocalWorkerJob(kind);
+}
+
 async function downloadSupabaseObject(bucket, objectPath, outputPath) {
   const response = await supabaseRequest(
     `storage/v1/object/${encodeURIComponent(bucket)}/${encodePath(objectPath)}`,
@@ -503,18 +617,7 @@ async function markJob(storageMode, runId, job, pkg, status, patch = {}) {
   return { job: nextJob, pkg: nextPackage };
 }
 
-async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  const runId = args["run-id"];
-  const storageMode = args.storage || process.env.APP_STORAGE_MODE || "local";
-  if (!runId || args.confirm !== confirmToken) {
-    usage();
-    process.exitCode = 2;
-    return;
-  }
-  if (storageMode !== "local" && storageMode !== "supabase") {
-    throw new Error("--storage must be local or supabase.");
-  }
+async function runRenderJob({ args, runId, storageMode }) {
   assertSafeRunId(runId);
 
   let job = await readRunJson(storageMode, runId, "render-worker-job.json");
@@ -624,6 +727,76 @@ async function main() {
     }).catch(() => null);
     throw error;
   }
+}
+
+function pollIntervalMs(args) {
+  const seconds = Number(args["interval-seconds"] || 15);
+  return Math.max(1, Number.isFinite(seconds) ? seconds : 15) * 1000;
+}
+
+function maxJobs(args) {
+  if (args["max-jobs"] !== undefined) {
+    const value = Number(args["max-jobs"]);
+    return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
+  }
+  return args.poll === "true" ? Number.POSITIVE_INFINITY : 1;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function runQueuedMode(args, storageMode) {
+  const limit = maxJobs(args);
+  let processed = 0;
+  while (processed < limit) {
+    const claimed = await claimNextWorkerJob(storageMode, "render");
+    if (!claimed) {
+      const idle = { kind: "render", status: "idle", storageMode };
+      console.log(JSON.stringify(idle, null, 2));
+      if (args.poll !== "true") {
+        return;
+      }
+      await sleep(pollIntervalMs(args));
+      continue;
+    }
+
+    try {
+      await runRenderJob({ args, runId: claimed.run_id, storageMode });
+      processed += 1;
+    } catch (error) {
+      await patchWorkerJobRecord(storageMode, claimed, {
+        completed_at: new Date().toISOString(),
+        last_error: error instanceof Error ? error.message : String(error),
+        status: "failed",
+      }).catch(() => null);
+      throw error;
+    }
+  }
+}
+
+async function main() {
+  const args = parseArgs(process.argv.slice(2));
+  const runId = args["run-id"];
+  const storageMode = args.storage || process.env.APP_STORAGE_MODE || "local";
+  if (args.confirm !== confirmToken) {
+    usage();
+    process.exitCode = 2;
+    return;
+  }
+  if (storageMode !== "local" && storageMode !== "supabase") {
+    throw new Error("--storage must be local or supabase.");
+  }
+  if (args.next === "true" || args.poll === "true") {
+    await runQueuedMode(args, storageMode);
+    return;
+  }
+  if (!runId) {
+    usage();
+    process.exitCode = 2;
+    return;
+  }
+  await runRenderJob({ args, runId, storageMode });
 }
 
 main().catch((error) => {

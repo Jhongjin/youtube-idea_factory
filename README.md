@@ -239,6 +239,13 @@ An external worker can process the queued render job with:
 npm run render:worker -- --run-id <run-id> --confirm RUN_RENDER_WORKER
 ```
 
+Or let the worker claim the next queued render job from `worker_jobs`:
+
+```powershell
+npm run render:worker -- --next --confirm RUN_RENDER_WORKER --storage supabase
+npm run render:worker -- --poll --confirm RUN_RENDER_WORKER --storage supabase --interval-seconds 15
+```
+
 For Supabase-backed production runs, run the worker in an environment that has `APP_STORAGE_MODE=supabase`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_ASSETS_BUCKET`.
 
 ## Draft Publishing
@@ -263,6 +270,13 @@ An external worker can process the queued upload job with:
 ```powershell
 npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD --storage supabase --dry-run
 npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD --storage supabase
+```
+
+Or let the worker claim the next queued upload job from `worker_jobs`:
+
+```powershell
+npm run youtube:upload-worker -- --next --confirm RUN_YOUTUBE_UPLOAD --storage supabase
+npm run youtube:upload-worker -- --poll --confirm RUN_YOUTUBE_UPLOAD --storage supabase --interval-seconds 15
 ```
 
 The upload worker needs `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`, and `YOUTUBE_OAUTH_REFRESH_TOKEN` with YouTube upload scope. Jobs default to private visibility unless the upload job explicitly requests another privacy status.
