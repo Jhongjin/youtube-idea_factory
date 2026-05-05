@@ -21,6 +21,7 @@ import {
   Wand2,
 } from "lucide-react";
 import Link from "next/link";
+import { AbLearningLogButton } from "@/app/components/ab-learning-log-button";
 import { AnalysisDraftButton } from "@/app/components/analysis-draft-button";
 import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
 import { AssetGenerationConsole } from "@/app/components/asset-generation-console";
@@ -117,6 +118,12 @@ const feedbackStatusCopy: Record<string, string> = {
   needs_more_data: "데이터 필요",
   strong_signal: "강한 신호",
   watch: "주의 관찰",
+};
+
+const learningStatusCopy: Record<string, string> = {
+  draft: "초안",
+  needs_metrics: "지표 필요",
+  ready_for_comparison: "비교 준비",
 };
 
 const formatCopy: Record<string, string> = {
@@ -589,6 +596,7 @@ function Inspector({
                 videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
               />
               <FeedbackInsightsButton runId={run.id} />
+              <AbLearningLogButton runId={run.id} />
               <div className="detail-row">
                 <span>인사이트</span>
                 <span>
@@ -601,6 +609,19 @@ function Inspector({
               <div className="detail-row">
                 <span>추천 항목</span>
                 <span>{run.package.feedback_insights?.recommendations ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>A/B 로그</span>
+                <span>
+                  {run.package.learning_log?.status
+                    ? learningStatusCopy[run.package.learning_log.status] ??
+                      run.package.learning_log.status
+                    : "대기"}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span>변형 카드</span>
+                <span>{run.package.learning_log?.variants ?? 0}</span>
               </div>
             </div>
           </div>
@@ -675,6 +696,7 @@ export default async function Home({
                 }
               />
               <FeedbackInsightsButton runId={activeRun.id} />
+              <AbLearningLogButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>

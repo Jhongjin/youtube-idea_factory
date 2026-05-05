@@ -71,6 +71,12 @@ export type ProductionPackage = {
     status: "needs_more_data" | "watch" | "learning" | "strong_signal" | string;
     updated_at: string;
   };
+  learning_log?: {
+    path: string;
+    status: "draft" | "needs_metrics" | "ready_for_comparison" | string;
+    updated_at: string;
+    variants: number;
+  };
   asset_manifest?: {
     path: string;
     items: number;

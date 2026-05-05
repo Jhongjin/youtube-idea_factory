@@ -296,6 +296,10 @@ The dashboard `피드백 인사이트` action turns the stored snapshot history 
 
 API route: `POST /api/runs/:runId/analytics/insights`.
 
+The dashboard `A/B 로그` action creates `11-ab-learning-log.json` and `11-ab-learning-log.md` from title candidates, thumbnail prompt, hook hypothesis, and current feedback metrics. It is a deterministic experiment log for future CTR/retention comparisons.
+
+API route: `POST /api/runs/:runId/analytics/learning-log`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.
