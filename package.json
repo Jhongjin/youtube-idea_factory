@@ -6,6 +6,7 @@
     "dev": "node scripts/next-realpath.cjs dev",
     "build": "node scripts/next-realpath.cjs build",
     "start": "node scripts/next-realpath.cjs start",
+    "ops:status": "node scripts/ops-status.mjs",
     "render:worker": "node scripts/render-worker.mjs",
     "youtube:upload-worker": "node scripts/youtube-upload-worker.mjs",
     "typecheck": "node scripts/next-realpath.cjs typegen && tsc --noEmit"

@@ -65,6 +65,16 @@ export const phaseWorkQueue: WorkQueueItem[] = [
       "Google Cloud에서 YouTube Analytics API를 활성화하고 analytics.readonly 권한으로 refresh token을 발급합니다.",
   },
   {
+    id: "operator-status-cli",
+    phase: "Phase 5",
+    title: "운영자 run id/큐 상태 CLI",
+    status: "done",
+    owner: "codex",
+    canSkip: false,
+    reason: "PowerShell에서 예시 플레이스홀더를 그대로 실행하지 않도록 실제 run id와 큐 상태를 보여줘야 합니다.",
+    nextAction: "워커 실행 전 npm run ops:status -- --storage supabase로 실제 run id를 확인합니다.",
+  },
+  {
     id: "external-render-upload-workers",
     phase: "Phase 5",
     title: "외부 렌더/업로드 워커 상시 실행",

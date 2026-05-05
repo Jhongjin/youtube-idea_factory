@@ -290,6 +290,7 @@ The dashboard inspector reads `render-worker-job.json`, `render-log.json`, `yout
 When the `worker_jobs` Supabase table exists, upload job creation and worker execution also update that durable queue record. If the table is not applied yet, the JSON artifact flow still works.
 Queue records are also readable at `GET /api/runs/:runId/worker-jobs`.
 Queued jobs can be cancelled, and failed or cancelled jobs can be retried from the dashboard operations panel.
+Use `npm run ops:status -- --storage supabase` to list real run IDs and recent worker jobs before running worker commands.
 
 ## Performance Snapshot
 

@@ -19,6 +19,17 @@ JSON handoff artifacts used by the original manual CLI flow.
 The queue is intentionally an execution index. The canonical job payloads remain in run artifacts
 such as `render-worker-job.json` and `youtube-upload-job.json`.
 
+## Operator Status
+
+List recent run IDs and queued worker jobs before running a worker command:
+
+```powershell
+npm run ops:status -- --storage supabase
+```
+
+The command prints real `run-id` values and an upload dry-run example so placeholders such as
+`<run-id>` are not pasted into PowerShell.
+
 ## Render Worker
 
 Direct run:
