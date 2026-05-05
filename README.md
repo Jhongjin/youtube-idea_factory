@@ -304,6 +304,8 @@ The dashboard `채널 메모리` action creates `12-channel-memory-update.json` 
 
 API route: `POST /api/runs/:runId/analytics/channel-memory`.
 
+The dashboard sidebar also shows a channel memory index aggregated across all runs with memory updates. It is available as `GET /api/analytics/channel-memory-index`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

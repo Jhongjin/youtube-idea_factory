@@ -1,6 +1,7 @@
 import {
   AlertTriangle,
   BarChart3,
+  Brain,
   CheckCircle2,
   Clapperboard,
   FileSearch,
@@ -56,6 +57,7 @@ import { WorkerStatusPanel } from "@/app/components/worker-status-panel";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
+import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
@@ -161,7 +163,37 @@ function StatusPill({ status }: { status: "done" | "review" | "blocked" | "pendi
   );
 }
 
-function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSummary }) {
+function ChannelMemoryIndexPanel({ index }: { index: ChannelMemoryIndex }) {
+  const topExperiment = index.next_experiments[0]?.text ?? "아직 누적 실험 메모리가 없습니다";
+  return (
+    <section className="nav-section channel-memory-index">
+      <h2>채널 메모리</h2>
+      <div className="memory-index-card">
+        <div className="memory-index-heading">
+          <Brain size={16} />
+          <strong>
+            {index.ready_update_count}/{index.run_count} 준비
+          </strong>
+        </div>
+        <p>{topExperiment}</p>
+        <div className="memory-index-stats">
+          <span>업데이트 {index.update_count}</span>
+          <span>대기 {index.skipped_runs}</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Sidebar({
+  activeRun,
+  memoryIndex,
+  runs,
+}: {
+  activeRun?: RunSummary;
+  memoryIndex: ChannelMemoryIndex;
+  runs: RunSummary[];
+}) {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -205,6 +237,8 @@ function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSumma
           {runs.length === 0 ? <p className="muted">실행 기록이 없습니다</p> : null}
         </div>
       </section>
+
+      <ChannelMemoryIndexPanel index={memoryIndex} />
 
       <section className="nav-section">
         <h2>스킬</h2>
@@ -657,6 +691,7 @@ export default async function Home({
   searchParams?: Promise<{ run?: string }>;
 }) {
   const runs = await getRuns();
+  const memoryIndex = await getChannelMemoryIndex(runs);
   const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
@@ -669,7 +704,7 @@ export default async function Home({
 
   return (
     <div className="shell">
-      <Sidebar runs={runs} activeRun={activeRun} />
+      <Sidebar activeRun={activeRun} memoryIndex={memoryIndex} runs={runs} />
       {activeRun ? (
         <main className="main">
           <div className="topbar">
