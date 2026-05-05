@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getAppStorageMode } from "@/lib/storage-mode";
-import { supabaseEq, supabaseRest } from "@/lib/supabase-rest";
+import { isSupabaseMissingTableError, supabaseEq, supabaseRest } from "@/lib/supabase-rest";
 
 export type ApprovalGate = "generation" | "render" | "publish";
 
@@ -105,6 +105,11 @@ export async function getRunApprovals(runId: string): Promise<RunApprovals> {
         run_id: supabaseEq(runId),
         select: "gate,approved,approved_by,approved_at,notes",
       },
+    }).catch((error) => {
+      if (isSupabaseMissingTableError(error)) {
+        return [];
+      }
+      throw error;
     });
     const approvals = cloneDefaults();
     for (const row of rows) {

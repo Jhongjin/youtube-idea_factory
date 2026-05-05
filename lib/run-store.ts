@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getAppStorageMode } from "@/lib/storage-mode";
-import { supabaseEq, supabaseRest } from "@/lib/supabase-rest";
+import { isSupabaseMissingTableError, supabaseEq, supabaseRest } from "@/lib/supabase-rest";
 import type { ProductionPackage, RunSummary } from "@/lib/runs";
 
 export type RunFileInfo = {
@@ -108,6 +108,11 @@ export async function listRunSummaries(): Promise<RunSummary[]> {
         order: "updated_at.desc",
         select: "id,package,updated_at",
       },
+    }).catch((error) => {
+      if (isSupabaseMissingTableError(error)) {
+        return [];
+      }
+      throw error;
     });
     return rows.map((row) => ({
       id: row.id,
@@ -342,4 +347,3 @@ export async function getRunFileInfo(runId: string, filePath: string): Promise<R
   const stat = await fs.stat(localRunFilePath(runId, normalized)).catch(() => null);
   return stat ? { size: stat.size, updatedAt: stat.mtime.toISOString() } : null;
 }
-

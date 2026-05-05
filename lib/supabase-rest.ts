@@ -27,6 +27,11 @@ export function supabaseEq(value: string) {
   return `eq.${value}`;
 }
 
+export function isSupabaseMissingTableError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("PGRST205") || message.includes("Could not find the table");
+}
+
 export async function supabaseRest<T>(
   table: string,
   options: SupabaseRestOptions = {},
@@ -61,4 +66,3 @@ export async function supabaseRest<T>(
   }
   return JSON.parse(text) as T;
 }
-

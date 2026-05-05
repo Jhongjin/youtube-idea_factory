@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getAppStorageMode } from "@/lib/storage-mode";
-import { supabaseRest } from "@/lib/supabase-rest";
+import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
 import {
   isProviderRoleId,
   providerRoles,
@@ -104,6 +104,11 @@ export async function getProviderSettings(): Promise<StoredProviderSettings> {
       query: {
         select: "role,enabled,provider,model,api_key,base_url,notes,updated_at",
       },
+    }).catch((error) => {
+      if (isSupabaseMissingTableError(error)) {
+        return [];
+      }
+      throw error;
     });
     const settings = createDefaultSettings();
     for (const row of rows) {
