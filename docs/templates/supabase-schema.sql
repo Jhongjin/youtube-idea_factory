@@ -77,6 +77,10 @@ create table if not exists public.provider_settings (
   updated_at timestamptz not null default now()
 );
 
+insert into storage.buckets (id, name, public)
+values ('youtube-assets', 'youtube-assets', false)
+on conflict (id) do nothing;
+
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql

@@ -2,8 +2,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { getRunApprovals } from "@/lib/approvals";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
+import { assetExists } from "@/lib/asset-storage";
+import { readRunJson, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
-import { isSupabaseStorageMode } from "@/lib/storage-mode";
+import { getAppStorageMode } from "@/lib/storage-mode";
 
 type StoryboardScene = {
   scene_id?: string;
@@ -81,29 +83,11 @@ export type RenderManifestResult = {
   renderReady: boolean;
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
 const artifactsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "artifacts");
 
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
-  }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
-}
-
-async function fileExists(assetPath: string) {
-  try {
-    await fs.access(path.resolve(/* turbopackIgnore: true */ process.cwd(), assetPath));
-    return true;
-  } catch {
-    return false;
   }
 }
 
@@ -147,7 +131,11 @@ function assetByKind(manifest: AssetManifest, kind: AssetManifestItem["kind"]) {
   return manifest.items.find((item) => item.kind === kind);
 }
 
-async function assetBlockers(item: AssetManifestItem | undefined, label: string) {
+async function assetBlockers(
+  runId: string,
+  item: AssetManifestItem | undefined,
+  label: string,
+) {
   if (!item) {
     return [`${label} asset is missing from asset-manifest.json`];
   }
@@ -158,7 +146,7 @@ async function assetBlockers(item: AssetManifestItem | undefined, label: string)
   const outputPath = assetPath(item);
   if (!outputPath) {
     blockers.push(`${label} asset path is empty`);
-  } else if (item.status === "generated" && !(await fileExists(outputPath))) {
+  } else if (item.status === "generated" && !(await assetExists(runId, outputPath))) {
     blockers.push(`${label} file does not exist: ${outputPath}`);
   }
   return blockers;
@@ -174,19 +162,10 @@ function sceneDuration(
 
 export async function createRenderManifest(runId: string): Promise<RenderManifestResult> {
   assertSafeRunId(runId);
-  if (isSupabaseStorageMode()) {
-    throw new Error("Render manifest file checks currently require local artifact storage. Supabase Storage support is next.");
-  }
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const manifestPath = path.join(runDir, "asset-manifest.json");
   const [pkg, manifest, approvals] = await Promise.all([
-    loadJson<ProductionPackage>(packagePath),
-    loadJson<AssetManifest>(manifestPath).catch((error: NodeJS.ErrnoException) => {
-      if (error.code === "ENOENT") {
-        throw new Error("Asset manifest not found. Build assets first.");
-      }
-      throw error;
+    readRunJson<ProductionPackage>(runId, "production-package.json"),
+    readRunJson<AssetManifest>(runId, "asset-manifest.json").catch(() => {
+      throw new Error("Asset manifest not found. Build assets first.");
     }),
     getRunApprovals(runId),
   ]);
@@ -202,7 +181,7 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
     const scene = scenes.find((candidate) => candidate.scene_id === sceneId) ?? scenes[index];
     const asset = renderAssetForScene(manifest, sceneId);
     const duration = sceneDuration(scene, asset, fallbackDuration);
-    const blockers = await assetBlockers(asset, `scene ${sceneId}`);
+    const blockers = await assetBlockers(runId, asset, `scene ${sceneId}`);
     timeline.push({
       scene_id: sceneId,
       start_seconds: cursor,
@@ -222,9 +201,9 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
   const subtitles = assetByKind(manifest, "subtitles");
   const bgm = assetByKind(manifest, "bgm");
   const [voiceBlockers, subtitleBlockers, rawBgmBlockers] = await Promise.all([
-    assetBlockers(voice, "voice"),
-    assetBlockers(subtitles, "subtitles"),
-    assetBlockers(bgm, "bgm"),
+    assetBlockers(runId, voice, "voice"),
+    assetBlockers(runId, subtitles, "subtitles"),
+    assetBlockers(runId, bgm, "bgm"),
   ]);
   const bgmBlockers = bgm?.status === "generated" ? rawBgmBlockers : [];
   const renderApproval = approvals.render;
@@ -285,8 +264,10 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
     },
   };
 
-  await fs.mkdir(path.join(artifactsDir, runId, "renders"), { recursive: true });
-  await writeJson(path.join(runDir, "render-manifest.json"), renderManifest);
+  if (getAppStorageMode() === "local") {
+    await fs.mkdir(path.join(artifactsDir, runId, "renders"), { recursive: true });
+  }
+  await writeRunJson(runId, "render-manifest.json", renderManifest);
   pkg.render_manifest = {
     path: "render-manifest.json",
     timeline_items: renderManifest.summary.timeline_items,
@@ -295,7 +276,7 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
     render_ready: renderManifest.summary.render_ready,
     updated_at: now,
   };
-  await writeJson(packagePath, pkg);
+  await writeRunJson(runId, "production-package.json", pkg);
 
   return {
     file: "render-manifest.json",

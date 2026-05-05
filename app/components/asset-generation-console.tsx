@@ -24,7 +24,7 @@ const assetKindCopy: Record<string, string> = {
 };
 
 function compactPath(value: string) {
-  return value.replace(/^artifacts\//, "");
+  return value.replace(/^supabase:\/\/[^/]+\//, "").replace(/^artifacts\//, "");
 }
 
 function AssetStatus({ item }: { item: AssetGenerationStateItem }) {

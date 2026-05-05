@@ -1,9 +1,8 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import type { AssetManifest } from "@/lib/asset-manifest";
+import { normalizeRegisteredAssetPath } from "@/lib/asset-storage";
 import { createRenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
-import { isSupabaseStorageMode } from "@/lib/storage-mode";
+import { readRunJson, writeRunJson } from "@/lib/run-store";
 
 export type RegisterAssetRequest = {
   assetId: string;
@@ -18,44 +17,9 @@ export type RegisterAssetResult = {
   status: "generated";
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-const artifactsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "artifacts");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
-  }
-}
-
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
-}
-
-function normalizeArtifactPath(runId: string, artifactPath: string) {
-  const trimmed = artifactPath.trim().replace(/\\/g, "/");
-  if (!trimmed) {
-    throw new Error("artifactPath is required.");
-  }
-
-  const resolved = path.resolve(/* turbopackIgnore: true */ process.cwd(), trimmed);
-  const root = path.join(artifactsDir, runId);
-  const relative = path.relative(root, resolved);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    throw new Error("Registered asset path must stay inside artifacts/:runId.");
-  }
-
-  return path.relative(/* turbopackIgnore: true */ process.cwd(), resolved).replace(/\\/g, "/");
-}
-
-async function assertFileExists(relativePath: string) {
-  const resolved = path.resolve(/* turbopackIgnore: true */ process.cwd(), relativePath);
-  const stat = await fs.stat(resolved).catch(() => null);
-  if (!stat?.isFile()) {
-    throw new Error(`Registered asset file does not exist: ${relativePath}`);
   }
 }
 
@@ -64,32 +28,25 @@ export async function registerManualAsset(
   request: RegisterAssetRequest,
 ): Promise<RegisterAssetResult> {
   assertSafeRunId(runId);
-  if (isSupabaseStorageMode()) {
-    throw new Error("Manual asset registration currently requires local artifact storage. Supabase Storage support is next.");
-  }
   const assetId = request.assetId?.trim();
   if (!assetId) {
     throw new Error("assetId is required.");
   }
 
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
-  const manifestPath = path.join(runDir, "asset-manifest.json");
   const [pkg, manifest] = await Promise.all([
-    loadJson<ProductionPackage>(packagePath),
-    loadJson<AssetManifest>(manifestPath),
+    readRunJson<ProductionPackage>(runId, "production-package.json"),
+    readRunJson<AssetManifest>(runId, "asset-manifest.json"),
   ]);
   const item = manifest.items.find((candidate) => candidate.id === assetId);
   if (!item) {
     throw new Error(`Asset not found: ${assetId}`);
   }
 
-  const relativePath = normalizeArtifactPath(runId, request.artifactPath);
-  await assertFileExists(relativePath);
+  const assetPath = await normalizeRegisteredAssetPath(runId, request.artifactPath);
 
   const now = new Date().toISOString();
   item.status = "generated";
-  item.actual_path = relativePath;
+  item.actual_path = assetPath;
   item.provider = request.provider?.trim() || "manual";
   item.model = request.model?.trim() || "external-file";
   item.generated_at = now;
@@ -106,12 +63,15 @@ export async function registerManualAsset(
     updated_at: now,
   };
 
-  await Promise.all([writeJson(manifestPath, manifest), writeJson(packagePath, pkg)]);
+  await Promise.all([
+    writeRunJson(runId, "asset-manifest.json", manifest),
+    writeRunJson(runId, "production-package.json", pkg),
+  ]);
   await createRenderManifest(runId).catch(() => null);
 
   return {
     assetId,
-    path: relativePath,
+    path: assetPath,
     status: "generated",
   };
 }

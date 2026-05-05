@@ -16,13 +16,14 @@ Implemented Supabase-backed state:
 - markdown/JSON run artifacts through `run_artifacts`
 - approval gates through `run_approvals`
 - provider API settings through `provider_settings`
+- generated image/TTS bytes and manually registered media pointers through Supabase Storage
 
 Still local or adapter-specific:
 
-- generated binary media files under `artifacts/`
 - local ffmpeg rendering
 - final YouTube upload adapter
 - provider-specific video generation adapters
+- subtitle/BGM generation adapters
 
 ## Vercel Notes
 
@@ -41,6 +42,7 @@ APP_STORAGE_MODE=supabase
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_API_KEY=...
 ```
 
@@ -48,7 +50,7 @@ Keep provider API keys either in Vercel Environment Variables or the dashboard p
 
 ## Supabase Notes
 
-Use Supabase for durable run state, approvals, provider settings, logs, and later media storage pointers. The seed schema lives at:
+Use Supabase for durable run state, approvals, provider settings, logs, and media storage pointers. The seed schema lives at:
 
 - `docs/templates/supabase-schema.sql`
 
@@ -59,7 +61,7 @@ Initial policy:
 3. Do not add public table policies until the auth model is decided.
 4. Use `SUPABASE_SERVICE_ROLE_KEY` only from server-side adapters.
 5. Treat `provider_settings.api_key` as server-only secret material. Move to Supabase Vault or a dedicated secrets manager before multi-user operation.
-6. Store large binary media in Supabase Storage or object storage, with table rows tracking storage paths and provenance.
+6. Store generated image/TTS binaries in Supabase Storage. By default the server adapters use the private `youtube-assets` bucket unless `SUPABASE_ASSETS_BUCKET` is set.
 
 When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of local files:
 
@@ -71,14 +73,11 @@ When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of l
 - `POST /api/runs/:runId/sources/import`
 - `POST /api/runs/:runId/sources/enrich`
 - `GET/PUT /api/runs/:runId/transcripts/:sourceKey`
-- text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, and generation queue
+- text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, generation queue, image/TTS generation, manual media registration, and render manifest checks
 
 These routes remain local-artifact-only and return explicit errors in Supabase mode until object storage/render workers are added:
 
-- image/TTS generation adapters
-- manual asset registration
 - subtitle asset file generation
-- render manifest file checks
 - local MP4 render
 - publishing handoff file checks
 
