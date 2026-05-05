@@ -191,6 +191,10 @@ The inspector `Generation Console` lists queue status and can invoke the guarded
 
 It can also register an already-created file under `artifacts/:runId` against any asset ID. This keeps external image, video, voice, subtitle, or BGM tools usable before every provider-specific adapter exists.
 
+The `수동 핸드오프` action creates `manual-provider-handoff.json` and `manual-provider-handoff.md` for selected providers that are manual or adapter-pending. It never calls paid APIs; it packages prompts, narration, expected paths, and registration hints for external tools such as Supertone, AIVIS, Vrew, CapCut, Midjourney, or other manual workflows.
+
+API route: `POST /api/runs/:runId/assets/manual-handoff`.
+
 ## Generate Image Assets
 
 Direct image generation is available as a guarded adapter route for OpenAI only:

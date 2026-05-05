@@ -65,6 +65,21 @@ export function AssetGenerationConsole({
   const [loadingId, setLoadingId] = useState("");
   const [message, setMessage] = useState("");
 
+  async function createManualHandoff() {
+    setMessage("");
+    setLoadingId("manual-handoff");
+    const response = await fetch(`/api/runs/${runId}/assets/manual-handoff`, {
+      method: "POST",
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error ?? "수동 제공자 핸드오프 생성에 실패했습니다.");
+      setLoadingId("");
+      return;
+    }
+    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+  }
+
   async function generateImage(assetId: string) {
     setMessage("");
     const confirmation = window.prompt(`${imageConfirmToken}를 입력하면 이미지를 생성합니다.`);
@@ -182,6 +197,15 @@ export function AssetGenerationConsole({
         <span>준비 {state.summary?.ready ?? 0}</span>
         <span>생성 {state.summary?.generated ?? 0}</span>
         <span>차단 {state.summary?.blocked ?? 0}</span>
+        <button
+          className="text-button"
+          disabled={!state.manifestExists || Boolean(loadingId)}
+          onClick={createManualHandoff}
+          type="button"
+        >
+          {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
+          수동 핸드오프
+        </button>
       </div>
 
       <div className="asset-control-grid">

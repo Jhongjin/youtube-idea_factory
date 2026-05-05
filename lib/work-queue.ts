@@ -86,6 +86,16 @@ export const phaseWorkQueue: WorkQueueItem[] = [
     nextAction: "실제 API 어댑터는 사용자가 우선 제공자를 선택한 뒤 깊게 붙입니다.",
   },
   {
+    id: "manual-provider-handoff",
+    phase: "Phase 4",
+    title: "수동 제공자 핸드오프 산출물",
+    status: "done",
+    owner: "codex",
+    canSkip: false,
+    reason: "직접 어댑터가 없는 제공자도 안전하게 외부 생성 후 다시 등록할 수 있어야 합니다.",
+    nextAction: "우선순위 제공자가 확정되면 해당 API 직접 어댑터를 추가합니다.",
+  },
+  {
     id: "provider-adapter-depth",
     phase: "Phase 4",
     title: "선택형 생성/TTS 제공자 어댑터 확장",

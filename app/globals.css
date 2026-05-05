@@ -1572,6 +1572,11 @@ a {
   gap: 6px;
 }
 
+.asset-console-summary .text-button {
+  grid-column: 1 / -1;
+  justify-content: center;
+}
+
 .asset-console-summary span {
   display: grid;
   min-height: 30px;

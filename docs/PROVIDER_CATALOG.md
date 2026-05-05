@@ -8,6 +8,8 @@ The settings page labels every provider as `direct`, `manual`, or `pending`:
 - `manual`: the provider is useful, but the workflow is handled outside the dashboard or through file registration.
 - `pending`: the provider is selectable, but a direct adapter still needs to be built.
 
+For `manual` or `pending` providers, use the dashboard `수동 핸드오프` action to create an external generation packet before registering completed files back into the asset manifest.
+
 ## LLM
 
 - OpenAI
