@@ -20,6 +20,7 @@ function Require-Dir {
 Require-File "AGENTS.md"
 Require-File "README.md"
 Require-File "MEMORY.md"
+Require-File "vercel.json"
 Require-File "docs\INDEX.md"
 Require-File "docs\PRODUCT_SPEC.md"
 Require-File "docs\PIPELINE.md"

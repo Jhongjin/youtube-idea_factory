@@ -84,6 +84,8 @@ python .\scripts\check_deployment_ready.py --target vercel
 
 The dashboard also exposes `GET /api/health/deployment`. Vercel production should use durable storage such as Supabase; `APP_STORAGE_MODE=local` is only for local harness work.
 
+The repository includes `vercel.json` to pin the project to the Next.js preset and clear custom Output Directory overrides. If a Vercel project setting points Output Directory to `public`, the deployment can fail after a successful Next build.
+
 ## Enrich Source Metadata
 
 ```powershell

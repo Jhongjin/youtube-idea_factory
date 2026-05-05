@@ -13,7 +13,7 @@ export type CreateRunInput = {
   seedUrls: string[];
 };
 
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
+const runsDir = path.join(/*turbopackIgnore: true*/ process.cwd(), "runs");
 
 function slugify(value: string) {
   const slug = value
@@ -291,7 +291,7 @@ export async function createRun(input: CreateRunInput) {
 
   return {
     id: runId,
-    path: path.relative(/* turbopackIgnore: true */ process.cwd(), runDir),
+    path: path.relative(/*turbopackIgnore: true*/ process.cwd(), runDir),
     package: pkg,
     updatedAt: now.toISOString(),
   };

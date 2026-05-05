@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -44,6 +45,23 @@ def current_branch() -> str:
         return ""
 
 
+def vercel_config_failures() -> list[str]:
+    path = ROOT / "vercel.json"
+    if not path.exists():
+        return ["Missing deployment file: vercel.json"]
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"Invalid vercel.json: {exc}"]
+
+    failures: list[str] = []
+    if config.get("framework") != "nextjs":
+        failures.append("vercel.json must set framework to nextjs")
+    if config.get("outputDirectory", "__missing__") is not None:
+        failures.append("vercel.json must set outputDirectory to null to clear static output overrides")
+    return failures
+
+
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check deployment readiness.")
     parser.add_argument("--target", choices=["local", "vercel"], default="vercel")
@@ -71,6 +89,7 @@ def main(argv: list[str]) -> int:
     for relative in required_files:
         if not (ROOT / relative).exists():
             blockers.append(f"Missing deployment file: {relative}")
+    blockers.extend(vercel_config_failures())
 
     if args.target == "vercel" and storage_mode == "local":
         blockers.append("APP_STORAGE_MODE=local is not durable on Vercel; use supabase before production operations.")

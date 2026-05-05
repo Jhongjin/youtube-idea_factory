@@ -16,6 +16,9 @@ This is correct for local harness work, but not durable on Vercel serverless fun
 - Preview deployments are created from non-production branches such as `codex/dashboard-mvp`.
 - Environment variables are configured per environment in Vercel Project Settings.
 - Vercel environment variable changes apply to new deployments, not already-built deployments.
+- `vercel.json` pins the framework preset to `nextjs` and clears the custom output directory override so a project-level static output override such as `public` does not break Next.js deployments.
+
+If Vercel shows `No Output Directory named "public" found`, check Project Settings and remove any Output Directory override, or keep the repository `vercel.json` override in place with `outputDirectory: null`.
 
 Recommended production environment variables:
 
