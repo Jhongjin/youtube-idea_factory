@@ -300,6 +300,10 @@ The dashboard `A/B 로그` action creates `11-ab-learning-log.json` and `11-ab-l
 
 API route: `POST /api/runs/:runId/analytics/learning-log`.
 
+The dashboard `채널 메모리` action creates `12-channel-memory-update.json` and `12-channel-memory-update.md`, turning feedback insights, A/B variants, QA warnings, title patterns, thumbnail patterns, and hook patterns into durable channel learning notes.
+
+API route: `POST /api/runs/:runId/analytics/channel-memory`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

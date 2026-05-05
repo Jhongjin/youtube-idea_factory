@@ -27,6 +27,7 @@ import { AnalysisRefineButton } from "@/app/components/analysis-refine-button";
 import { AssetGenerationConsole } from "@/app/components/asset-generation-console";
 import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
+import { ChannelMemoryButton } from "@/app/components/channel-memory-button";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { FeedbackInsightsButton } from "@/app/components/feedback-insights-button";
 import { GenerationQueueButton } from "@/app/components/generation-queue-button";
@@ -124,6 +125,11 @@ const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
   ready_for_comparison: "비교 준비",
+};
+
+const memoryStatusCopy: Record<string, string> = {
+  draft: "초안",
+  ready: "준비됨",
 };
 
 const formatCopy: Record<string, string> = {
@@ -597,6 +603,7 @@ function Inspector({
               />
               <FeedbackInsightsButton runId={run.id} />
               <AbLearningLogButton runId={run.id} />
+              <ChannelMemoryButton runId={run.id} />
               <div className="detail-row">
                 <span>인사이트</span>
                 <span>
@@ -622,6 +629,19 @@ function Inspector({
               <div className="detail-row">
                 <span>변형 카드</span>
                 <span>{run.package.learning_log?.variants ?? 0}</span>
+              </div>
+              <div className="detail-row">
+                <span>채널 메모리</span>
+                <span>
+                  {run.package.channel_memory_update?.status
+                    ? memoryStatusCopy[run.package.channel_memory_update.status] ??
+                      run.package.channel_memory_update.status
+                    : "대기"}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span>메모리 항목</span>
+                <span>{run.package.channel_memory_update?.items ?? 0}</span>
               </div>
             </div>
           </div>
@@ -697,6 +717,7 @@ export default async function Home({
               />
               <FeedbackInsightsButton runId={activeRun.id} />
               <AbLearningLogButton runId={activeRun.id} />
+              <ChannelMemoryButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>

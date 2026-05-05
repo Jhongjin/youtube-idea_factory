@@ -77,6 +77,12 @@ export type ProductionPackage = {
     updated_at: string;
     variants: number;
   };
+  channel_memory_update?: {
+    items: number;
+    path: string;
+    status: "draft" | "ready" | string;
+    updated_at: string;
+  };
   asset_manifest?: {
     path: string;
     items: number;
