@@ -229,6 +229,8 @@ The dashboard `Render MP4` action runs a guarded local ffmpeg assembly adapter:
 
 It refreshes the render manifest, runs `scripts/check_approval_gate.py --gate render`, normalizes scene videos or still images into segments, muxes voice plus optional BGM, embeds SRT subtitles, and records `rendered_path` / `rendered_at` in `production-package.json`.
 
+The dashboard `Render Job` action creates `render-worker-job.json` behind the same render approval expectations. This is the handoff contract for an external ffmpeg worker so Vercel can stay focused on dashboard/API work.
+
 ## Draft Publishing
 
 The dashboard `Draft Publish` action creates a deterministic starter upload package for `07-publishing-package.md` from the brief, script plan, and media prompts. It also updates `production-package.json` with title candidates, description, tags, and thumbnail prompt.

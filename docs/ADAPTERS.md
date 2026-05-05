@@ -486,6 +486,26 @@ Behavior:
 8. Updates `production-package.json.render_manifest.rendered_path`, `rendered_at`, and `render-log.json`.
 9. Does not upload, schedule, or publish; YouTube handoff remains behind the publish gate.
 
+## Render Worker Job
+
+Status: worker handoff manifest implemented. A separate worker process is still required to execute the job.
+
+Route:
+
+- `POST /api/runs/:runId/render/job`
+
+Required request body:
+
+- `confirmQueue`: must equal `QUEUE_RENDER_JOB`
+
+Behavior:
+
+1. Rebuilds `render-manifest.json`.
+2. Requires `render_manifest.summary.render_ready` and a complete render approval gate.
+3. Writes `render-worker-job.json` with scene asset paths, voice, subtitles, optional BGM, final output path, and ffmpeg worker requirements.
+4. Updates `production-package.json.render_manifest.worker_job_*` fields.
+5. Does not run ffmpeg inside Vercel. This is the durable handoff file for a later queue or worker service.
+
 ## Publishing Draft
 
 Status: deterministic starter draft implemented.

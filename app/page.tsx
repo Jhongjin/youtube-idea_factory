@@ -36,6 +36,7 @@ import { PublishingDraftButton } from "@/app/components/publishing-draft-button"
 import { PublishingHandoffButton } from "@/app/components/publishing-handoff-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
 import { RenderManifestButton } from "@/app/components/render-manifest-button";
+import { RenderWorkerJobButton } from "@/app/components/render-worker-job-button";
 import { RunDeleteButton } from "@/app/components/run-delete-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
@@ -494,6 +495,10 @@ function Inspector({
                 <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
               </div>
               <div className="detail-row">
+                <span>렌더 작업</span>
+                <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
+              </div>
+              <div className="detail-row">
                 <span>자산 매니페스트</span>
                 <span>
                   {run.package.asset_manifest
@@ -575,6 +580,7 @@ export default async function Home({
               <GenerationQueueButton runId={activeRun.id} />
               <SubtitleDraftButton runId={activeRun.id} />
               <RenderManifestButton runId={activeRun.id} />
+              <RenderWorkerJobButton runId={activeRun.id} />
               <LocalRenderButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <PublishingHandoffButton runId={activeRun.id} />
