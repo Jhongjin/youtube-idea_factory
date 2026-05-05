@@ -14,6 +14,13 @@ export type TranscriptPayload = {
   status: string;
 };
 
+export type SaveTranscriptOptions = {
+  status?: "manual_transcript" | "stt_transcript";
+  provider?: string;
+  model?: string;
+  sourceUrl?: string;
+};
+
 const maxTranscriptBytes = 1_000_000;
 
 function assertSafe(value: string, label: string) {
@@ -31,7 +38,12 @@ function matchesSource(source: SourceVideo, sourceKey: string) {
   return source.video_id === sourceKey || `source-${source.rank ?? ""}` === sourceKey;
 }
 
-async function updateSourceStatus(runId: string, sourceKey: string, content: string) {
+async function updateSourceStatus(
+  runId: string,
+  sourceKey: string,
+  content: string,
+  options: SaveTranscriptOptions = {},
+) {
   assertSafe(runId, "run id");
   const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(
     runId,
@@ -41,7 +53,7 @@ async function updateSourceStatus(runId: string, sourceKey: string, content: str
     runId,
     "production-package.json",
   );
-  const status = content.trim() ? "manual_transcript" : "not_checked";
+  const status = content.trim() ? (options.status ?? "manual_transcript") : "not_checked";
   const transcriptPath = content.trim() ? `transcripts/${sourceKey}.txt` : "";
   const updatedAt = new Date().toISOString();
 
@@ -54,6 +66,11 @@ async function updateSourceStatus(runId: string, sourceKey: string, content: str
       transcript_status: status,
       transcript_path: transcriptPath,
       transcript_updated_at: content.trim() ? updatedAt : "",
+      transcript_provider: content.trim() ? (options.provider ?? source.transcript_provider ?? "") : "",
+      transcript_model: content.trim() ? (options.model ?? source.transcript_model ?? "") : "",
+      transcript_source_url: content.trim()
+        ? (options.sourceUrl ?? source.transcript_source_url ?? "")
+        : "",
     };
   });
 
@@ -82,7 +99,12 @@ export async function getTranscript(runId: string, sourceKey: string): Promise<T
   };
 }
 
-export async function saveTranscript(runId: string, sourceKey: string, content: string) {
+export async function saveTranscript(
+  runId: string,
+  sourceKey: string,
+  content: string,
+  options: SaveTranscriptOptions = {},
+) {
   assertSafe(runId, "run id");
   const transcriptPath = getTranscriptPath(sourceKey);
   const bytes = Buffer.byteLength(content, "utf-8");
@@ -91,7 +113,7 @@ export async function saveTranscript(runId: string, sourceKey: string, content: 
   }
 
   await writeRunFile(runId, transcriptPath, content);
-  const { status, updatedAt } = await updateSourceStatus(runId, sourceKey, content);
+  const { status, updatedAt } = await updateSourceStatus(runId, sourceKey, content, options);
 
   return {
     sourceKey,

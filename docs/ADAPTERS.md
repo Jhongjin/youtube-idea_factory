@@ -95,18 +95,32 @@ Official references:
 
 ## Transcript Storage
 
-Status: manual transcript slot implemented.
+Status: manual transcript slot and OpenAI STT import implemented.
 
 Routes:
 
 - `GET /api/runs/:runId/transcripts/:sourceKey`
 - `PUT /api/runs/:runId/transcripts/:sourceKey`
+- `POST /api/runs/:runId/transcripts/:sourceKey/transcribe`
 
 Behavior:
 
 1. Stores transcript text under `runs/:runId/transcripts/:sourceKey.txt`.
 2. Updates `sources.json` and `production-package.json` with transcript status and path.
-3. Keeps collection provider-agnostic until a compliant transcript adapter is chosen.
+3. The dashboard can save a manually pasted transcript or run guarded STT from an operator-provided audio URL.
+4. The STT route uses the selected Subtitles provider. Direct implementation currently supports `OpenAI`.
+5. STT requires `confirmSpend: "TRANSCRIBE_AUDIO"` and does not download YouTube video/audio directly. Use only audio URLs you are allowed to process.
+
+OpenAI STT provider settings:
+
+- Subtitles provider: `OpenAI`
+- Model: `gpt-4o-transcribe`, `gpt-4o-mini-transcribe`, or another compatible transcription model
+- API key: OpenAI API key
+- Base URL: optional; defaults to `https://api.openai.com/v1`
+
+Official reference:
+
+- https://developers.openai.com/api/docs/guides/speech-to-text
 
 ## Analysis Draft
 

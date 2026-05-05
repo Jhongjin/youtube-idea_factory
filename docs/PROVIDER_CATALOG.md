@@ -96,6 +96,10 @@ Selectable, but not directly automated yet:
 - Local
 - Custom
 
+Direct adapter implemented now:
+
+- OpenAI speech-to-text transcript import from an operator-provided audio URL
+
 ## BGM
 
 - Manual Library

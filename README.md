@@ -118,6 +118,9 @@ The dashboard Sources panel can store manual transcripts per source video. The A
 
 - `GET /api/runs/:runId/transcripts/:sourceKey`
 - `PUT /api/runs/:runId/transcripts/:sourceKey`
+- `POST /api/runs/:runId/transcripts/:sourceKey/transcribe`
+
+The transcript panel can also run guarded OpenAI STT from an operator-provided audio URL when the Subtitles provider is set to OpenAI and `confirmSpend` is acknowledged. It does not fetch YouTube audio directly.
 
 ## Draft Analysis
 
