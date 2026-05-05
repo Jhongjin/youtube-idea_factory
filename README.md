@@ -251,6 +251,10 @@ The dashboard `Publish Check` action creates `publish-handoff.json`. It checks t
 
 API route: `POST /api/runs/:runId/publishing/handoff`.
 
+The dashboard `Upload Job` action creates `youtube-upload-job.json` after publish handoff passes. Actual YouTube upload still needs an external OAuth-enabled worker.
+
+API route: `POST /api/runs/:runId/publishing/upload-job`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

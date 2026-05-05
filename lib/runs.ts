@@ -47,6 +47,9 @@ export type ProductionPackage = {
     path: string;
     ready: boolean;
     blockers: number;
+    upload_job_path?: string;
+    upload_job_status?: "queued" | "running" | "completed" | "failed" | string;
+    upload_job_id?: string;
     updated_at: string;
   };
   asset_manifest?: {

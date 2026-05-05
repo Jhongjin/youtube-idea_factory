@@ -46,6 +46,7 @@ import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel"
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
 import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
+import { YouTubeUploadJobButton } from "@/app/components/youtube-upload-job-button";
 import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
@@ -522,6 +523,10 @@ function Inspector({
                 <span>배포 핸드오프</span>
                 <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
               </div>
+              <div className="detail-row">
+                <span>업로드 작업</span>
+                <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -584,6 +589,7 @@ export default async function Home({
               <LocalRenderButton runId={activeRun.id} />
               <PublishingDraftButton runId={activeRun.id} />
               <PublishingHandoffButton runId={activeRun.id} />
+              <YouTubeUploadJobButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>

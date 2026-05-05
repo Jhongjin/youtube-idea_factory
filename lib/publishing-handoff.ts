@@ -1,11 +1,8 @@
-import { execFile } from "node:child_process";
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { promisify } from "node:util";
 import { getRunApprovals } from "@/lib/approvals";
 import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
+import { assetExists } from "@/lib/asset-storage";
 import type { ProductionPackage } from "@/lib/runs";
-import { isSupabaseStorageMode } from "@/lib/storage-mode";
+import { readRunJson, writeRunJson } from "@/lib/run-store";
 
 type MinimalRenderManifest = {
   output?: {
@@ -63,57 +60,19 @@ export type PublishingHandoffResult = {
   blockers: number;
 };
 
-const execFileAsync = promisify(execFile);
-const runsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "runs");
-const artifactsDir = path.join(/* turbopackIgnore: true */ process.cwd(), "artifacts");
-
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
   }
 }
 
-async function loadJson<T>(filePath: string): Promise<T> {
-  return JSON.parse(await fs.readFile(filePath, "utf-8")) as T;
-}
-
-async function loadJsonIfExists<T>(filePath: string): Promise<T | null> {
-  try {
-    return await loadJson<T>(filePath);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+async function loadRunJsonIfExists<T>(runId: string, filePath: string): Promise<T | null> {
+  return readRunJson<T>(runId, filePath).catch((error) => {
+    if (error instanceof Error && error.message.includes("Run file not found")) {
       return null;
     }
-    throw error;
-  }
-}
-
-async function writeJson(filePath: string, data: unknown) {
-  await fs.writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
-}
-
-async function fileExists(filePath: string) {
-  try {
-    return (await fs.stat(filePath)).isFile();
-  } catch {
-    return false;
-  }
-}
-
-function artifactResolution(runId: string, artifactPath: string, label: string) {
-  const blockers: string[] = [];
-  if (!artifactPath.trim()) {
-    return { path: "", blockers: [`${label} path is empty`] };
-  }
-
-  const root = path.join(artifactsDir, runId);
-  const resolved = path.resolve(/* turbopackIgnore: true */ process.cwd(), artifactPath);
-  const relative = path.relative(root, resolved);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    blockers.push(`${label} path must stay inside artifacts/:runId`);
-  }
-
-  return { path: resolved, blockers };
+    return null;
+  });
 }
 
 function assetPath(item?: AssetManifestItem) {
@@ -134,43 +93,49 @@ function approvalBlockers(approval: { approved: boolean; approved_by: string; ap
   return blockers;
 }
 
-async function gateScriptBlockers(runDir: string) {
-  const scriptPath = path.join(
-    /* turbopackIgnore: true */ process.cwd(),
-    "scripts",
-    "check_approval_gate.py",
-  );
-  try {
-    await execFileAsync("python", [scriptPath, runDir, "--gate", "publish"], {
-      maxBuffer: 1024 * 1024,
-    });
-    return [];
-  } catch (error) {
-    const output = [
-      (error as { stdout?: string }).stdout,
-      (error as { stderr?: string }).stderr,
-    ]
-      .filter(Boolean)
-      .join("\n");
-    return output
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => line.startsWith("- "))
-      .map((line) => line.slice(2));
+async function artifactBlockers(runId: string, artifactPath: string, label: string) {
+  if (!artifactPath.trim()) {
+    return [`${label} path is empty`];
   }
+  const exists = await assetExists(runId, artifactPath).catch(() => false);
+  if (!exists) {
+    return [`${label} file does not exist`];
+  }
+  return [];
+}
+
+function deterministicPublishGateBlockers(pkg: ProductionPackage) {
+  const blockers: string[] = [];
+  const imageCount = Array.isArray(pkg.media_prompts.image_prompts)
+    ? pkg.media_prompts.image_prompts.length
+    : 0;
+  const videoCount = Array.isArray(pkg.media_prompts.video_prompts)
+    ? pkg.media_prompts.video_prompts.length
+    : 0;
+  if (pkg.qa.status === "blocked") {
+    blockers.push("qa.status is blocked");
+  }
+  if (imageCount + videoCount === 0) {
+    blockers.push("media prompts are empty");
+  }
+  if (pkg.render_manifest?.render_ready !== true) {
+    blockers.push("render_manifest.render_ready must be true");
+  }
+  if ((pkg.publishing_package.title_candidates?.length ?? 0) === 0) {
+    blockers.push("publishing title candidates are empty");
+  }
+  if (pkg.qa.publish_readiness !== "ready") {
+    blockers.push("qa.publish_readiness must be ready for publishing");
+  }
+  return blockers;
 }
 
 export async function createPublishingHandoff(runId: string): Promise<PublishingHandoffResult> {
   assertSafeRunId(runId);
-  if (isSupabaseStorageMode()) {
-    throw new Error("Publishing handoff currently checks local render and thumbnail files. Supabase Storage support is next.");
-  }
-  const runDir = path.join(runsDir, runId);
-  const packagePath = path.join(runDir, "production-package.json");
   const [pkg, assetManifest, renderManifest, approvals] = await Promise.all([
-    loadJson<ProductionPackage>(packagePath),
-    loadJsonIfExists<AssetManifest>(path.join(runDir, "asset-manifest.json")),
-    loadJsonIfExists<MinimalRenderManifest>(path.join(runDir, "render-manifest.json")),
+    readRunJson<ProductionPackage>(runId, "production-package.json"),
+    loadRunJsonIfExists<AssetManifest>(runId, "asset-manifest.json"),
+    loadRunJsonIfExists<MinimalRenderManifest>(runId, "render-manifest.json"),
     getRunApprovals(runId),
   ]);
 
@@ -179,9 +144,9 @@ export async function createPublishingHandoff(runId: string): Promise<Publishing
   const description = pkg.publishing_package.description?.trim() ?? "";
   const tags = (pkg.publishing_package.tags ?? []).filter((tag) => tag.trim());
   const videoPath = pkg.render_manifest?.rendered_path || renderManifest?.output?.final_path || "";
-  const videoResolution = artifactResolution(runId, videoPath, "video");
-  const videoExists = videoResolution.path ? await fileExists(videoResolution.path) : false;
-  const videoBlockers = [...videoResolution.blockers];
+  const rawVideoBlockers = await artifactBlockers(runId, videoPath, "video");
+  const videoExists = rawVideoBlockers.length === 0;
+  const videoBlockers = [...rawVideoBlockers];
   if (!pkg.render_manifest?.render_ready) {
     videoBlockers.push("render_manifest.render_ready is not true");
   }
@@ -194,11 +159,9 @@ export async function createPublishingHandoff(runId: string): Promise<Publishing
 
   const thumbnailAsset = assetManifest?.items.find((item) => item.kind === "thumbnail");
   const thumbnailPath = assetPath(thumbnailAsset);
-  const thumbnailResolution = artifactResolution(runId, thumbnailPath, "thumbnail");
-  const thumbnailExists = thumbnailResolution.path
-    ? await fileExists(thumbnailResolution.path)
-    : false;
-  const thumbnailBlockers = [...thumbnailResolution.blockers];
+  const rawThumbnailBlockers = await artifactBlockers(runId, thumbnailPath, "thumbnail");
+  const thumbnailExists = rawThumbnailBlockers.length === 0;
+  const thumbnailBlockers = [...rawThumbnailBlockers];
   if (!thumbnailAsset) {
     thumbnailBlockers.push("thumbnail asset is missing from asset-manifest.json");
   } else if (thumbnailAsset.status !== "generated") {
@@ -225,7 +188,7 @@ export async function createPublishingHandoff(runId: string): Promise<Publishing
     policyBlockers.push("qa.publish_readiness is not ready");
   }
 
-  const scriptBlockers = await gateScriptBlockers(runDir);
+  const scriptBlockers = deterministicPublishGateBlockers(pkg);
   const allBlockers = [
     ...videoBlockers,
     ...thumbnailBlockers,
@@ -286,8 +249,8 @@ export async function createPublishingHandoff(runId: string): Promise<Publishing
   };
 
   await Promise.all([
-    writeJson(path.join(runDir, "publish-handoff.json"), handoff),
-    writeJson(packagePath, pkg),
+    writeRunJson(runId, "publish-handoff.json", handoff),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

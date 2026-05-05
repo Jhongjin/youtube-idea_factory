@@ -531,7 +531,7 @@ Behavior:
 
 ## Publishing Handoff
 
-Status: deterministic publish preflight implemented.
+Status: deterministic publish preflight implemented for local and Supabase Storage asset paths.
 
 Route:
 
@@ -547,6 +547,29 @@ Behavior:
 6. Runs `scripts/check_approval_gate.py --gate publish` and includes any deterministic gate failures as blockers.
 7. Updates `production-package.json.publishing_handoff`.
 8. Does not upload, schedule, or publish to YouTube.
+
+## YouTube Upload Job
+
+Status: upload handoff manifest implemented. The actual YouTube upload worker is still pending because upload requires OAuth credentials and YouTube upload scope, not only a Data API key.
+
+Route:
+
+- `POST /api/runs/:runId/publishing/upload-job`
+
+Required request body:
+
+- `confirmQueue`: must equal `QUEUE_YOUTUBE_UPLOAD`
+- `privacyStatus`: optional `private`, `unlisted`, or `public`; defaults to `private`
+- `scheduledAt`: optional ISO timestamp
+- `madeForKids`: optional boolean
+
+Behavior:
+
+1. Rebuilds `publish-handoff.json`.
+2. Requires the handoff to be ready with zero blockers.
+3. Writes `youtube-upload-job.json` containing final video path, thumbnail path, title, description, tags, language, category, privacy, and YouTube OAuth worker requirements.
+4. Updates `production-package.json.publishing_handoff.upload_job_*`.
+5. Does not perform the upload inside Vercel.
 
 ## QA Draft
 
