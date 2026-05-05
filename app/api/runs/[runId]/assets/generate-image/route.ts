@@ -1,7 +1,7 @@
 import {
-  generateOpenAIImage,
+  generateImageAsset,
   type GenerateImageRequest,
-} from "@/lib/openai-image-generation";
+} from "@/lib/image-generation";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const { runId } = await context.params;
     const payload = (await request.json()) as GenerateImageRequest;
-    return Response.json({ result: await generateOpenAIImage(runId, payload) });
+    return Response.json({ result: await generateImageAsset(runId, payload) });
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Image generation failed." },

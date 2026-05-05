@@ -295,6 +295,34 @@ Official references:
 - https://developers.openai.com/api/docs/guides/image-generation
 - https://developers.openai.com/api/reference/overview
 
+## fal.ai Image Generation
+
+Status: guarded adapter route implemented, not part of the one-click draft flow.
+
+Route:
+
+- `POST /api/runs/:runId/assets/generate-image`
+
+Provider settings:
+
+- Image provider: `fal.ai`
+- Model: fal endpoint path such as `fal-ai/flux-pro/v1.1`
+- API key: fal key with API scope
+- Base URL: optional; defaults to `https://queue.fal.run`
+
+Behavior:
+
+1. Rebuilds the generation queue before spending.
+2. Requires selected Image provider `fal.ai`, model path, API key, generation approval, and `confirmSpend: "GENERATE_IMAGE"`.
+3. Submits the prompt to the fal queue API, polls until completion within a short server-side timeout, downloads the returned image URL, and stores it in the asset path.
+4. Updates `asset-manifest.json`, `production-package.json.asset_manifest`, `asset-generation-log.json`, and tries to refresh `render-manifest.json`.
+
+Official references:
+
+- https://fal.ai/docs/model-api-reference
+- https://fal.ai/docs/documentation/setting-up/authentication
+- https://fal.ai/docs/documentation/model-apis/inference/queue
+
 ## OpenAI TTS Generation
 
 Status: guarded adapter route implemented, not part of the one-click draft flow.
@@ -326,6 +354,62 @@ Behavior:
 Official reference:
 
 - https://developers.openai.com/api/docs/guides/text-to-speech
+
+## Inworld TTS Generation
+
+Status: guarded adapter route implemented, not part of the one-click draft flow.
+
+Route:
+
+- `POST /api/runs/:runId/assets/generate-voice`
+
+Provider settings:
+
+- TTS provider: `Inworld`
+- Model: Inworld model ID such as `inworld-tts-1.5-max`
+- API key: Inworld API credential used in the `Authorization: Basic` header
+- Base URL: optional; defaults to `https://api.inworld.ai/tts/v1`
+- Voice field in the generation console: Inworld `voiceId`
+
+Behavior:
+
+1. Rebuilds the generation queue before spending.
+2. Requires selected TTS provider `Inworld`, model, API key, generation approval, and `confirmSpend: "GENERATE_TTS"`.
+3. Calls `POST /tts/v1/voice` with `LINEAR16` audio config and stores the returned base64 audio as WAV bytes.
+4. Enforces Inworld's 2,000-character request limit for this direct adapter. Long narration should be chunked in a later worker.
+5. Updates `asset-manifest.json`, `production-package.json.asset_manifest`, `asset-generation-log.json`, and tries to refresh `render-manifest.json`.
+
+Official reference:
+
+- https://docs.inworld.ai/api-reference/ttsAPI/texttospeech/synthesize-speech
+
+## fal.ai Video Generation
+
+Status: guarded adapter route implemented, not part of the one-click draft flow.
+
+Route:
+
+- `POST /api/runs/:runId/assets/generate-video`
+
+Provider settings:
+
+- Video provider: `fal.ai`
+- Model: fal endpoint path for a video model
+- API key: fal key with API scope
+- Base URL: optional; defaults to `https://queue.fal.run`
+
+Behavior:
+
+1. Rebuilds the generation queue before spending.
+2. Requires selected Video provider `fal.ai`, model path, API key, generation approval, pending video asset, and `confirmSpend: "GENERATE_VIDEO"`.
+3. Submits prompt, aspect ratio, and duration hints to the fal queue API.
+4. Polls for completion, downloads the returned video URL, stores it in the expected MP4 asset path, and tries to refresh `render-manifest.json`.
+5. This is suitable for operator-triggered MVP tests. Production unattended video generation should move to a background worker or webhook because long video jobs can exceed serverless request windows.
+
+Official references:
+
+- https://fal.ai/docs/model-api-reference
+- https://fal.ai/docs/documentation/model-apis/inference/queue
 
 ## Subtitle Draft
 

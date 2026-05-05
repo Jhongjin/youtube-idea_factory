@@ -31,6 +31,7 @@ This dashboard separates provider selection from adapter implementation. A provi
 Direct adapter implemented now:
 
 - OpenAI image generation
+- fal.ai image generation through the queue API
 
 ## Video Generation
 
@@ -52,7 +53,7 @@ Direct adapter implemented now:
 
 Direct adapter implemented now:
 
-- none. Track generated or external video files through manual registration until a provider adapter is added.
+- fal.ai video generation through the queue API. Long-running jobs still need a background worker for unattended production reliability.
 
 ## TTS
 
@@ -73,6 +74,16 @@ Direct adapter implemented now:
 Direct adapter implemented now:
 
 - OpenAI TTS
+- Inworld TTS
+
+Selectable, but not directly automated yet:
+
+- Supertone
+- AIVIS (Avis)
+- Typecast
+- Vrew
+- Naver Clova Dubbing
+- CapCut
 
 ## Subtitles
 

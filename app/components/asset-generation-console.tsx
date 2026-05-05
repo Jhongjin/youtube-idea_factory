@@ -8,11 +8,13 @@ import {
   Image as ImageIcon,
   Loader2,
   Mic2,
+  Video,
 } from "lucide-react";
 import type { AssetGenerationState, AssetGenerationStateItem } from "@/lib/asset-generation-state";
 
 const imageConfirmToken = "GENERATE_IMAGE";
 const ttsConfirmToken = "GENERATE_TTS";
+const videoConfirmToken = "GENERATE_VIDEO";
 
 const assetKindCopy: Record<string, string> = {
   image: "이미지",
@@ -89,6 +91,32 @@ export function AssetGenerationConsole({
     window.location.href = `/?run=${encodeURIComponent(runId)}`;
   }
 
+  async function generateVideo(assetId: string) {
+    setMessage("");
+    const confirmation = window.prompt(`${videoConfirmToken}를 입력하면 영상을 생성합니다.`);
+    if (confirmation === null) {
+      return;
+    }
+    if (confirmation !== videoConfirmToken) {
+      setMessage(`영상 생성에는 ${videoConfirmToken}가 필요합니다.`);
+      return;
+    }
+
+    setLoadingId(assetId);
+    const response = await fetch(`/api/runs/${runId}/assets/generate-video`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assetId, confirmSpend: videoConfirmToken }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error ?? "영상 생성에 실패했습니다.");
+      setLoadingId("");
+      return;
+    }
+    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+  }
+
   async function registerAsset() {
     setMessage("");
     setLoadingId("manual-register");
@@ -145,6 +173,7 @@ export function AssetGenerationConsole({
   }
 
   const imageItems = state.items.filter((item) => item.kind === "image" || item.kind === "thumbnail");
+  const videoItems = state.items.filter((item) => item.kind === "video");
   const voiceItem = state.items.find((item) => item.kind === "voice");
 
   return (
@@ -200,6 +229,29 @@ export function AssetGenerationConsole({
             >
               {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <ImageIcon size={15} />}
               이미지
+            </button>
+          </div>
+        ))}
+
+        {videoItems.slice(0, 4).map((item) => (
+          <div className="asset-action-row" key={item.id}>
+            <div>
+              <strong>
+                {item.id}
+                {item.scene_id ? ` / ${item.scene_id}` : ""}
+              </strong>
+              <small>{compactPath(item.expected_path)}</small>
+              {item.blockers.length > 0 ? <small>{item.blockers[0]}</small> : null}
+            </div>
+            <AssetStatus item={item} />
+            <button
+              className="text-button"
+              disabled={item.status !== "pending_generation" || Boolean(loadingId)}
+              onClick={() => generateVideo(item.id)}
+              type="button"
+            >
+              {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <Video size={15} />}
+              영상
             </button>
           </div>
         ))}
