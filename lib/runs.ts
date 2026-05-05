@@ -65,6 +65,12 @@ export type ProductionPackage = {
     video_id: string;
     view_count: number;
   };
+  feedback_insights?: {
+    path: string;
+    recommendations: number;
+    status: "needs_more_data" | "watch" | "learning" | "strong_signal" | string;
+    updated_at: string;
+  };
   asset_manifest?: {
     path: string;
     items: number;

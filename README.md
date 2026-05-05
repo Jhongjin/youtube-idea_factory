@@ -292,6 +292,10 @@ The dashboard `성과 스냅샷` action uses the configured YouTube API key to f
 
 API route: `POST /api/runs/:runId/analytics/snapshot`.
 
+The dashboard `피드백 인사이트` action turns the stored snapshot history into `10-feedback-insights.json` and `10-feedback-insights.md`, including view velocity, engagement rates, source-video benchmark context, and next-content recommendations.
+
+API route: `POST /api/runs/:runId/analytics/insights`.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.

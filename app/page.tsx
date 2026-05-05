@@ -27,6 +27,7 @@ import { AssetGenerationConsole } from "@/app/components/asset-generation-consol
 import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
+import { FeedbackInsightsButton } from "@/app/components/feedback-insights-button";
 import { GenerationQueueButton } from "@/app/components/generation-queue-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
 import { LocalRenderButton } from "@/app/components/local-render-button";
@@ -109,6 +110,13 @@ const transcriptStatusCopy: Record<string, string> = {
   missing: "없음",
   manual_transcript: "수동 입력",
   available: "확보됨",
+};
+
+const feedbackStatusCopy: Record<string, string> = {
+  learning: "학습 중",
+  needs_more_data: "데이터 필요",
+  strong_signal: "강한 신호",
+  watch: "주의 관찰",
 };
 
 const formatCopy: Record<string, string> = {
@@ -580,6 +588,20 @@ function Inspector({
                 runId={run.id}
                 videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
               />
+              <FeedbackInsightsButton runId={run.id} />
+              <div className="detail-row">
+                <span>인사이트</span>
+                <span>
+                  {run.package.feedback_insights?.status
+                    ? feedbackStatusCopy[run.package.feedback_insights.status] ??
+                      run.package.feedback_insights.status
+                    : "대기"}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span>추천 항목</span>
+                <span>{run.package.feedback_insights?.recommendations ?? 0}</span>
+              </div>
             </div>
           </div>
         </section>
@@ -652,6 +674,7 @@ export default async function Home({
                   activeRun.package.feedback_loop?.video_id
                 }
               />
+              <FeedbackInsightsButton runId={activeRun.id} />
               <QaDraftButton runId={activeRun.id} />
             </div>
           </div>
