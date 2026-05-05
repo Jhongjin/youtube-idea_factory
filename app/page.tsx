@@ -63,6 +63,7 @@ import { validateProductionPackage, type PackageValidationResult } from "@/lib/p
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
+import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
 
 export const dynamic = "force-dynamic";
@@ -186,14 +187,44 @@ function ChannelMemoryIndexPanel({ index }: { index: ChannelMemoryIndex }) {
   );
 }
 
+function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
+  const nextItem = summary.nextItem;
+  return (
+    <section className="nav-section work-queue-index">
+      <h2>작업 큐</h2>
+      <div className="work-queue-card">
+        <div className="work-queue-heading">
+          <ListChecks size={16} />
+          <strong>{summary.codexReady}개 진행 가능</strong>
+          <span>{summary.externalBlocked}개 외부 대기</span>
+        </div>
+        <p>{nextItem ? nextItem.title : "현재 Codex가 바로 진행할 작업이 없습니다"}</p>
+        <div className="work-queue-stats">
+          <span>
+            {workQueueStatusCopy.next} {summary.next}
+          </span>
+          <span>
+            {workQueueStatusCopy.deferred} {summary.deferred}
+          </span>
+          <span>
+            {workQueueStatusCopy.done} {summary.done}
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Sidebar({
   activeRun,
   memoryIndex,
   runs,
+  workQueueSummary,
 }: {
   activeRun?: RunSummary;
   memoryIndex: ChannelMemoryIndex;
   runs: RunSummary[];
+  workQueueSummary: WorkQueueSummary;
 }) {
   return (
     <aside className="sidebar">
@@ -240,6 +271,8 @@ function Sidebar({
       </section>
 
       <ChannelMemoryIndexPanel index={memoryIndex} />
+
+      <WorkQueuePanel summary={workQueueSummary} />
 
       <section className="nav-section">
         <h2>스킬</h2>
@@ -697,6 +730,7 @@ export default async function Home({
 }) {
   const runs = await getRuns();
   const memoryIndex = await getChannelMemoryIndex(runs);
+  const workQueueSummary = getWorkQueueSummary();
   const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
   const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
@@ -709,7 +743,12 @@ export default async function Home({
 
   return (
     <div className="shell">
-      <Sidebar activeRun={activeRun} memoryIndex={memoryIndex} runs={runs} />
+      <Sidebar
+        activeRun={activeRun}
+        memoryIndex={memoryIndex}
+        runs={runs}
+        workQueueSummary={workQueueSummary}
+      />
       {activeRun ? (
         <main className="main">
           <div className="topbar">

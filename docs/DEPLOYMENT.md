@@ -96,6 +96,7 @@ When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of l
 - `GET /api/runs/:runId/artifacts`
 - `GET/PUT /api/runs/:runId/approvals`
 - `GET/PUT /api/settings/providers`
+- `GET /api/ops/work-queue`
 - `GET /api/analytics/channel-memory-index`
 - `POST /api/runs/:runId/analytics/channel-memory`
 - `POST /api/runs/:runId/analytics/insights`

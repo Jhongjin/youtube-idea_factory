@@ -14,6 +14,7 @@
 - `scripts/validate-harness.ps1`: 하네스 문서/스킬 기본 검증
 - `docs/PROVIDER_CATALOG.md`: LLM, 이미지, 영상, TTS, 자막, BGM 제공자 후보와 어댑터 상태
 - `docs/YOUTUBE_UPLOAD_WORKER.md`: OAuth 기반 YouTube 업로드 워커 실행 절차
+- `docs/WORK_QUEUE.md`: 작업 완료, 보류, 건너뜀 기준과 현재 Phase 큐
 - `runs/`: 콘텐츠 제작 실행 단위별 작업 기록 위치
 - `artifacts/`: 생성 이미지, 음성, 영상, 자막 등 산출물 위치
 
@@ -311,6 +312,12 @@ The dashboard `피드백 루프` action runs the whole public-metrics feedback s
 `성과 스냅샷 -> 피드백 인사이트 -> A/B 로그 -> 채널 메모리`
 
 If the run does not already have an uploaded YouTube video ID, the action asks the operator to paste a YouTube URL or video ID before the sequence starts.
+
+## Work Queue
+
+The dashboard sidebar shows the current phase work queue so Codex-owned next jobs, skippable work, and external/user-blocked items stay visible while the project loops through implementation.
+
+API route: `GET /api/ops/work-queue`.
 
 ## Draft QA
 

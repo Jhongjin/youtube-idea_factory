@@ -1904,6 +1904,11 @@ a {
   padding-top: 18px;
 }
 
+.work-queue-index {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+
 .memory-index-card {
   display: grid;
   gap: 10px;
@@ -1940,6 +1945,59 @@ a {
 }
 
 .memory-index-stats span {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.work-queue-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.work-queue-heading,
+.work-queue-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.work-queue-heading {
+  color: #334155;
+}
+
+.work-queue-heading strong {
+  color: #182235;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.work-queue-heading span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.work-queue-card p {
+  margin: 0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.work-queue-stats span {
   display: inline-flex;
   min-height: 24px;
   align-items: center;

@@ -26,6 +26,7 @@ Build a YouTube automation dashboard that can turn a category or topic into a re
 - YouTube upload worker: `docs/YOUTUBE_UPLOAD_WORKER.md`
 - Worker queue operations: `docs/WORKER_QUEUE.md`
 - MVP sequence: `docs/MVP_ROADMAP.md`
+- Work queue and deferred tasks: `docs/WORK_QUEUE.md`
 - Decision log: `docs/TECH_DECISIONS.md`
 - Data contract seed: `docs/templates/production-package.schema.json`
 - Run brief template: `docs/templates/run-brief.md`
