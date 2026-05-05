@@ -32,3 +32,5 @@ assets/generated/*
 Thumbs.db
 .vscode/
 .idea/
+
+.vercel
