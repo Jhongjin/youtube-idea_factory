@@ -1,3 +1,4 @@
+import { getProviderSettings } from "@/lib/provider-settings";
 import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
 
 export type DeploymentReadiness = {
@@ -24,6 +25,7 @@ export type DeploymentReadiness = {
   };
   providers: {
     youtubeApiKey: boolean;
+    youtubeProviderSettings: boolean;
   };
   blockers: string[];
   warnings: string[];
@@ -101,7 +103,13 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   if (hasEnv("SUPABASE_SERVICE_ROLE_KEY") && process.env.SUPABASE_SERVICE_ROLE_KEY === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     blockers.push("SUPABASE_SERVICE_ROLE_KEY must not equal NEXT_PUBLIC_SUPABASE_ANON_KEY.");
   }
-  if (!hasEnv("YOUTUBE_API_KEY")) {
+  const providerSettings = await getProviderSettings().catch(() => null);
+  const youtubeProviderSettings = Boolean(
+    providerSettings?.roles.youtube.enabled &&
+      providerSettings.roles.youtube.apiKey?.trim(),
+  );
+  const youtubeApiKey = hasEnv("YOUTUBE_API_KEY") || youtubeProviderSettings;
+  if (!youtubeApiKey) {
     warnings.push("YOUTUBE_API_KEY is missing; YouTube Finder will need the dashboard provider settings or env var.");
   }
   if (!hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")) {
@@ -120,7 +128,8 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     },
     supabase,
     providers: {
-      youtubeApiKey: hasEnv("YOUTUBE_API_KEY"),
+      youtubeApiKey,
+      youtubeProviderSettings,
     },
     blockers,
     warnings,

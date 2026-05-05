@@ -71,7 +71,9 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     <form className="provider-settings-form" onSubmit={onSubmit}>
       <div className="settings-summary">
         <div>
-          <p className="eyebrow">로컬 제공자 설정</p>
+          <p className="eyebrow">
+            {settings.configPath.startsWith("supabase") ? "Supabase 제공자 설정" : "로컬 제공자 설정"}
+          </p>
           <h2>API 등록</h2>
           <p className="muted">
             <strong>{settings.configPath}</strong>에 저장됩니다. API 키 원문은 브라우저로 반환하지 않습니다.
