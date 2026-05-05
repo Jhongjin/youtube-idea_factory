@@ -66,6 +66,25 @@ create table if not exists public.run_events (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.worker_jobs (
+  id uuid primary key,
+  run_id text not null references public.production_runs(id) on delete cascade,
+  kind text not null check (kind in ('render', 'youtube-upload', 'image-generation', 'video-generation', 'tts', 'subtitles', 'bgm')),
+  status text not null check (status in ('queued', 'running', 'completed', 'failed', 'cancelled')),
+  job_artifact_key text not null,
+  log_artifact_key text not null default '',
+  approval_gate text not null default '',
+  provider_role text not null default '',
+  worker_type text not null default '',
+  attempts integer not null default 0,
+  payload jsonb not null default '{}'::jsonb,
+  last_error text not null default '',
+  queued_at timestamptz not null default now(),
+  started_at timestamptz,
+  completed_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.provider_settings (
   role text primary key,
   enabled boolean not null default false,
@@ -111,6 +130,11 @@ create trigger set_run_approvals_updated_at
 before update on public.run_approvals
 for each row execute function public.set_updated_at();
 
+drop trigger if exists set_worker_jobs_updated_at on public.worker_jobs;
+create trigger set_worker_jobs_updated_at
+before update on public.worker_jobs
+for each row execute function public.set_updated_at();
+
 drop trigger if exists set_provider_settings_updated_at on public.provider_settings;
 create trigger set_provider_settings_updated_at
 before update on public.provider_settings
@@ -121,11 +145,16 @@ alter table public.run_artifacts enable row level security;
 alter table public.run_assets enable row level security;
 alter table public.run_approvals enable row level security;
 alter table public.run_events enable row level security;
+alter table public.worker_jobs enable row level security;
 alter table public.provider_settings enable row level security;
+
+create index if not exists worker_jobs_status_kind_idx on public.worker_jobs (status, kind, queued_at);
+create index if not exists worker_jobs_run_id_idx on public.worker_jobs (run_id, updated_at desc);
 
 comment on table public.production_runs is 'Durable production package records for YouTube Idea Factory.';
 comment on table public.run_artifacts is 'Markdown artifacts and optional Supabase Storage pointers.';
 comment on table public.run_assets is 'Generated or externally registered media asset manifest records.';
 comment on table public.run_approvals is 'Human approval gates for generation, render, and publish.';
 comment on table public.run_events is 'Provider calls, cost estimates, render events, upload attempts, and audit notes.';
+comment on table public.worker_jobs is 'Durable queue records for external render, upload, and generation workers.';
 comment on table public.provider_settings is 'Server-side provider selections and API keys for adapter roles. Access with service role only until auth policies are designed.';

@@ -221,6 +221,71 @@ async function writeRunJson(storageMode, runId, filePath, data) {
   await fs.writeFile(output, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
 }
 
+function isMissingWorkerJobsTable(error) {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("PGRST205") || message.includes("Could not find the table");
+}
+
+async function readWorkerJobRecords(storageMode, runId) {
+  if (storageMode === "supabase") {
+    const query = new URLSearchParams({
+      run_id: `eq.${runId}`,
+      select: "*",
+    });
+    const response = await supabaseRequest(`rest/v1/worker_jobs?${query}`);
+    return response.json();
+  }
+  return readRunJson(storageMode, runId, "worker-jobs.json").catch(() => []);
+}
+
+function uploadQueueRecord(runId, job, status) {
+  const now = job.updated_at || new Date().toISOString();
+  return {
+    approval_gate: "publish",
+    attempts: status === "queued" ? 0 : 1,
+    completed_at: job.completed_at || job.failed_at || null,
+    id: job.job_id,
+    job_artifact_key: "youtube-upload-job.json",
+    kind: "youtube-upload",
+    last_error: job.error || "",
+    log_artifact_key: "youtube-upload-log.json",
+    payload: {
+      made_for_kids: Boolean(job.metadata?.made_for_kids),
+      privacy_status: job.metadata?.privacy_status || "",
+      scheduled_at: job.metadata?.scheduled_at || "",
+      title: job.metadata?.title || "",
+      video_url: job.video_url || "",
+    },
+    provider_role: "youtube",
+    queued_at: job.created_at || now,
+    run_id: runId,
+    started_at: job.started_at || null,
+    status,
+    updated_at: now,
+    worker_type: "youtube-upload",
+  };
+}
+
+async function writeWorkerJobRecord(storageMode, runId, job, status) {
+  const record = uploadQueueRecord(runId, job, status);
+  if (storageMode === "supabase") {
+    await supabaseRequest("rest/v1/worker_jobs?on_conflict=id", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=minimal",
+      },
+      body: JSON.stringify(record),
+    });
+    return;
+  }
+  const records = await readWorkerJobRecords(storageMode, runId).catch(() => []);
+  await writeRunJson(storageMode, runId, "worker-jobs.json", [
+    record,
+    ...records.filter((item) => item?.id !== record.id),
+  ]);
+}
+
 async function downloadSupabaseObject(bucket, objectPath, outputPath) {
   const response = await supabaseRequest(
     `storage/v1/object/${encodeURIComponent(bucket)}/${encodePath(objectPath)}`,
@@ -396,7 +461,15 @@ async function uploadThumbnail({ accessToken, thumbnailPath, videoId }) {
 async function markJob(storageMode, runId, job, pkg, status, patch = {}) {
   const now = new Date().toISOString();
   const { package_patch: packagePatch, ...jobPatch } = patch;
-  const nextJob = { ...job, ...jobPatch, status, updated_at: now };
+  const lifecyclePatch =
+    status === "running"
+      ? { started_at: job.started_at || now }
+      : status === "completed"
+        ? { completed_at: now }
+        : status === "failed"
+          ? { failed_at: now }
+          : {};
+  const nextJob = { ...job, ...lifecyclePatch, ...jobPatch, status, updated_at: now };
   const nextPackage = {
     ...pkg,
     publishing_handoff: {
@@ -412,6 +485,11 @@ async function markJob(storageMode, runId, job, pkg, status, patch = {}) {
     writeRunJson(storageMode, runId, "youtube-upload-job.json", nextJob),
     writeRunJson(storageMode, runId, "production-package.json", nextPackage),
   ]);
+  await writeWorkerJobRecord(storageMode, runId, nextJob, status).catch((error) => {
+    if (!isMissingWorkerJobsTable(error)) {
+      console.warn(`worker_jobs update skipped: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
   return { job: nextJob, pkg: nextPackage };
 }
 

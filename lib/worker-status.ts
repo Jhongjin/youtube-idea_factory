@@ -1,5 +1,6 @@
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunFileIfExists } from "@/lib/run-store";
+import { getWorkerJobRecords, type WorkerJobKind, type WorkerJobRecord } from "@/lib/worker-job-records";
 
 export type WorkerStageStatus = "pending" | "queued" | "running" | "completed" | "failed" | "unknown";
 
@@ -12,6 +13,12 @@ export type WorkerStageStatusView = {
   jobPath: string;
   label: string;
   logPath: string;
+  queue: {
+    attempts: number;
+    lastError: string;
+    status: string;
+    updatedAt: string;
+  } | null;
   status: WorkerStageStatus;
   updatedAt: string;
 };
@@ -65,8 +72,28 @@ function compactDetails(details: Array<{ label: string; value?: string; href?: s
     .filter((detail): detail is { label: string; value: string; href?: string } => Boolean(detail.value));
 }
 
-function renderStatus(pkg: ProductionPackage, job: JsonObject | null, log: JsonObject | null): WorkerStageStatusView {
-  const status = asStatus(job?.status ?? pkg.render_manifest?.worker_job_status);
+function latestRecord(records: WorkerJobRecord[], kind: WorkerJobKind) {
+  return records.find((record) => record.kind === kind) ?? null;
+}
+
+function queueView(record: WorkerJobRecord | null) {
+  return record
+    ? {
+        attempts: record.attempts,
+        lastError: record.last_error,
+        status: record.status,
+        updatedAt: record.updated_at,
+      }
+    : null;
+}
+
+function renderStatus(
+  pkg: ProductionPackage,
+  job: JsonObject | null,
+  log: JsonObject | null,
+  record: WorkerJobRecord | null,
+): WorkerStageStatusView {
+  const status = asStatus(job?.status ?? pkg.render_manifest?.worker_job_status ?? record?.status);
   const outputPath = asString(log?.output_path) || asString(job?.output_path) || pkg.render_manifest?.rendered_path || "";
   return {
     completedAt: asString(job?.completed_at) || asString(log?.rendered_at) || pkg.render_manifest?.rendered_at || "",
@@ -77,19 +104,25 @@ function renderStatus(pkg: ProductionPackage, job: JsonObject | null, log: JsonO
       { label: "자막", value: asBoolean(log?.subtitles_embedded) ? "임베드 완료" : "" },
       { label: "BGM", value: asBoolean(log?.bgm_mixed) ? "믹스 완료" : "" },
     ]),
-    error: asString(job?.error) || asString(log?.error),
+    error: asString(job?.error) || asString(log?.error) || record?.last_error || "",
     jobId: asString(job?.job_id) || pkg.render_manifest?.worker_job_id || "",
     jobPath: "render-worker-job.json",
     label: "렌더 워커",
     logPath: log ? "render-log.json" : "",
+    queue: queueView(record),
     status,
     updatedAt: asString(job?.updated_at) || asString(log?.rendered_at) || pkg.render_manifest?.updated_at || "",
   };
 }
 
-function uploadStatus(pkg: ProductionPackage, job: JsonObject | null, log: JsonObject | null): WorkerStageStatusView {
+function uploadStatus(
+  pkg: ProductionPackage,
+  job: JsonObject | null,
+  log: JsonObject | null,
+  record: WorkerJobRecord | null,
+): WorkerStageStatusView {
   const metadata = asObject(job?.metadata);
-  const status = asStatus(job?.status ?? pkg.publishing_handoff?.upload_job_status);
+  const status = asStatus(job?.status ?? pkg.publishing_handoff?.upload_job_status ?? record?.status);
   const videoUrl = asString(log?.video_url) || asString(job?.video_url) || pkg.publishing_handoff?.uploaded_video_url || "";
   const videoId = asString(log?.video_id) || asString(job?.video_id) || pkg.publishing_handoff?.uploaded_video_id || "";
   return {
@@ -102,26 +135,28 @@ function uploadStatus(pkg: ProductionPackage, job: JsonObject | null, log: JsonO
       { label: "예약", value: asString(metadata?.scheduled_at) },
       { label: "썸네일", value: asBoolean(log?.thumbnail_uploaded) || asBoolean(job?.thumbnail_uploaded) ? "업로드 완료" : "" },
     ]),
-    error: asString(job?.error) || asString(log?.error),
+    error: asString(job?.error) || asString(log?.error) || record?.last_error || "",
     jobId: asString(job?.job_id) || pkg.publishing_handoff?.upload_job_id || "",
     jobPath: "youtube-upload-job.json",
     label: "YouTube 업로드",
     logPath: log ? "youtube-upload-log.json" : "",
+    queue: queueView(record),
     status,
     updatedAt: asString(job?.updated_at) || asString(log?.uploaded_at) || pkg.publishing_handoff?.updated_at || "",
   };
 }
 
 export async function getRunWorkerStatus(runId: string, pkg: ProductionPackage): Promise<RunWorkerStatus> {
-  const [renderJob, renderLog, uploadJob, uploadLog] = await Promise.all([
+  const [renderJob, renderLog, uploadJob, uploadLog, queueRecords] = await Promise.all([
     readOptionalJson(runId, "render-worker-job.json"),
     readOptionalJson(runId, "render-log.json"),
     readOptionalJson(runId, "youtube-upload-job.json"),
     readOptionalJson(runId, "youtube-upload-log.json"),
+    getWorkerJobRecords(runId),
   ]);
 
   return {
-    render: renderStatus(pkg, renderJob, renderLog),
-    upload: uploadStatus(pkg, uploadJob, uploadLog),
+    render: renderStatus(pkg, renderJob, renderLog, latestRecord(queueRecords, "render")),
+    upload: uploadStatus(pkg, uploadJob, uploadLog, latestRecord(queueRecords, "youtube-upload")),
   };
 }

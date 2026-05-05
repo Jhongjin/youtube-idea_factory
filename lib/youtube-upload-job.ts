@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createPublishingHandoff, type PublishingHandoff } from "@/lib/publishing-handoff";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
+import { upsertWorkerJobRecord } from "@/lib/worker-job-records";
 
 export type CreateYouTubeUploadJobRequest = {
   confirmQueue?: string;
@@ -145,6 +146,25 @@ export async function createYouTubeUploadJob(
   await Promise.all([
     writeRunJson(runId, "youtube-upload-job.json", job),
     writeRunJson(runId, "production-package.json", pkg),
+    upsertWorkerJobRecord({
+      approvalGate: "publish",
+      id: job.job_id,
+      jobArtifactKey: "youtube-upload-job.json",
+      kind: "youtube-upload",
+      logArtifactKey: "youtube-upload-log.json",
+      payload: {
+        made_for_kids: job.metadata.made_for_kids,
+        privacy_status: job.metadata.privacy_status,
+        scheduled_at: job.metadata.scheduled_at,
+        title: job.metadata.title,
+      },
+      providerRole: "youtube",
+      queuedAt: now,
+      runId,
+      status: "queued",
+      updatedAt: now,
+      workerType: "youtube-upload",
+    }),
   ]);
 
   return {

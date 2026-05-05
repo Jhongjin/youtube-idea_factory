@@ -17,6 +17,7 @@ Implemented Supabase-backed state:
 - approval gates through `run_approvals`
 - provider API settings through `provider_settings`
 - generated image/TTS bytes and manually registered media pointers through Supabase Storage
+- external worker queue records through `worker_jobs` when the latest schema is applied
 
 Still local or adapter-specific:
 
@@ -97,7 +98,9 @@ When `APP_STORAGE_MODE=supabase`, these dashboard APIs use Supabase instead of l
 - `POST /api/runs/:runId/sources/import`
 - `POST /api/runs/:runId/sources/enrich`
 - `GET/PUT /api/runs/:runId/transcripts/:sourceKey`
+- `GET /api/runs/:runId/worker-jobs`
 - text draft/refinement routes for analysis, script, storyboard, media prompts, publishing package, QA, asset manifest, generation queue, image/TTS generation, manual media registration, and render manifest checks
+- render/upload job queue creation records in `worker_jobs` when the table exists
 
 These routes remain local-worker or adapter-specific:
 

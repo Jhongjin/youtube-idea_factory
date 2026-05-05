@@ -80,6 +80,7 @@ def supabase_schema_failures() -> list[str]:
         "public.run_artifacts",
         "public.run_approvals",
         "public.provider_settings",
+        "public.worker_jobs",
     ]
     return [f"Supabase schema missing {table}" for table in required_tables if table not in schema]
 

@@ -77,11 +77,23 @@ function StageCard({ stage }: { stage: WorkerStageStatusView }) {
             <strong>{stage.logPath}</strong>
           </div>
         ) : null}
+        {stage.queue ? (
+          <>
+            <div>
+              <span>큐 상태</span>
+              <strong>{stage.queue.status}</strong>
+            </div>
+            <div>
+              <span>시도</span>
+              <strong>{stage.queue.attempts}</strong>
+            </div>
+          </>
+        ) : null}
       </div>
-      {stage.error ? (
+      {stage.error || stage.queue?.lastError ? (
         <p className="worker-status-error">
           <AlertTriangle size={14} />
-          {stage.error}
+          {stage.error || stage.queue?.lastError}
         </p>
       ) : null}
       {stage.details.length > 0 ? (

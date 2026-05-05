@@ -231,6 +231,7 @@ The dashboard `Render MP4` action runs a guarded local ffmpeg assembly adapter:
 It refreshes the render manifest, runs `scripts/check_approval_gate.py --gate render`, normalizes scene videos or still images into segments, muxes voice plus optional BGM, embeds SRT subtitles, and records `rendered_path` / `rendered_at` in `production-package.json`.
 
 The dashboard `Render Job` action creates `render-worker-job.json` behind the same render approval expectations. This is the handoff contract for an external ffmpeg worker so Vercel can stay focused on dashboard/API work.
+When the `worker_jobs` Supabase table exists, creating a render job also writes a durable queue record. The worker keeps that queue record in sync while it moves through running, completed, or failed states.
 
 An external worker can process the queued render job with:
 
@@ -267,6 +268,8 @@ npm run youtube:upload-worker -- --run-id <run-id> --confirm RUN_YOUTUBE_UPLOAD 
 The upload worker needs `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET`, and `YOUTUBE_OAUTH_REFRESH_TOKEN` with YouTube upload scope. Jobs default to private visibility unless the upload job explicitly requests another privacy status.
 Full worker setup lives in `docs/YOUTUBE_UPLOAD_WORKER.md`.
 The dashboard inspector reads `render-worker-job.json`, `render-log.json`, `youtube-upload-job.json`, and `youtube-upload-log.json` into an operations status panel so failures and final YouTube URLs are visible without opening raw JSON.
+When the `worker_jobs` Supabase table exists, upload job creation and worker execution also update that durable queue record. If the table is not applied yet, the JSON artifact flow still works.
+Queue records are also readable at `GET /api/runs/:runId/worker-jobs`.
 
 ## Draft QA
 

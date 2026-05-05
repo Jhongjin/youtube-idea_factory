@@ -21,6 +21,7 @@ export type DeploymentReadiness = {
       providerSettings: boolean;
       runApprovals: boolean;
       runArtifacts: boolean;
+      workerJobs: boolean;
     };
   };
   providers: {
@@ -59,6 +60,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     providerSettings: false,
     runApprovals: false,
     runArtifacts: false,
+    workerJobs: false,
   };
   const supabase = {
     publicUrl: hasEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -92,22 +94,27 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   }
   if (appStorageMode === "supabase" && supabase.readyForServerAdapters) {
     try {
-      const [productionRuns, runArtifacts, runApprovals, providerSettings] =
+      const [productionRuns, runArtifacts, runApprovals, providerSettings, workerJobs] =
         await Promise.all([
           hasSupabaseTable("production_runs"),
           hasSupabaseTable("run_artifacts"),
           hasSupabaseTable("run_approvals"),
           hasSupabaseTable("provider_settings"),
+          hasSupabaseTable("worker_jobs"),
         ]);
       schema.checked = true;
       schema.productionRuns = productionRuns;
       schema.runArtifacts = runArtifacts;
       schema.runApprovals = runApprovals;
       schema.providerSettings = providerSettings;
+      schema.workerJobs = workerJobs;
       supabase.durableRunStateEnabled = productionRuns && runArtifacts && runApprovals;
       supabase.providerSettingsEnabled = providerSettings;
       if (!productionRuns || !runArtifacts || !runApprovals || !providerSettings) {
         blockers.push("Supabase schema is not applied. Run docs/templates/supabase-schema.sql in the Supabase SQL Editor.");
+      }
+      if (!workerJobs) {
+        warnings.push("Supabase worker_jobs table is missing; external worker queue records will fall back to JSON artifacts.");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

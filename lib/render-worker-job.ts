@@ -3,6 +3,7 @@ import { getRunApprovals } from "@/lib/approvals";
 import { createRenderManifest, type RenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
+import { upsertWorkerJobRecord } from "@/lib/worker-job-records";
 
 export type CreateRenderWorkerJobRequest = {
   confirmQueue?: string;
@@ -134,6 +135,23 @@ export async function createRenderWorkerJob(
   await Promise.all([
     writeRunJson(runId, "render-worker-job.json", job),
     writeRunJson(runId, "production-package.json", pkg),
+    upsertWorkerJobRecord({
+      approvalGate: "render",
+      id: job.job_id,
+      jobArtifactKey: "render-worker-job.json",
+      kind: "render",
+      logArtifactKey: "render-log.json",
+      payload: {
+        output_path: job.output_path,
+        timeline_items: job.inputs.timeline.length,
+      },
+      providerRole: "render",
+      queuedAt: now,
+      runId,
+      status: "queued",
+      updatedAt: now,
+      workerType: "ffmpeg",
+    }),
   ]);
 
   return {

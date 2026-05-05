@@ -65,6 +65,8 @@ The worker writes:
 
 The dashboard operations panel reads those files and shows upload status, failure messages,
 thumbnail status, and the final YouTube URL when the upload completes.
+If `public.worker_jobs` exists in Supabase, the upload job and worker also update a durable queue
+record so future polling workers can discover and report jobs without scanning artifact files.
 
 The upload job defaults to `private` visibility. If a scheduled publish time is set, the worker
 forces YouTube privacy to `private` because YouTube requires scheduled uploads to be private first.
