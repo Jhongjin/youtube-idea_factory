@@ -134,40 +134,40 @@ export async function getRuns(): Promise<RunSummary[]> {
 export function getStageState(pkg: ProductionPackage) {
   return [
     {
-      name: "Intake",
+      name: "접수",
       meta: pkg.brief.topic,
       status: "done" as const,
     },
     {
-      name: "Research",
-      meta: `${pkg.sources.length} source video${pkg.sources.length === 1 ? "" : "s"}`,
+      name: "리서치",
+      meta: `소스 영상 ${pkg.sources.length}개`,
       status: pkg.sources.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "Video Analysis",
-      meta: "Competitor structure and hook teardown",
+      name: "영상 분석",
+      meta: "경쟁 영상 구조와 훅 분석",
       status: "pending" as const,
     },
     {
-      name: "Fact Check",
-      meta: `${pkg.claim_ledger.length} claim${pkg.claim_ledger.length === 1 ? "" : "s"}`,
+      name: "팩트체크",
+      meta: `클레임 ${pkg.claim_ledger.length}개`,
       status: pkg.claim_ledger.length > 0 ? ("review" as const) : ("blocked" as const),
     },
     {
-      name: "Script",
+      name: "대본",
       meta: pkg.script_plan.hook,
       status: pkg.script_plan.outline.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "Storyboard",
-      meta: `${pkg.storyboard.length} scene${pkg.storyboard.length === 1 ? "" : "s"}`,
+      name: "스토리보드",
+      meta: `씬 ${pkg.storyboard.length}개`,
       status: pkg.storyboard.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "Media Prompts",
-      meta: `${pkg.media_prompts.image_prompts?.length ?? 0} image, ${
+      name: "미디어 프롬프트",
+      meta: `이미지 ${pkg.media_prompts.image_prompts?.length ?? 0}개, 영상 ${
         pkg.media_prompts.video_prompts?.length ?? 0
-      } video`,
+      }개`,
       status:
         (pkg.media_prompts.image_prompts?.length ?? 0) +
           (pkg.media_prompts.video_prompts?.length ?? 0) >
@@ -176,18 +176,16 @@ export function getStageState(pkg: ProductionPackage) {
           : ("pending" as const),
     },
     {
-      name: "Publishing",
-      meta: `${pkg.publishing_package.title_candidates?.length ?? 0} title candidate${
-        (pkg.publishing_package.title_candidates?.length ?? 0) === 1 ? "" : "s"
-      }`,
+      name: "배포 패키지",
+      meta: `제목 후보 ${pkg.publishing_package.title_candidates?.length ?? 0}개`,
       status:
         (pkg.publishing_package.title_candidates?.length ?? 0) > 0
           ? ("review" as const)
           : ("pending" as const),
     },
     {
-      name: "QA",
-      meta: `${pkg.qa.blockers.length} blocker${pkg.qa.blockers.length === 1 ? "" : "s"}`,
+      name: "검수",
+      meta: `차단 항목 ${pkg.qa.blockers.length}개`,
       status:
         pkg.qa.status === "pass"
           ? ("done" as const)

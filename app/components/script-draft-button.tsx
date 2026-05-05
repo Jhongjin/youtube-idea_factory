@@ -13,7 +13,7 @@ export function ScriptDraftButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/script/draft`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Script draft failed.");
+      setError(body?.error ?? "대본 초안 생성에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,10 +24,9 @@ export function ScriptDraftButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={draft} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <PenLine size={15} />}
-        Draft Script
+        대본 초안
       </button>
       {error ? <span>{error}</span> : null}
     </div>
   );
 }
-

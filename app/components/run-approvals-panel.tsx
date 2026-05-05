@@ -5,9 +5,9 @@ import { CheckCircle2, Loader2, Save, ShieldCheck } from "lucide-react";
 import type { ApprovalGate, RunApprovals } from "@/lib/approvals";
 
 const gates: Array<{ id: ApprovalGate; label: string }> = [
-  { id: "generation", label: "Generation" },
-  { id: "render", label: "Render" },
-  { id: "publish", label: "Publish" },
+  { id: "generation", label: "생성" },
+  { id: "render", label: "렌더" },
+  { id: "publish", label: "배포" },
 ];
 
 export function RunApprovalsPanel({
@@ -38,7 +38,7 @@ export function RunApprovalsPanel({
       (gate) => approvals[gate.id].approved && !approvals[gate.id].approved_by.trim(),
     );
     if (missingApprover) {
-      setError(`${missingApprover.label} approval needs an approver.`);
+      setError(`${missingApprover.label} 승인에는 승인자가 필요합니다.`);
       setSaved(false);
       return;
     }
@@ -54,7 +54,7 @@ export function RunApprovalsPanel({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Approvals update failed.");
+      setError(body?.error ?? "승인 정보 저장에 실패했습니다.");
       setSaving(false);
       return;
     }
@@ -68,7 +68,7 @@ export function RunApprovalsPanel({
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">Approval Gates</h3>
+        <h3 className="panel-title">승인 게이트</h3>
         <ShieldCheck size={16} />
       </div>
       <div className="panel-body">
@@ -88,7 +88,7 @@ export function RunApprovalsPanel({
                 <input
                   disabled={!approval.approved}
                   onChange={(event) => updateGate(gate.id, { approved_by: event.target.value })}
-                  placeholder="approved by"
+                  placeholder="승인자"
                   value={approval.approved_by}
                 />
                 <textarea
@@ -105,12 +105,12 @@ export function RunApprovalsPanel({
         {saved ? (
           <p className="settings-message saved compact">
             <CheckCircle2 size={14} />
-            Approvals saved.
+            승인 정보가 저장되었습니다.
           </p>
         ) : null}
         <button className="text-button form-submit" disabled={saving} onClick={save} type="button">
           {saving ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-          Save Approvals
+          승인 저장
         </button>
       </div>
     </section>

@@ -13,11 +13,11 @@ export default async function SettingsPage() {
       <div className="settings-topbar">
         <Link className="text-button" href="/">
           <ArrowLeft size={15} />
-          Dashboard
+          대시보드
         </Link>
         <div className="settings-security-note">
           <ShieldCheck size={15} />
-          Local-only provider settings
+          로컬 전용 제공자 설정
         </div>
       </div>
       <ProviderSettingsForm initialSettings={settings} />

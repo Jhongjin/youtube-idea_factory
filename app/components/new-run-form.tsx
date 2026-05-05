@@ -39,7 +39,7 @@ export function NewRunForm() {
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Run creation failed.");
+      setError(body?.error ?? "새 실행 생성에 실패했습니다.");
       setState("error");
       return;
     }
@@ -56,53 +56,53 @@ export function NewRunForm() {
   return (
     <form className="new-run-form" onSubmit={onSubmit}>
       <label>
-        <span>Topic</span>
+        <span>주제</span>
         <input name="topic" required placeholder="AI 뉴스 요약 자동화" />
       </label>
       <div className="form-grid">
         <label>
-          <span>Category</span>
+          <span>카테고리</span>
           <input name="category" placeholder="Technology" />
         </label>
         <label>
-          <span>Format</span>
+          <span>형식</span>
           <select name="format" defaultValue="shorts">
-            <option value="shorts">Shorts</option>
-            <option value="long-form">Long-form</option>
-            <option value="explainer">Explainer</option>
-            <option value="documentary">Documentary</option>
+            <option value="shorts">쇼츠</option>
+            <option value="long-form">롱폼</option>
+            <option value="explainer">설명형</option>
+            <option value="documentary">다큐형</option>
           </select>
         </label>
       </div>
       <div className="form-grid">
         <label>
-          <span>Language</span>
+          <span>언어</span>
           <select name="language" defaultValue="ko">
-            <option value="ko">Korean</option>
-            <option value="en">English</option>
+            <option value="ko">한국어</option>
+            <option value="en">영어</option>
           </select>
         </label>
         <label>
-          <span>Duration</span>
+          <span>길이(초)</span>
           <input name="durationSeconds" type="number" min={1} defaultValue={60} />
         </label>
       </div>
       <label>
-        <span>Audience</span>
+        <span>대상 시청자</span>
         <input name="targetAudience" placeholder="AI 툴에 관심 있는 크리에이터" />
       </label>
       <label>
-        <span>Tone</span>
+        <span>톤</span>
         <input name="tone" placeholder="빠르고 실용적인 설명" />
       </label>
       <label>
-        <span>Seed URLs</span>
+        <span>시드 URL</span>
         <textarea name="seedUrls" required rows={4} placeholder="https://www.youtube.com/watch?v=..." />
       </label>
       {error ? <p className="form-error">{error}</p> : null}
       <button className="text-button primary form-submit" disabled={state === "submitting"} type="submit">
         {state === "submitting" ? <Loader2 className="spin" size={16} /> : <Plus size={16} />}
-        New Run
+        새 실행 만들기
       </button>
     </form>
   );

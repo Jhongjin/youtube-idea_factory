@@ -55,13 +55,13 @@ import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 export const dynamic = "force-dynamic";
 
 const navItems = [
-  { label: "Pipeline", icon: ListChecks, active: true },
-  { label: "Sources", icon: FileSearch, active: false },
-  { label: "Script", icon: FileText, active: false },
-  { label: "Storyboard", icon: Clapperboard, active: false },
-  { label: "Media", icon: Image, active: false },
-  { label: "Publishing", icon: Upload, active: false },
-  { label: "QA", icon: ShieldCheck, active: false },
+  { label: "파이프라인", icon: ListChecks, active: true },
+  { label: "소스", icon: FileSearch, active: false },
+  { label: "대본", icon: FileText, active: false },
+  { label: "스토리보드", icon: Clapperboard, active: false },
+  { label: "미디어", icon: Image, active: false },
+  { label: "배포", icon: Upload, active: false },
+  { label: "검수", icon: ShieldCheck, active: false },
 ];
 
 const skillItems = [
@@ -74,11 +74,46 @@ const skillItems = [
   "youtube-production-qa",
 ];
 
+const skillLabels: Record<string, string> = {
+  "youtube-market-research": "시장 리서치",
+  "youtube-video-analysis": "영상 분석",
+  "youtube-fact-check": "팩트체크",
+  "youtube-script-architect": "대본 설계",
+  "youtube-storyboard": "스토리보드",
+  "youtube-media-prompts": "미디어 프롬프트",
+  "youtube-production-qa": "제작 검수",
+};
+
 const statusCopy = {
-  done: "Done",
-  review: "Review",
-  blocked: "Blocked",
-  pending: "Pending",
+  done: "완료",
+  review: "검토",
+  blocked: "차단",
+  pending: "대기",
+};
+
+const qaStatusCopy: Record<string, string> = {
+  pass: "검수 통과",
+  blocked: "검수 차단",
+  needs_review: "검토 필요",
+};
+
+const transcriptStatusCopy: Record<string, string> = {
+  not_checked: "미확인",
+  missing: "없음",
+  manual_transcript: "수동 입력",
+  available: "확보됨",
+};
+
+const formatCopy: Record<string, string> = {
+  shorts: "쇼츠",
+  longform: "롱폼",
+  explainer: "설명형",
+  documentary: "다큐형",
+};
+
+const languageCopy: Record<string, string> = {
+  ko: "한국어",
+  en: "영어",
 };
 
 const statusIcons = {
@@ -107,12 +142,12 @@ function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSumma
         </div>
         <div>
           <h1>YouTube Idea Factory</h1>
-          <p>Production Ops</p>
+          <p>제작 운영</p>
         </div>
       </div>
 
       <section className="nav-section">
-        <h2>Workspace</h2>
+        <h2>작업공간</h2>
         <ul className="nav-list">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -127,7 +162,7 @@ function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSumma
       </section>
 
       <section className="nav-section">
-        <h2>Runs</h2>
+        <h2>실행 기록</h2>
         <div className="nav-list">
           {runs.slice(0, 5).map((run) => (
             <Link
@@ -139,17 +174,17 @@ function Sidebar({ runs, activeRun }: { runs: RunSummary[]; activeRun?: RunSumma
               <span>{run.id}</span>
             </Link>
           ))}
-          {runs.length === 0 ? <p className="muted">No runs found</p> : null}
+          {runs.length === 0 ? <p className="muted">실행 기록이 없습니다</p> : null}
         </div>
       </section>
 
       <section className="nav-section">
-        <h2>Skills</h2>
+        <h2>스킬</h2>
         <ul className="nav-list">
           {skillItems.map((skill) => (
             <li key={skill} className="nav-item">
               <Sparkles size={15} />
-              {skill.replace("youtube-", "")}
+              {skillLabels[skill] ?? skill}
             </li>
           ))}
         </ul>
@@ -163,15 +198,15 @@ function EmptyState() {
     <main className="main">
       <div className="topbar">
         <div>
-          <p className="eyebrow">Phase 1</p>
-          <h2>Production Workspace</h2>
+          <p className="eyebrow">1단계</p>
+          <h2>제작 작업공간</h2>
         </div>
       </div>
       <div className="empty-state">
         <div>
           <Rocket size={34} />
-          <h3>No production runs yet</h3>
-          <p>New runs appear here as production packages move through the pipeline.</p>
+          <h3>아직 제작 실행이 없습니다</h3>
+          <p>새 실행을 만들면 제작 패키지가 파이프라인을 따라 여기에 표시됩니다.</p>
         </div>
       </div>
     </main>
@@ -184,30 +219,30 @@ function SummaryGrid({ run }: { run: RunSummary }) {
     (pkg.media_prompts.image_prompts?.length ?? 0) +
     (pkg.media_prompts.video_prompts?.length ?? 0);
   return (
-    <section className="summary-grid" aria-label="Run summary">
+    <section className="summary-grid" aria-label="실행 요약">
       <div className="stat">
-        <p className="stat-label">Sources</p>
+        <p className="stat-label">소스</p>
         <p className="stat-value">
           <Search size={19} />
           {pkg.sources.length}
         </p>
       </div>
       <div className="stat">
-        <p className="stat-label">Claims</p>
+        <p className="stat-label">클레임</p>
         <p className="stat-value">
           <ShieldCheck size={19} />
           {pkg.claim_ledger.length}
         </p>
       </div>
       <div className="stat">
-        <p className="stat-label">Scenes</p>
+        <p className="stat-label">씬</p>
         <p className="stat-value">
           <Clapperboard size={19} />
           {pkg.storyboard.length}
         </p>
       </div>
       <div className="stat">
-        <p className="stat-label">Prompts</p>
+        <p className="stat-label">프롬프트</p>
         <p className="stat-value">
           <Image size={19} />
           {promptCount}
@@ -222,8 +257,8 @@ function PipelinePanel({ run }: { run: RunSummary }) {
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">Pipeline</h3>
-        <span className="meta">{run.package.qa.status}</span>
+        <h3 className="panel-title">파이프라인</h3>
+        <span className="meta">{qaStatusCopy[run.package.qa.status] ?? run.package.qa.status}</span>
       </div>
       <div className="panel-body">
         <div className="stage-list">
@@ -247,16 +282,16 @@ function SourcesPanel({ run }: { run: RunSummary }) {
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">Source Videos</h3>
+        <h3 className="panel-title">소스 영상</h3>
         <EnrichSourcesButton runId={run.id} />
       </div>
       <div className="panel-body">
         <table className="source-table">
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Source</th>
-              <th>Transcript</th>
+              <th>순위</th>
+              <th>소스</th>
+              <th>자막/스크립트</th>
             </tr>
           </thead>
           <tbody>
@@ -269,7 +304,11 @@ function SourcesPanel({ run }: { run: RunSummary }) {
                     {source.url}
                   </a>
                 </td>
-                <td>{source.transcript_status ?? "not_checked"}</td>
+                <td>
+                  {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
+                    source.transcript_status ??
+                    "미확인"}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -311,7 +350,7 @@ function Inspector({
       <div className="detail-stack">
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">New Run</h3>
+            <h3 className="panel-title">새 실행</h3>
             <Rocket size={16} />
           </div>
           <div className="panel-body">
@@ -325,7 +364,7 @@ function Inspector({
 
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">Generation Console</h3>
+            <h3 className="panel-title">생성 콘솔</h3>
             <Sparkles size={16} />
           </div>
           <div className="panel-body">
@@ -339,13 +378,13 @@ function Inspector({
 
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">Provider Readiness</h3>
+            <h3 className="panel-title">제공자 준비 상태</h3>
             <KeyRound size={16} />
           </div>
           <div className="panel-body">
             <div className="detail-stack">
               <div className="detail-row">
-                <span>Ready</span>
+                <span>준비됨</span>
                 <span>
                   {readyProviderCount}/{providerRoles.length}
                 </span>
@@ -354,10 +393,10 @@ function Inspector({
                 const setting = providerSettings.roles[role.id];
                 const status =
                   setting.enabled && setting.hasApiKey
-                    ? "ready"
+                    ? "준비됨"
                     : setting.enabled
-                      ? "key needed"
-                      : "off";
+                      ? "키 필요"
+                      : "꺼짐";
                 return (
                   <div className="detail-row" key={role.id}>
                     <span>{role.label}</span>
@@ -367,7 +406,7 @@ function Inspector({
               })}
               <Link className="text-button form-submit" href="/settings">
                 <Settings size={15} />
-                Configure Providers
+                제공자 설정
               </Link>
             </div>
           </div>
@@ -375,33 +414,33 @@ function Inspector({
 
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">Run Brief</h3>
+            <h3 className="panel-title">실행 브리프</h3>
             <BarChart3 size={16} />
           </div>
           <div className="panel-body">
             <div className="detail-stack">
               <div className="detail-row">
-                <span>Run</span>
+                <span>실행</span>
                 <span>{run.id}</span>
               </div>
               <div className="detail-row">
-                <span>Topic</span>
+                <span>주제</span>
                 <span>{brief.topic}</span>
               </div>
               <div className="detail-row">
-                <span>Category</span>
-                <span>{brief.category || "Unassigned"}</span>
+                <span>카테고리</span>
+                <span>{brief.category || "미지정"}</span>
               </div>
               <div className="detail-row">
-                <span>Format</span>
-                <span>{brief.format}</span>
+                <span>형식</span>
+                <span>{formatCopy[brief.format] ?? brief.format}</span>
               </div>
               <div className="detail-row">
-                <span>Language</span>
-                <span>{brief.language}</span>
+                <span>언어</span>
+                <span>{languageCopy[brief.language] ?? brief.language}</span>
               </div>
               <div className="detail-row">
-                <span>Duration</span>
+                <span>길이</span>
                 <span>{brief.target_duration_seconds ?? 0}s</span>
               </div>
             </div>
@@ -410,7 +449,7 @@ function Inspector({
 
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">QA Blockers</h3>
+            <h3 className="panel-title">검수 차단 항목</h3>
             <AlertTriangle size={16} />
           </div>
           <div className="panel-body">
@@ -427,54 +466,54 @@ function Inspector({
 
         <section className="panel">
           <div className="panel-header">
-            <h3 className="panel-title">Assembly</h3>
+            <h3 className="panel-title">영상 조립</h3>
             <Mic2 size={16} />
           </div>
           <div className="panel-body">
             <div className="detail-stack">
               <div className="detail-row">
-                <span>Voice</span>
-                <span>pending</span>
+                <span>음성</span>
+                <span>대기</span>
               </div>
               <div className="detail-row">
-                <span>Subtitles</span>
-                <span>pending</span>
+                <span>자막</span>
+                <span>대기</span>
               </div>
               <div className="detail-row">
                 <span>BGM</span>
-                <span>pending</span>
+                <span>대기</span>
               </div>
               <div className="detail-row">
-                <span>Render</span>
-                <span>{run.package.render_manifest?.render_ready ? "ready" : "pending"}</span>
+                <span>렌더</span>
+                <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
               </div>
               <div className="detail-row">
-                <span>Final file</span>
-                <span>{run.package.render_manifest?.rendered_path ?? "pending"}</span>
+                <span>최종 파일</span>
+                <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
               </div>
               <div className="detail-row">
-                <span>Asset manifest</span>
+                <span>자산 매니페스트</span>
                 <span>
                   {run.package.asset_manifest
-                    ? `${run.package.asset_manifest.items} items`
-                    : "pending"}
+                    ? `${run.package.asset_manifest.items}개`
+                    : "대기"}
                 </span>
               </div>
               <div className="detail-row">
-                <span>Ready queue</span>
+                <span>생성 대기열</span>
                 <span>{run.package.asset_manifest?.ready_for_generation ?? 0}</span>
               </div>
               <div className="detail-row">
-                <span>Queue blocked</span>
+                <span>대기열 차단</span>
                 <span>{run.package.asset_manifest?.blocked ?? 0}</span>
               </div>
               <div className="detail-row">
-                <span>Render blockers</span>
+                <span>렌더 차단</span>
                 <span>{run.package.render_manifest?.blockers ?? 0}</span>
               </div>
               <div className="detail-row">
-                <span>Publish handoff</span>
-                <span>{run.package.publishing_handoff?.ready ? "ready" : "pending"}</span>
+                <span>배포 핸드오프</span>
+                <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
               </div>
             </div>
           </div>
@@ -505,21 +544,22 @@ export default async function Home({
         <main className="main">
           <div className="topbar">
             <div>
-              <p className="eyebrow">Phase 1 Production Run</p>
+              <p className="eyebrow">1단계 제작 실행</p>
               <h2>{activeRun.package.brief.topic}</h2>
               <p className="muted">
-                {activeRun.package.brief.format} / {activeRun.package.brief.language} /{" "}
-                {activeRun.package.brief.target_audience || "Audience pending"}
+                {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} /{" "}
+                {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} /{" "}
+                {activeRun.package.brief.target_audience || "대상 시청자 미정"}
               </p>
             </div>
             <div className="toolbar">
-              <button className="icon-button" title="Refresh run data" type="button">
+              <button className="icon-button" title="실행 데이터 새로고침" type="button">
                 <RefreshCw size={16} />
               </button>
-              <button className="icon-button" title="Open media queue" type="button">
+              <button className="icon-button" title="미디어 대기열 열기" type="button">
                 <Megaphone size={16} />
               </button>
-              <Link className="icon-button" href="/settings" title="Provider settings">
+              <Link className="icon-button" href="/settings" title="제공자 설정">
                 <Settings size={16} />
               </Link>
               <RunDraftFlowButton runId={activeRun.id} />
@@ -566,7 +606,7 @@ export default async function Home({
         <aside className="inspector">
           <section className="panel">
             <div className="panel-header">
-              <h3 className="panel-title">New Run</h3>
+              <h3 className="panel-title">새 실행</h3>
               <Rocket size={16} />
             </div>
             <div className="panel-body">

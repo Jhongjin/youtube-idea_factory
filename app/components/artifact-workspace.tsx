@@ -48,7 +48,7 @@ export function ArtifactWorkspace({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Save failed.");
+      setError(body?.error ?? "저장에 실패했습니다.");
       setSaveState("error");
       return;
     }
@@ -70,7 +70,7 @@ export function ArtifactWorkspace({
     <section className="panel artifact-workspace">
       <div className="panel-header">
         <div>
-          <h3 className="panel-title">Artifact Editor</h3>
+          <h3 className="panel-title">작업 산출물 편집기</h3>
           <p className="panel-subtitle">{activeArtifact.description}</p>
         </div>
         <button
@@ -80,12 +80,12 @@ export function ArtifactWorkspace({
           type="button"
         >
           {saveState === "saved" ? <Check size={16} /> : <Save size={16} />}
-          {saveState === "saving" ? "Saving" : saveState === "saved" ? "Saved" : "Save"}
+          {saveState === "saving" ? "저장 중" : saveState === "saved" ? "저장됨" : "저장"}
         </button>
       </div>
 
       <div className="artifact-layout">
-        <div className="artifact-tabs" role="tablist" aria-label="Run artifacts">
+        <div className="artifact-tabs" role="tablist" aria-label="실행 산출물">
           {artifacts.map((artifact) => (
             <button
               aria-selected={artifact.id === activeArtifact.id}
@@ -109,10 +109,10 @@ export function ArtifactWorkspace({
           <div className="artifact-meta">
             <span>{activeArtifact.filename}</span>
             <span>{activeArtifact.skill}</span>
-            <span>{activeArtifact.size.toLocaleString()} bytes</span>
+            <span>{activeArtifact.size.toLocaleString()}바이트</span>
           </div>
           <textarea
-            aria-label={`${activeArtifact.label} markdown content`}
+            aria-label={`${activeArtifact.label} 마크다운 내용`}
             value={activeContent}
             onChange={(event) =>
               setContents((current) => ({
@@ -122,7 +122,7 @@ export function ArtifactWorkspace({
             }
           />
           <div className="artifact-footer">
-            <span>{isDirty ? "Unsaved changes" : "No local changes"}</span>
+            <span>{isDirty ? "저장되지 않은 변경 사항" : "로컬 변경 없음"}</span>
             {error ? <strong>{error}</strong> : null}
           </div>
         </div>

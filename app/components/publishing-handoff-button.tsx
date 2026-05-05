@@ -13,7 +13,7 @@ export function PublishingHandoffButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/publishing/handoff`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Publishing handoff failed.");
+      setError(body?.error ?? "배포 핸드오프 검사에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function PublishingHandoffButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={buildHandoff} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Send size={15} />}
-        Publish Check
+        배포 검사
       </button>
       {error ? <span>{error}</span> : null}
     </div>

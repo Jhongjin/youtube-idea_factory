@@ -13,7 +13,7 @@ export function AnalysisRefineButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/analysis/refine`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "LLM analysis refinement failed.");
+      setError(body?.error ?? "LLM 분석 고도화에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function AnalysisRefineButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={refine} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Sparkles size={15} />}
-        Refine Analysis
+        분석 고도화
       </button>
       {error ? <span>{error}</span> : null}
     </div>

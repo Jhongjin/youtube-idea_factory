@@ -4,6 +4,12 @@ import { useState } from "react";
 import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
 import type { PackageValidationResult } from "@/lib/package-validation";
 
+const qaStatusCopy: Record<string, string> = {
+  pass: "통과",
+  blocked: "차단",
+  needs_review: "검토 필요",
+};
+
 export function PackageValidationPanel({
   runId,
   initialResult,
@@ -21,7 +27,7 @@ export function PackageValidationPanel({
     const response = await fetch(`/api/runs/${runId}/validate`);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Validation failed.");
+      setError(body?.error ?? "패키지 검증에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -33,25 +39,25 @@ export function PackageValidationPanel({
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">Package Validation</h3>
-        <button className="icon-button" onClick={refresh} title="Refresh validation" type="button">
+        <h3 className="panel-title">패키지 검증</h3>
+        <button className="icon-button" onClick={refresh} title="검증 새로고침" type="button">
           <RefreshCw className={loading ? "spin" : ""} size={15} />
         </button>
       </div>
       <div className="panel-body">
         <div className={`validation-banner ${result.status}`}>
           {result.status === "pass" ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
-          <span>{result.status === "pass" ? "Structure passed" : "Structure failed"}</span>
+          <span>{result.status === "pass" ? "구조 통과" : "구조 실패"}</span>
         </div>
         <div className="validation-grid">
-          <span>Sources</span>
+          <span>소스</span>
           <strong>{result.summary.sources}</strong>
-          <span>Claims</span>
+          <span>클레임</span>
           <strong>{result.summary.claims}</strong>
-          <span>Scenes</span>
+          <span>씬</span>
           <strong>{result.summary.scenes}</strong>
-          <span>QA</span>
-          <strong>{result.summary.qaStatus}</strong>
+          <span>검수</span>
+          <strong>{qaStatusCopy[result.summary.qaStatus] ?? result.summary.qaStatus}</strong>
         </div>
         {result.failures.length > 0 ? (
           <ul className="validation-failures">
@@ -65,4 +71,3 @@ export function PackageValidationPanel({
     </section>
   );
 }
-

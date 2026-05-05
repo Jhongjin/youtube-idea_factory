@@ -13,7 +13,7 @@ export function SubtitleDraftButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/subtitles/draft`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Subtitle draft failed.");
+      setError(body?.error ?? "자막 초안 생성에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function SubtitleDraftButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={draftSubtitles} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Captions size={15} />}
-        Draft Subs
+        자막 초안
       </button>
       {error ? <span>{error}</span> : null}
     </div>

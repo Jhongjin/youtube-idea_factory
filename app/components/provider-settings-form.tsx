@@ -57,7 +57,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Provider settings update failed.");
+      setError(body?.error ?? "제공자 설정 저장에 실패했습니다.");
       setState("error");
       return;
     }
@@ -71,15 +71,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     <form className="provider-settings-form" onSubmit={onSubmit}>
       <div className="settings-summary">
         <div>
-          <p className="eyebrow">Local Provider Config</p>
-          <h2>API Registration</h2>
+          <p className="eyebrow">로컬 제공자 설정</p>
+          <h2>API 등록</h2>
           <p className="muted">
-            Stored in <strong>{settings.configPath}</strong>. API keys are never returned to the browser.
+            <strong>{settings.configPath}</strong>에 저장됩니다. API 키 원문은 브라우저로 반환하지 않습니다.
           </p>
         </div>
         <button className="text-button primary" disabled={state === "saving"} type="submit">
           {state === "saving" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-          Save Settings
+          설정 저장
         </button>
       </div>
 
@@ -87,7 +87,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       {state === "saved" ? (
         <p className="settings-message saved">
           <CheckCircle2 size={15} />
-          Provider settings saved.
+          제공자 설정이 저장되었습니다.
         </p>
       ) : null}
 
@@ -106,13 +106,13 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                   onChange={(event) => updateRole(id, { enabled: event.target.checked })}
                   type="checkbox"
                 />
-                Enabled
+                사용
               </label>
             </div>
 
             <div className="provider-fields">
               <label>
-                <span>Provider</span>
+                <span>제공자</span>
                 <select
                   name={`${id}.provider`}
                   onChange={(event) => updateRole(id, { provider: event.target.value })}
@@ -126,38 +126,38 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                 </select>
               </label>
               <label>
-                <span>Model / Preset</span>
+                <span>모델 / 프리셋</span>
                 <input
                   name={`${id}.model`}
                   onChange={(event) => updateRole(id, { model: event.target.value })}
-                  placeholder="model name, voice, preset, or workflow id"
+                  placeholder="모델명, 음성, 프리셋, 워크플로 ID"
                   value={setting.model}
                 />
               </label>
               <label>
-                <span>API Key</span>
+                <span>API 키</span>
                 <input
                   autoComplete="off"
                   name={`${id}.apiKey`}
-                  placeholder={setting.hasApiKey ? setting.apiKeyPreview : "Paste API key"}
+                  placeholder={setting.hasApiKey ? setting.apiKeyPreview : "API 키 붙여넣기"}
                   type="password"
                 />
               </label>
               <label>
-                <span>Base URL</span>
+                <span>기본 URL</span>
                 <input
                   name={`${id}.baseUrl`}
                   onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
-                  placeholder="optional custom endpoint"
+                  placeholder="선택 사항: 커스텀 엔드포인트"
                   value={setting.baseUrl}
                 />
               </label>
               <label className="provider-notes">
-                <span>Notes</span>
+                <span>메모</span>
                 <textarea
                   name={`${id}.notes`}
                   onChange={(event) => updateRole(id, { notes: event.target.value })}
-                  placeholder="quota, account, safety notes, allowed usage"
+                  placeholder="쿼터, 계정, 안전 메모, 허용 사용 범위"
                   rows={3}
                   value={setting.notes}
                 />
@@ -166,7 +166,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
             <div className="provider-status">
               <KeyRound size={14} />
-              {setting.hasApiKey ? `Key ${setting.apiKeyPreview}` : "No key stored"}
+              {setting.hasApiKey ? `키 ${setting.apiKeyPreview}` : "저장된 키 없음"}
             </div>
           </section>
         ))}

@@ -13,7 +13,7 @@ export function StoryboardDraftButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/storyboard/draft`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Storyboard draft failed.");
+      setError(body?.error ?? "스토리보드 초안 생성에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,10 +24,9 @@ export function StoryboardDraftButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={draft} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Clapperboard size={15} />}
-        Draft Storyboard
+        스토리보드 초안
       </button>
       {error ? <span>{error}</span> : null}
     </div>
   );
 }
-

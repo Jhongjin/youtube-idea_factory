@@ -5,12 +5,12 @@ import { AlertTriangle, Copy, Loader2, Plus, Search } from "lucide-react";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
 
 function formatNumber(value: number) {
-  return new Intl.NumberFormat("en", { notation: "compact" }).format(value);
+  return new Intl.NumberFormat("ko", { notation: "compact" }).format(value);
 }
 
 function formatDuration(seconds: number) {
   if (!seconds) {
-    return "unknown";
+    return "알 수 없음";
   }
   const minutes = Math.floor(seconds / 60);
   const rest = seconds % 60;
@@ -54,7 +54,7 @@ export function YouTubeFinderPanel({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "YouTube search failed.");
+      setError(body?.error ?? "유튜브 검색에 실패했습니다.");
       setCandidates([]);
       setLoading(false);
       return;
@@ -83,7 +83,7 @@ export function YouTubeFinderPanel({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Source import failed.");
+      setError(body?.error ?? "소스 가져오기에 실패했습니다.");
       setImporting(false);
       return;
     }
@@ -95,18 +95,18 @@ export function YouTubeFinderPanel({
     <section className="panel finder-panel">
       <div className="panel-header">
         <div>
-          <h3 className="panel-title">YouTube Finder</h3>
-          <p className="panel-subtitle">Search candidates with the YouTube Data API adapter.</p>
+          <h3 className="panel-title">유튜브 파인더</h3>
+          <p className="panel-subtitle">YouTube Data API 어댑터로 후보 영상을 검색합니다.</p>
         </div>
         {candidates.length > 0 ? (
           <div className="toolbar">
             <button className="text-button" onClick={copyUrls} type="button">
               <Copy size={15} />
-              {copied ? "Copied" : "Copy URLs"}
+              {copied ? "복사됨" : "URL 복사"}
             </button>
             <button className="text-button primary" disabled={importing} onClick={importCandidates} type="button">
               {importing ? <Loader2 className="spin" size={15} /> : <Plus size={15} />}
-              Import
+              가져오기
             </button>
           </div>
         ) : null}
@@ -114,42 +114,42 @@ export function YouTubeFinderPanel({
       <div className="panel-body">
         <form className="finder-form" onSubmit={onSubmit}>
           <label className="finder-query">
-            <span>Query</span>
+            <span>검색어</span>
             <input name="query" defaultValue={defaultQuery} required />
           </label>
           <label>
-            <span>Order</span>
+            <span>정렬</span>
             <select name="order" defaultValue="viewCount">
-              <option value="viewCount">View count</option>
-              <option value="relevance">Relevance</option>
-              <option value="date">Date</option>
-              <option value="rating">Rating</option>
+              <option value="viewCount">조회수</option>
+              <option value="relevance">관련도</option>
+              <option value="date">최신순</option>
+              <option value="rating">평점</option>
             </select>
           </label>
           <label>
-            <span>Results</span>
+            <span>결과 수</span>
             <input name="maxResults" type="number" min={1} max={25} defaultValue={10} />
           </label>
           <label>
-            <span>Region</span>
+            <span>지역</span>
             <input name="regionCode" defaultValue="KR" maxLength={2} />
           </label>
           <label>
-            <span>Language</span>
+            <span>언어</span>
             <input name="relevanceLanguage" defaultValue="ko" maxLength={8} />
           </label>
           <label>
-            <span>Duration</span>
+            <span>길이</span>
             <select name="videoDuration" defaultValue="any">
-              <option value="any">Any</option>
-              <option value="short">Short</option>
-              <option value="medium">Medium</option>
-              <option value="long">Long</option>
+              <option value="any">전체</option>
+              <option value="short">짧은 영상</option>
+              <option value="medium">중간 길이</option>
+              <option value="long">긴 영상</option>
             </select>
           </label>
           <button className="text-button primary" disabled={loading} type="submit">
             {loading ? <Loader2 className="spin" size={15} /> : <Search size={15} />}
-            Search
+            검색
           </button>
         </form>
 
@@ -171,7 +171,7 @@ export function YouTubeFinderPanel({
                   <a href={candidate.url}>{candidate.url}</a>
                 </div>
                 <div className="finder-metrics">
-                  <span>{formatNumber(candidate.viewCount)} views</span>
+                  <span>조회수 {formatNumber(candidate.viewCount)}</span>
                   <span>{formatDuration(candidate.durationSeconds)}</span>
                 </div>
               </article>

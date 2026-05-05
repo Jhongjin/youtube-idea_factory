@@ -13,7 +13,7 @@ export function EnrichSourcesButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/sources/enrich`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Enrichment failed.");
+      setError(body?.error ?? "소스 보강에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,10 +24,9 @@ export function EnrichSourcesButton({ runId }: { runId: string }) {
     <div className="source-action">
       <button className="text-button" disabled={loading} onClick={enrich} type="button">
         {loading ? <RefreshCw className="spin" size={15} /> : <Wand2 size={15} />}
-        Enrich
+        소스 보강
       </button>
       {error ? <span>{error}</span> : null}
     </div>
   );
 }
-

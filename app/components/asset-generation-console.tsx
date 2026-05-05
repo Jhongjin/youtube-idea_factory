@@ -14,6 +14,15 @@ import type { AssetGenerationState, AssetGenerationStateItem } from "@/lib/asset
 const imageConfirmToken = "GENERATE_IMAGE";
 const ttsConfirmToken = "GENERATE_TTS";
 
+const assetKindCopy: Record<string, string> = {
+  image: "이미지",
+  thumbnail: "썸네일",
+  voice: "음성",
+  subtitles: "자막",
+  video: "영상",
+  bgm: "BGM",
+};
+
 function compactPath(value: string) {
   return value.replace(/^artifacts\//, "");
 }
@@ -23,7 +32,15 @@ function AssetStatus({ item }: { item: AssetGenerationStateItem }) {
   return (
     <span className={`asset-status ${ready ? "ready" : "blocked"}`}>
       {ready ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
-      {item.status}
+      {item.status === "pending_generation"
+        ? "생성 대기"
+        : item.status === "generated"
+          ? "생성 완료"
+          : item.status === "pending_approval"
+            ? "승인 대기"
+            : item.status === "failed"
+              ? "실패"
+              : "건너뜀"}
     </span>
   );
 }
@@ -48,12 +65,12 @@ export function AssetGenerationConsole({
 
   async function generateImage(assetId: string) {
     setMessage("");
-    const confirmation = window.prompt(`Type ${imageConfirmToken} to generate this image.`);
+    const confirmation = window.prompt(`${imageConfirmToken}를 입력하면 이미지를 생성합니다.`);
     if (confirmation === null) {
       return;
     }
     if (confirmation !== imageConfirmToken) {
-      setMessage(`Image generation requires ${imageConfirmToken}.`);
+      setMessage(`이미지 생성에는 ${imageConfirmToken}가 필요합니다.`);
       return;
     }
 
@@ -65,7 +82,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "Image generation failed.");
+      setMessage(body?.error ?? "이미지 생성에 실패했습니다.");
       setLoadingId("");
       return;
     }
@@ -87,7 +104,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "Asset registration failed.");
+      setMessage(body?.error ?? "자산 등록에 실패했습니다.");
       setLoadingId("");
       return;
     }
@@ -96,12 +113,12 @@ export function AssetGenerationConsole({
 
   async function generateVoice(assetId: string) {
     setMessage("");
-    const confirmation = window.prompt(`Type ${ttsConfirmToken} to generate voice.`);
+    const confirmation = window.prompt(`${ttsConfirmToken}를 입력하면 음성을 생성합니다.`);
     if (confirmation === null) {
       return;
     }
     if (confirmation !== ttsConfirmToken) {
-      setMessage(`Voice generation requires ${ttsConfirmToken}.`);
+      setMessage(`음성 생성에는 ${ttsConfirmToken}가 필요합니다.`);
       return;
     }
 
@@ -120,7 +137,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "Voice generation failed.");
+      setMessage(body?.error ?? "음성 생성에 실패했습니다.");
       setLoadingId("");
       return;
     }
@@ -133,33 +150,33 @@ export function AssetGenerationConsole({
   return (
     <div className="asset-console">
       <div className="asset-console-summary">
-        <span>{state.summary?.ready ?? 0} ready</span>
-        <span>{state.summary?.generated ?? 0} generated</span>
-        <span>{state.summary?.blocked ?? 0} blocked</span>
+        <span>준비 {state.summary?.ready ?? 0}</span>
+        <span>생성 {state.summary?.generated ?? 0}</span>
+        <span>차단 {state.summary?.blocked ?? 0}</span>
       </div>
 
       <div className="asset-control-grid">
         <label>
-          <span>Image quality</span>
+          <span>이미지 품질</span>
           <select value={quality} onChange={(event) => setQuality(event.target.value as typeof quality)}>
-            <option value="low">low</option>
-            <option value="medium">medium</option>
-            <option value="high">high</option>
-            <option value="auto">auto</option>
+            <option value="low">낮음</option>
+            <option value="medium">보통</option>
+            <option value="high">높음</option>
+            <option value="auto">자동</option>
           </select>
         </label>
         <label>
-          <span>Voice</span>
+          <span>음성</span>
           <input value={voice} onChange={(event) => setVoice(event.target.value)} />
         </label>
       </div>
 
       <label className="asset-narration">
-        <span>Narration</span>
+        <span>내레이션</span>
         <textarea value={narration} onChange={(event) => setNarration(event.target.value)} rows={5} />
       </label>
       <label className="asset-narration">
-        <span>Voice direction</span>
+        <span>음성 지시사항</span>
         <input value={instructions} onChange={(event) => setInstructions(event.target.value)} />
       </label>
 
@@ -182,7 +199,7 @@ export function AssetGenerationConsole({
               type="button"
             >
               {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <ImageIcon size={15} />}
-              Image
+              이미지
             </button>
           </div>
         ))}
@@ -202,7 +219,7 @@ export function AssetGenerationConsole({
               type="button"
             >
               {loadingId === voiceItem.id ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
-              Voice
+              음성
             </button>
           </div>
         ) : null}
@@ -210,17 +227,17 @@ export function AssetGenerationConsole({
 
       <div className="asset-register">
         <label>
-          <span>Asset</span>
+          <span>자산</span>
           <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
             {state.items.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.id} / {item.kind}
+                {item.id} / {assetKindCopy[item.kind] ?? item.kind}
               </option>
             ))}
           </select>
         </label>
         <label>
-          <span>File path</span>
+          <span>파일 경로</span>
           <input
             placeholder={`artifacts/${runId}/...`}
             value={registerPath}
@@ -238,12 +255,12 @@ export function AssetGenerationConsole({
           ) : (
             <FilePlus2 size={15} />
           )}
-          Register
+          등록
         </button>
       </div>
 
       {message ? <p className="form-error">{message}</p> : null}
-      {!state.manifestExists ? <p className="form-error">Asset manifest pending.</p> : null}
+      {!state.manifestExists ? <p className="form-error">자산 매니페스트가 아직 없습니다.</p> : null}
     </div>
   );
 }

@@ -11,12 +11,12 @@ export function LocalRenderButton({ runId }: { runId: string }) {
 
   async function renderVideo() {
     setError("");
-    const confirmation = window.prompt(`Type ${confirmToken} to start local render.`);
+    const confirmation = window.prompt(`${confirmToken}를 입력하면 로컬 렌더를 시작합니다.`);
     if (confirmation === null) {
       return;
     }
     if (confirmation !== confirmToken) {
-      setError(`Render requires ${confirmToken}.`);
+      setError(`렌더를 시작하려면 ${confirmToken}가 필요합니다.`);
       return;
     }
 
@@ -28,7 +28,7 @@ export function LocalRenderButton({ runId }: { runId: string }) {
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Local render failed.");
+      setError(body?.error ?? "로컬 렌더에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -39,7 +39,7 @@ export function LocalRenderButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={renderVideo} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Film size={15} />}
-        Render MP4
+        MP4 렌더
       </button>
       {error ? <span>{error}</span> : null}
     </div>

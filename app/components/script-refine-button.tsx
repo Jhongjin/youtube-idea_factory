@@ -13,7 +13,7 @@ export function ScriptRefineButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/script/refine`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "LLM script refinement failed.");
+      setError(body?.error ?? "LLM 대본 고도화에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function ScriptRefineButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={refine} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Sparkles size={15} />}
-        Refine Script
+        대본 고도화
       </button>
       {error ? <span>{error}</span> : null}
     </div>

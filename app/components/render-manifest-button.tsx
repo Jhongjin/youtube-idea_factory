@@ -13,7 +13,7 @@ export function RenderManifestButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/render/manifest`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Render manifest creation failed.");
+      setError(body?.error ?? "렌더 매니페스트 생성에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function RenderManifestButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={buildRenderManifest} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <PanelsTopLeft size={15} />}
-        Render Plan
+        렌더 계획
       </button>
       {error ? <span>{error}</span> : null}
     </div>

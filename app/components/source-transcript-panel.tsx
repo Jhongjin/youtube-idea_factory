@@ -10,6 +10,13 @@ function getSourceKey(source: SourceVideo) {
   return source.video_id || `source-${source.rank ?? 0}`;
 }
 
+const transcriptStatusCopy: Record<string, string> = {
+  not_checked: "미확인",
+  missing: "없음",
+  manual_transcript: "수동 입력",
+  available: "확보됨",
+};
+
 export function SourceTranscriptPanel({
   runId,
   sources,
@@ -38,7 +45,7 @@ export function SourceTranscriptPanel({
     fetch(`/api/runs/${runId}/transcripts/${activeKey}`)
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error("Transcript load failed.");
+          throw new Error("스크립트 불러오기에 실패했습니다.");
         }
         return (await response.json()) as { transcript: { content: string } };
       })
@@ -79,7 +86,7 @@ export function SourceTranscriptPanel({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "Transcript save failed.");
+      setError(body?.error ?? "스크립트 저장에 실패했습니다.");
       setState("error");
       return;
     }
@@ -95,7 +102,7 @@ export function SourceTranscriptPanel({
     <section className="transcript-panel">
       <div className="transcript-header">
         <div>
-          <h4>Transcript Slot</h4>
+          <h4>스크립트 슬롯</h4>
           <p>{activeSource.title}</p>
         </div>
         <button className="text-button" disabled={!isDirty || state === "saving"} onClick={save} type="button">
@@ -106,7 +113,7 @@ export function SourceTranscriptPanel({
           ) : (
             <Save size={15} />
           )}
-          {state === "saved" ? "Saved" : "Save"}
+          {state === "saved" ? "저장됨" : "저장"}
         </button>
       </div>
 
@@ -123,20 +130,24 @@ export function SourceTranscriptPanel({
               >
                 <FileText size={14} />
                 <span>{source.title}</span>
-                <small>{source.transcript_status ?? "not_checked"}</small>
+                <small>
+                  {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
+                    source.transcript_status ??
+                    "미확인"}
+                </small>
               </button>
             );
           })}
         </div>
         <div className="transcript-editor">
           <textarea
-            aria-label="Manual source transcript"
-            placeholder="Paste or edit the transcript for this source video."
+            aria-label="수동 소스 스크립트"
+            placeholder="이 소스 영상의 스크립트를 붙여넣거나 편집하세요."
             value={content}
             onChange={(event) => setContent(event.target.value)}
           />
           <div className="artifact-footer">
-            <span>{isDirty ? "Unsaved transcript changes" : "No transcript changes"}</span>
+            <span>{isDirty ? "저장되지 않은 스크립트 변경" : "스크립트 변경 없음"}</span>
             {error ? <strong>{error}</strong> : null}
           </div>
         </div>
@@ -144,4 +155,3 @@ export function SourceTranscriptPanel({
     </section>
   );
 }
-
