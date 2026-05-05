@@ -30,6 +30,7 @@ import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { ChannelMemoryButton } from "@/app/components/channel-memory-button";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
+import { FeedbackLoopFlowButton } from "@/app/components/feedback-loop-flow-button";
 import { FeedbackInsightsButton } from "@/app/components/feedback-insights-button";
 import { GenerationQueueButton } from "@/app/components/generation-queue-button";
 import { MediaPromptDraftButton } from "@/app/components/media-prompt-draft-button";
@@ -635,6 +636,10 @@ function Inspector({
                 runId={run.id}
                 videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
               />
+              <FeedbackLoopFlowButton
+                runId={run.id}
+                videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+              />
               <FeedbackInsightsButton runId={run.id} />
               <AbLearningLogButton runId={run.id} />
               <ChannelMemoryButton runId={run.id} />
@@ -744,6 +749,13 @@ export default async function Home({
               <PublishingHandoffButton runId={activeRun.id} />
               <YouTubeUploadJobButton runId={activeRun.id} />
               <PerformanceSnapshotButton
+                runId={activeRun.id}
+                videoId={
+                  activeRun.package.publishing_handoff?.uploaded_video_id ??
+                  activeRun.package.feedback_loop?.video_id
+                }
+              />
+              <FeedbackLoopFlowButton
                 runId={activeRun.id}
                 videoId={
                   activeRun.package.publishing_handoff?.uploaded_video_id ??

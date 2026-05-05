@@ -113,3 +113,4 @@ Build:
 - retention pattern comparison: started with deterministic feedback insights from snapshot history
 - title/thumbnail A/B learning log: started with deterministic variant log
 - channel memory updates: started with per-run memory update artifacts and a global dashboard index
+- dashboard feedback loop action: started with a one-click sequence for snapshot, insights, A/B log, and channel memory

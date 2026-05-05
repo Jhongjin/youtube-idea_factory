@@ -306,6 +306,12 @@ API route: `POST /api/runs/:runId/analytics/channel-memory`.
 
 The dashboard sidebar also shows a channel memory index aggregated across all runs with memory updates. It is available as `GET /api/analytics/channel-memory-index`.
 
+The dashboard `피드백 루프` action runs the whole public-metrics feedback sequence for one uploaded video:
+
+`성과 스냅샷 -> 피드백 인사이트 -> A/B 로그 -> 채널 메모리`
+
+If the run does not already have an uploaded YouTube video ID, the action asks the operator to paste a YouTube URL or video ID before the sequence starts.
+
 ## Draft QA
 
 The dashboard `QA Gate` action creates a deterministic review packet for `08-qa.md`. It checks source coverage, claim status, pending script markers, storyboard scenes, media prompts, publishing metadata, and approval requirements, then updates `production-package.json` with QA status, blockers, warnings, fix list, and publish readiness.
