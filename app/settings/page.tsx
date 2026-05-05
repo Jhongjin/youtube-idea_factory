@@ -46,6 +46,19 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
             </div>
           </div>
           <div className="deployment-status-card">
+            <ShieldCheck size={18} />
+            <div>
+              <strong>관리자 게이트</strong>
+              <span>
+                {readiness.security.mutationGate === "token-protected"
+                  ? "토큰 보호"
+                  : readiness.security.mutationGate === "locked-missing-token"
+                    ? "토큰 필요"
+                    : "로컬 제한 없음"}
+              </span>
+            </div>
+          </div>
+          <div className="deployment-status-card">
             <CheckCircle2 size={18} />
             <div>
               <strong>런 영속 저장</strong>

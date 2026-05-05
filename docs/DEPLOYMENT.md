@@ -44,9 +44,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
 SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_API_KEY=...
+DASHBOARD_ADMIN_TOKEN=...
 ```
 
 Keep provider API keys either in Vercel Environment Variables or the dashboard provider settings. Never commit `.env.local` or `config/provider-settings.local.json`.
+
+## Admin Mutation Gate
+
+All mutating dashboard API routes (`POST`, `PUT`, `DELETE`) are protected by `proxy.ts`.
+On Vercel, set `DASHBOARD_ADMIN_TOKEN` before using the production dashboard. The browser does not receive this value from the server; enter the same token in the dashboard's floating 관리자 토큰 panel so client-side requests can attach it as `X-YIF-Admin-Token`.
+
+If `DASHBOARD_ADMIN_TOKEN` is missing on Vercel, mutating API routes return a locked response instead of running. Local development remains unrestricted unless a token is configured.
 
 ## Supabase Notes
 

@@ -33,6 +33,13 @@ def env_value(name: str, file_values: dict[str, str]) -> str:
     return os.environ.get(name, "").strip() or file_values.get(name, "").strip()
 
 
+def has_admin_token(file_values: dict[str, str]) -> bool:
+    return any(
+        env_value(name, file_values)
+        for name in ("DASHBOARD_ADMIN_TOKEN", "YIF_ADMIN_TOKEN", "ADMIN_ACCESS_TOKEN")
+    )
+
+
 def current_branch() -> str:
     try:
         return subprocess.check_output(
@@ -100,6 +107,7 @@ def main(argv: list[str]) -> int:
         "docs/DEPLOYMENT.md",
         "docs/templates/supabase-schema.sql",
         "app/api/health/deployment/route.ts",
+        "proxy.ts",
     ]
     for relative in required_files:
         if not (ROOT / relative).exists():
@@ -109,6 +117,8 @@ def main(argv: list[str]) -> int:
 
     if args.target == "vercel" and storage_mode == "local":
         blockers.append("APP_STORAGE_MODE=local is not durable on Vercel; use supabase before production operations.")
+    if args.target == "vercel" and not has_admin_token(file_values):
+        blockers.append("DASHBOARD_ADMIN_TOKEN is missing; Vercel mutation APIs will be locked.")
 
     if storage_mode == "supabase":
         if not env_value("NEXT_PUBLIC_SUPABASE_URL", file_values):

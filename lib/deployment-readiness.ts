@@ -27,6 +27,10 @@ export type DeploymentReadiness = {
     youtubeApiKey: boolean;
     youtubeProviderSettings: boolean;
   };
+  security: {
+    adminToken: boolean;
+    mutationGate: "unrestricted-local" | "token-protected" | "locked-missing-token";
+  };
   blockers: string[];
   warnings: string[];
 };
@@ -67,8 +71,18 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     schema,
   };
   const vercel = Boolean(process.env.VERCEL);
+  const adminToken =
+    hasEnv("DASHBOARD_ADMIN_TOKEN") || hasEnv("YIF_ADMIN_TOKEN") || hasEnv("ADMIN_ACCESS_TOKEN");
   const blockers: string[] = [];
   const warnings: string[] = [];
+
+  if (adminToken) {
+    // Mutating API routes are protected by middleware when a token is configured.
+  } else if (vercel) {
+    blockers.push("DASHBOARD_ADMIN_TOKEN is missing; production mutation APIs are locked.");
+  } else {
+    warnings.push("DASHBOARD_ADMIN_TOKEN is missing; local mutation APIs remain unrestricted.");
+  }
 
   if (vercel && appStorageMode === "local") {
     blockers.push("APP_STORAGE_MODE=local is not durable on Vercel serverless runtime.");
@@ -130,6 +144,14 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     providers: {
       youtubeApiKey,
       youtubeProviderSettings,
+    },
+    security: {
+      adminToken,
+      mutationGate: adminToken
+        ? "token-protected"
+        : vercel
+          ? "locked-missing-token"
+          : "unrestricted-local",
     },
     blockers,
     warnings,

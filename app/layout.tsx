@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AdminAccessPanel } from "@/app/components/admin-access-panel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,8 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        {children}
+        <AdminAccessPanel />
+      </body>
     </html>
   );
 }
-

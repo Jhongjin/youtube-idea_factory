@@ -771,7 +771,7 @@ a {
 
 .deployment-status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -988,6 +988,69 @@ a {
   gap: 7px;
   color: var(--muted);
   font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-access-panel {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 34px minmax(190px, 240px) auto;
+  gap: 8px;
+  align-items: center;
+  max-width: calc(100vw - 36px);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+
+.admin-access-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.admin-access-field {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-access-field span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.admin-access-field input {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 7px 9px;
+  outline: none;
+}
+
+.admin-access-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-access-panel p {
+  grid-column: 2 / -1;
+  margin: -2px 0 0;
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -1440,8 +1503,19 @@ a {
 
   .asset-control-grid,
   .asset-register,
-  .asset-action-row {
+  .asset-action-row,
+  .admin-access-panel {
     grid-template-columns: 1fr;
+  }
+
+  .admin-access-panel {
+    position: static;
+    margin: 0 12px 12px;
+    max-width: none;
+  }
+
+  .admin-access-panel p {
+    grid-column: 1;
   }
 
   .finder-form {
