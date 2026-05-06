@@ -62,6 +62,7 @@ import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-me
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
+import { getRunNextActionPlan, type RunNextActionPlan } from "@/lib/run-next-actions";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
@@ -343,6 +344,33 @@ function SummaryGrid({ run }: { run: RunSummary }) {
           <Image size={19} />
           {promptCount}
         </p>
+      </div>
+    </section>
+  );
+}
+
+function RunNextActionPanel({ plan }: { plan: RunNextActionPlan }) {
+  return (
+    <section className="panel next-action-panel">
+      <div className="next-action-main">
+        <div>
+          <p className="eyebrow">다음 작업</p>
+          <h3>{plan.headline}</h3>
+          <p>{plan.detail}</p>
+        </div>
+        <StatusPill status={plan.status} />
+      </div>
+      <div className="next-action-list">
+        {plan.items.map((item) => (
+          <div className="next-action-item" key={`${item.title}-${item.detail}`}>
+            <div>
+              <strong>{item.title}</strong>
+              <span>{item.detail}</span>
+              {item.command ? <code>{item.command}</code> : null}
+            </div>
+            <StatusPill status={item.status} />
+          </div>
+        ))}
       </div>
     </section>
   );
@@ -740,6 +768,17 @@ export default async function Home({
   const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
   const workerStatus = activeRun ? await getRunWorkerStatus(activeRun.id, activeRun.package) : null;
   const storageMode = process.env.APP_STORAGE_MODE?.trim() || "local";
+  const nextActionPlan =
+    activeRun && validation && approvals && generationState && workerStatus
+      ? getRunNextActionPlan({
+          approvals,
+          generationState,
+          pkg: activeRun.package,
+          storageMode,
+          validation,
+          workerStatus,
+        })
+      : null;
 
   return (
     <div className="shell">
@@ -809,6 +848,8 @@ export default async function Home({
           </div>
 
           <SummaryGrid run={activeRun} />
+
+          {nextActionPlan ? <RunNextActionPanel plan={nextActionPlan} /> : null}
 
           <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
 
