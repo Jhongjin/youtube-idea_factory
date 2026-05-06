@@ -3,6 +3,9 @@ import { execFile } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();

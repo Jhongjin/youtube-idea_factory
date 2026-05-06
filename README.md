@@ -115,6 +115,10 @@ Or register the key on `http://localhost:3000/settings` under `YouTube API`.
 Then use the dashboard `YouTube Finder` panel or call `POST /api/youtube/search`.
 Finder results can be imported into the active run with `POST /api/runs/:runId/sources/import`.
 
+Local CLI scripts such as `ops:status`, `render:worker`, and `youtube:upload-worker` automatically
+load `.env.local` from the project root before reading environment variables. Existing PowerShell
+`$env:` values still take priority over `.env.local`.
+
 ## Transcript Slots
 
 The dashboard Sources panel can store manual transcripts per source video. The API routes are:

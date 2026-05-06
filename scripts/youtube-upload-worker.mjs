@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { loadLocalEnv } from "./load-local-env.mjs";
+
+loadLocalEnv();
 
 const root = process.cwd();
 const runsDir = path.join(root, "runs");

@@ -27,6 +27,10 @@ List recent run IDs and queued worker jobs before running a worker command:
 npm run ops:status -- --storage supabase
 ```
 
+The worker CLI scripts automatically load `.env.local` from the project root. Copy `.env.example`
+to `.env.local`, fill the Supabase and YouTube OAuth values, and keep that file out of git.
+PowerShell `$env:` values override `.env.local` for the current terminal.
+
 The command prints real `run-id` values and an upload dry-run example so placeholders such as
 `<run-id>` are not pasted into PowerShell.
 
