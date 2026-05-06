@@ -39,6 +39,23 @@ If this command reports `Supabase request failed`, first confirm the current Pow
 `NODE_TLS_REJECT_UNAUTHORIZED=0` is set, fix the local Windows/Node certificate trust path before
 running unattended workers.
 
+On Node 24+, try the system certificate store first:
+
+```powershell
+$env:NODE_OPTIONS="--use-system-ca"
+npm run ops:status -- --storage supabase
+```
+
+If your network or antivirus injects a private root CA that Node still cannot see, export that root
+certificate as a PEM file and set `NODE_EXTRA_CA_CERTS`:
+
+```powershell
+$env:NODE_EXTRA_CA_CERTS="C:\path\to\company-root-ca.pem"
+npm run ops:status -- --storage supabase
+```
+
+Use `NODE_TLS_REJECT_UNAUTHORIZED=0` only as a short-lived local diagnostic workaround.
+
 ## Render Worker
 
 Direct run:

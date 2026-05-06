@@ -118,6 +118,8 @@ Finder results can be imported into the active run with `POST /api/runs/:runId/s
 Local CLI scripts such as `ops:status`, `render:worker`, and `youtube:upload-worker` automatically
 load `.env.local` from the project root before reading environment variables. Existing PowerShell
 `$env:` values still take priority over `.env.local`.
+If local Node reports `SELF_SIGNED_CERT_IN_CHAIN`, prefer `$env:NODE_OPTIONS="--use-system-ca"` or
+`NODE_EXTRA_CA_CERTS` over disabling TLS verification.
 
 ## Transcript Slots
 

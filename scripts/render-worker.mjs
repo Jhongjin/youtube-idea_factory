@@ -121,14 +121,27 @@ function supabaseConfig() {
 
 async function supabaseRequest(pathSuffix, init = {}) {
   const { key, url } = supabaseConfig();
-  const response = await fetch(`${url}/${pathSuffix}`, {
-    ...init,
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      ...(init.headers ?? {}),
-    },
-  });
+  let response;
+  try {
+    response = await fetch(`${url}/${pathSuffix}`, {
+      ...init,
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch (error) {
+    const cause = error instanceof Error && error.cause instanceof Error ? error.cause : null;
+    const code =
+      cause && "code" in cause && typeof cause.code === "string" ? ` (${cause.code})` : "";
+    throw new Error(
+      [
+        `Supabase request failed${code}: ${cause?.message ?? (error instanceof Error ? error.message : String(error))}`,
+        "Check local network/TLS certificates. Prefer NODE_OPTIONS=--use-system-ca or NODE_EXTRA_CA_CERTS over disabling TLS verification.",
+      ].join("\n"),
+    );
+  }
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     throw new Error(`Supabase ${response.status}: ${text.slice(0, 500)}`);
