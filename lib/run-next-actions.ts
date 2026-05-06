@@ -6,6 +6,32 @@ import type { RunWorkerStatus } from "@/lib/worker-status";
 
 export type RunNextActionStatus = "done" | "review" | "blocked" | "pending";
 
+export type RunPrimaryActionId =
+  | "source-enrich"
+  | "draft-flow"
+  | "analysis-draft"
+  | "analysis-refine"
+  | "script-draft"
+  | "script-refine"
+  | "storyboard-draft"
+  | "media-draft"
+  | "asset-manifest"
+  | "generation-queue"
+  | "subtitle-draft"
+  | "render-manifest"
+  | "render-job"
+  | "local-render"
+  | "publishing-draft"
+  | "publishing-handoff"
+  | "youtube-upload-job"
+  | "performance-snapshot"
+  | "feedback-flow"
+  | "feedback-insights"
+  | "learning-log"
+  | "channel-memory"
+  | "qa-draft"
+  | "open-settings";
+
 export type RunNextActionItem = {
   title: string;
   detail: string;
@@ -16,9 +42,16 @@ export type RunNextActionItem = {
 export type RunNextActionPlan = {
   headline: string;
   detail: string;
+  primaryActionId?: RunPrimaryActionId;
+  secondaryActionIds?: RunPrimaryActionId[];
+  stageIndex: number;
+  stageLabel: string;
+  totalStages: number;
   status: RunNextActionStatus;
   items: RunNextActionItem[];
 };
+
+const totalStages = 10;
 
 function approvalReady(approval: RunApprovals[keyof RunApprovals]) {
   return approval.approved === true && approval.approved_by.trim() !== "" && approval.approved_at.trim() !== "";
@@ -26,6 +59,33 @@ function approvalReady(approval: RunApprovals[keyof RunApprovals]) {
 
 function promptCount(pkg: ProductionPackage) {
   return (pkg.media_prompts.image_prompts?.length ?? 0) + (pkg.media_prompts.video_prompts?.length ?? 0);
+}
+
+function hasTranscript(source: ProductionPackage["sources"][number]) {
+  return source.transcript_status === "manual_transcript" || source.transcript_status === "available";
+}
+
+function step({
+  detail,
+  headline,
+  items,
+  primaryActionId,
+  secondaryActionIds,
+  stageIndex,
+  stageLabel,
+  status,
+}: Omit<RunNextActionPlan, "totalStages">): RunNextActionPlan {
+  return {
+    detail,
+    headline,
+    items,
+    primaryActionId,
+    secondaryActionIds,
+    stageIndex,
+    stageLabel,
+    status,
+    totalStages,
+  };
 }
 
 function firstFailures(validation: PackageValidationResult) {
@@ -52,16 +112,19 @@ export function getRunNextActionPlan({
   workerStatus: RunWorkerStatus;
 }): RunNextActionPlan {
   if (validation.status === "fail") {
-    return {
+    return step({
       detail: `${validation.failures.length}개 구조 문제가 남아 있습니다.`,
       headline: "패키지 구조 보정",
       items: firstFailures(validation),
+      primaryActionId: "qa-draft",
+      stageIndex: 1,
+      stageLabel: "패키지 보정",
       status: "blocked",
-    };
+    });
   }
 
   if (pkg.sources.length === 0) {
-    return {
+    return step({
       detail: "소스 영상이 있어야 분석, 대본, 검수 흐름이 안정적으로 이어집니다.",
       headline: "소스 영상 수집",
       items: [
@@ -71,33 +134,127 @@ export function getRunNextActionPlan({
           title: "유튜브 파인더",
         },
       ],
+      primaryActionId: "source-enrich",
+      stageIndex: 1,
+      stageLabel: "리서치",
       status: "pending",
-    };
+    });
   }
 
-  if (
-    pkg.claim_ledger.length === 0 ||
-    pkg.script_plan.outline.length === 0 ||
-    pkg.storyboard.length === 0 ||
-    promptCount(pkg) === 0 ||
-    (pkg.publishing_package.title_candidates?.length ?? 0) === 0
-  ) {
-    return {
-      detail: "분석부터 검수 초안까지 한 번에 채워 제작 패키지의 기본 뼈대를 만듭니다.",
-      headline: "초안 전체 실행",
+  const missingTranscripts = pkg.sources.filter((source) => !hasTranscript(source)).length;
+  if (missingTranscripts > 0 && pkg.claim_ledger.length === 0) {
+    return step({
+      detail: `${missingTranscripts}개 소스의 자막/스크립트가 미확인입니다. 분석 전에 소스 근거를 먼저 보강하세요.`,
+      headline: "소스 보강",
       items: [
         {
-          detail: "상단의 초안 전체 실행 버튼으로 분석, 대본, 스토리보드, 미디어, 배포, 검수를 생성하세요.",
-          status: "pending",
-          title: "초안 파이프라인",
+          detail: "소스 보강을 실행하거나 소스 영상 패널에서 스크립트를 붙여넣고 저장하세요.",
+          status: "review",
+          title: "스크립트 슬롯",
         },
       ],
+      primaryActionId: "source-enrich",
+      secondaryActionIds: ["analysis-draft"],
+      stageIndex: 2,
+      stageLabel: "소스 검토",
+      status: "review",
+    });
+  }
+
+  if (pkg.claim_ledger.length === 0) {
+    return step({
+      detail: "소스에서 훅, 구조, 팩트체크 후보를 먼저 뽑아야 대본과 QA가 안정적으로 이어집니다.",
+      headline: "분석 초안 생성",
+      items: [
+        {
+          detail: "분석 초안을 실행한 뒤 클레임 장부에서 needs_evidence 항목을 검토하세요.",
+          status: "pending",
+          title: "영상 분석",
+        },
+      ],
+      primaryActionId: "analysis-draft",
+      secondaryActionIds: ["analysis-refine", "draft-flow"],
+      stageIndex: 3,
+      stageLabel: "영상 분석",
       status: "pending",
-    };
+    });
+  }
+
+  if (pkg.script_plan.outline.length === 0) {
+    return step({
+      detail: "분석과 클레임 장부를 바탕으로 훅, 각도, 비트맵을 만듭니다.",
+      headline: "대본 초안 생성",
+      items: [
+        {
+          detail: "대본 초안을 만든 뒤 LLM 제공자가 준비되어 있으면 대본 고도화를 실행하세요.",
+          status: "pending",
+          title: "대본 구성",
+        },
+      ],
+      primaryActionId: "script-draft",
+      secondaryActionIds: ["script-refine"],
+      stageIndex: 4,
+      stageLabel: "대본",
+      status: "pending",
+    });
+  }
+
+  if (pkg.storyboard.length === 0) {
+    return step({
+      detail: "대본 비트를 장면, 내레이션, 화면 문구, 자산 요구사항으로 쪼갭니다.",
+      headline: "스토리보드 생성",
+      items: [
+        {
+          detail: "스토리보드가 있어야 장면별 이미지/영상 프롬프트와 렌더 타임라인이 안정화됩니다.",
+          status: "pending",
+          title: "씬 카드",
+        },
+      ],
+      primaryActionId: "storyboard-draft",
+      stageIndex: 5,
+      stageLabel: "스토리보드",
+      status: "pending",
+    });
+  }
+
+  if (promptCount(pkg) === 0) {
+    return step({
+      detail: "스토리보드를 이미지/영상 생성 프롬프트와 스타일 지침으로 변환합니다.",
+      headline: "미디어 프롬프트 생성",
+      items: [
+        {
+          detail: "생성 비용이 발생하기 전 프롬프트만 먼저 검토 가능한 상태로 만듭니다.",
+          status: "pending",
+          title: "프롬프트 초안",
+        },
+      ],
+      primaryActionId: "media-draft",
+      stageIndex: 6,
+      stageLabel: "미디어 설계",
+      status: "pending",
+    });
+  }
+
+  if ((pkg.publishing_package.title_candidates?.length ?? 0) === 0) {
+    return step({
+      detail: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 초안화합니다.",
+      headline: "배포 패키지 초안 생성",
+      items: [
+        {
+          detail: "최종 업로드 전 QA에서 다시 막히므로 지금은 초안만 만듭니다.",
+          status: "pending",
+          title: "메타데이터",
+        },
+      ],
+      primaryActionId: "publishing-draft",
+      stageIndex: 7,
+      stageLabel: "배포 초안",
+      status: "pending",
+    });
   }
 
   if (pkg.qa.status === "blocked" || pkg.qa.blockers.length > 0) {
-    return {
+    return step({
       detail: `${pkg.qa.blockers.length}개 검수 차단 항목이 남아 있습니다.`,
       headline: "검수 차단 항목 해결",
       items: pkg.qa.blockers.slice(0, 3).map((blocker) => ({
@@ -105,12 +262,16 @@ export function getRunNextActionPlan({
         status: "blocked",
         title: "차단 항목",
       })),
+      primaryActionId: "qa-draft",
+      secondaryActionIds: ["analysis-refine", "script-refine"],
+      stageIndex: 8,
+      stageLabel: "검수",
       status: "blocked",
-    };
+    });
   }
 
   if (!approvalReady(approvals.generation)) {
-    return {
+    return step({
       detail: "이미지, 영상, TTS, 자막, BGM 생성 전에 generation 승인이 필요합니다.",
       headline: "생성 승인",
       items: [
@@ -120,12 +281,15 @@ export function getRunNextActionPlan({
           title: "승인 게이트",
         },
       ],
+      primaryActionId: undefined,
+      stageIndex: 9,
+      stageLabel: "생성 승인",
       status: "review",
-    };
+    });
   }
 
   if (!generationState.manifestExists || !pkg.asset_manifest) {
-    return {
+    return step({
       detail: "스토리보드와 미디어 프롬프트를 생성 가능한 자산 목록으로 변환합니다.",
       headline: "자산 매니페스트 생성",
       items: [
@@ -135,12 +299,15 @@ export function getRunNextActionPlan({
           title: "자산 목록",
         },
       ],
+      primaryActionId: "asset-manifest",
+      stageIndex: 9,
+      stageLabel: "자산 구성",
       status: "pending",
-    };
+    });
   }
 
   if (!generationState.queueExists) {
-    return {
+    return step({
       detail: "승인, 제공자 설정, 프롬프트 상태를 반영해 실제 생성 가능한 항목을 나눕니다.",
       headline: "생성 대기열 준비",
       items: [
@@ -150,12 +317,15 @@ export function getRunNextActionPlan({
           title: "대기열 프리플라이트",
         },
       ],
+      primaryActionId: "generation-queue",
+      stageIndex: 9,
+      stageLabel: "자산 구성",
       status: "pending",
-    };
+    });
   }
 
   if ((generationState.summary?.blocked ?? 0) > 0) {
-    return {
+    return step({
       detail: `${generationState.summary?.blocked ?? 0}개 생성 항목이 제공자 설정, 승인, 프롬프트 문제로 막혀 있습니다.`,
       headline: "생성 대기열 차단 해소",
       items: generationState.items
@@ -166,12 +336,15 @@ export function getRunNextActionPlan({
           status: "blocked" as const,
           title: item.id,
         })),
+      primaryActionId: "open-settings",
+      stageIndex: 9,
+      stageLabel: "자산 구성",
       status: "blocked",
-    };
+    });
   }
 
   if ((generationState.summary?.ready ?? 0) > 0) {
-    return {
+    return step({
       detail: `${generationState.summary?.ready ?? 0}개 자산이 생성 또는 수동 등록을 기다립니다.`,
       headline: "자산 생성",
       items: [
@@ -181,12 +354,15 @@ export function getRunNextActionPlan({
           title: "미디어 자산",
         },
       ],
+      primaryActionId: undefined,
+      stageIndex: 9,
+      stageLabel: "자산 생성",
       status: "pending",
-    };
+    });
   }
 
   if (!approvalReady(approvals.render)) {
-    return {
+    return step({
       detail: "최종 조립과 로컬 ffmpeg 렌더 전에 render 승인이 필요합니다.",
       headline: "렌더 승인",
       items: [
@@ -196,12 +372,14 @@ export function getRunNextActionPlan({
           title: "승인 게이트",
         },
       ],
+      stageIndex: 10,
+      stageLabel: "렌더",
       status: "review",
-    };
+    });
   }
 
   if (!pkg.render_manifest) {
-    return {
+    return step({
       detail: "생성된 자산을 타임라인으로 묶어 렌더 가능성을 확인합니다.",
       headline: "렌더 매니페스트 생성",
       items: [
@@ -211,12 +389,15 @@ export function getRunNextActionPlan({
           title: "렌더 프리플라이트",
         },
       ],
+      primaryActionId: "render-manifest",
+      stageIndex: 10,
+      stageLabel: "렌더",
       status: "pending",
-    };
+    });
   }
 
   if (pkg.render_manifest.blockers > 0 || !pkg.render_manifest.render_ready) {
-    return {
+    return step({
       detail: `${pkg.render_manifest.blockers}개 렌더 차단 항목이 남아 있습니다.`,
       headline: "렌더 차단 해소",
       items: [
@@ -226,12 +407,15 @@ export function getRunNextActionPlan({
           title: "렌더 입력",
         },
       ],
+      primaryActionId: "render-manifest",
+      stageIndex: 10,
+      stageLabel: "렌더",
       status: "blocked",
-    };
+    });
   }
 
   if (workerStatus.render.status === "queued") {
-    return {
+    return step({
       detail: "렌더 작업이 큐에 등록되어 외부 워커 실행을 기다립니다.",
       headline: "렌더 워커 실행",
       items: [
@@ -242,12 +426,14 @@ export function getRunNextActionPlan({
           title: "워커 명령",
         },
       ],
+      stageIndex: 10,
+      stageLabel: "렌더",
       status: "pending",
-    };
+    });
   }
 
   if (workerStatus.render.status !== "completed") {
-    return {
+    return step({
       detail: "렌더 준비가 끝났습니다. 큐 작업을 만들거나 로컬 렌더를 실행할 수 있습니다.",
       headline: "렌더 작업 생성",
       items: [
@@ -257,12 +443,16 @@ export function getRunNextActionPlan({
           title: "렌더 실행",
         },
       ],
+      primaryActionId: "render-job",
+      secondaryActionIds: ["local-render"],
+      stageIndex: 10,
+      stageLabel: "렌더",
       status: "pending",
-    };
+    });
   }
 
   if (!pkg.publishing_handoff?.ready) {
-    return {
+    return step({
       detail: "최종 파일, 썸네일, 제목, 설명, 태그를 업로드 패키지로 잠급니다.",
       headline: "배포 핸드오프 생성",
       items: [
@@ -272,12 +462,15 @@ export function getRunNextActionPlan({
           title: "배포 패키지",
         },
       ],
+      primaryActionId: "publishing-handoff",
+      stageIndex: 10,
+      stageLabel: "배포",
       status: "pending",
-    };
+    });
   }
 
   if (!approvalReady(approvals.publish)) {
-    return {
+    return step({
       detail: "YouTube 업로드나 예약 게시 전에 publish 승인이 필요합니다.",
       headline: "게시 승인",
       items: [
@@ -287,12 +480,14 @@ export function getRunNextActionPlan({
           title: "승인 게이트",
         },
       ],
+      stageIndex: 10,
+      stageLabel: "배포",
       status: "review",
-    };
+    });
   }
 
   if (workerStatus.upload.status === "queued") {
-    return {
+    return step({
       detail: "업로드 작업이 큐에 등록되어 외부 워커 실행을 기다립니다.",
       headline: "YouTube 업로드 워커 실행",
       items: [
@@ -303,12 +498,14 @@ export function getRunNextActionPlan({
           title: "워커 명령",
         },
       ],
+      stageIndex: 10,
+      stageLabel: "배포",
       status: "pending",
-    };
+    });
   }
 
   if (workerStatus.upload.status !== "completed") {
-    return {
+    return step({
       detail: "업로드 전 패키지가 준비됐습니다. 업로드 작업 큐를 만들 수 있습니다.",
       headline: "YouTube 업로드 작업 생성",
       items: [
@@ -318,11 +515,14 @@ export function getRunNextActionPlan({
           title: "업로드 큐",
         },
       ],
+      primaryActionId: "youtube-upload-job",
+      stageIndex: 10,
+      stageLabel: "배포",
       status: "pending",
-    };
+    });
   }
 
-  return {
+  return step({
     detail: pkg.publishing_handoff?.uploaded_video_url ?? "업로드 로그가 완료 상태입니다.",
     headline: "업로드 완료",
     items: [
@@ -332,6 +532,10 @@ export function getRunNextActionPlan({
         title: "피드백 루프",
       },
     ],
+    primaryActionId: "performance-snapshot",
+    secondaryActionIds: ["feedback-flow", "feedback-insights", "learning-log", "channel-memory"],
+    stageIndex: 10,
+    stageLabel: "피드백",
     status: "done",
-  };
+  });
 }

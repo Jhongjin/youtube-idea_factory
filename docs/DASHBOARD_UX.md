@@ -12,6 +12,29 @@ Primary layout:
 
 ## Core Views
 
+## Guided Operation Model
+
+The default dashboard mode should behave like a production wizard:
+
+- Show one primary next action for the active run.
+- Hide broad tool lists behind an explicit advanced-tools disclosure.
+- Disable or defer actions whose prerequisites are missing.
+- Keep approvals hidden until the current stage actually needs generation, render, or publish approval.
+- Use the right inspector for the current stage context instead of showing every possible control at once.
+
+Advanced operators can still open the full tool menu, but the default path is sequential:
+
+1. Intake
+2. Source review
+3. Video analysis
+4. Script
+5. Storyboard
+6. Media prompts
+7. QA review
+8. Asset generation
+9. Render
+10. Publishing and feedback
+
 ### Run Intake
 
 Fields:
@@ -92,4 +115,3 @@ Reviewable metadata:
 ## Design Tone
 
 This is an operator dashboard. Keep it dense, calm, and scannable. Avoid a decorative landing-page feel. Use clear stage states, compact controls, tables, tabs, and side inspectors.
-

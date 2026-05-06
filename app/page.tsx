@@ -9,7 +9,6 @@ import {
   Image,
   KeyRound,
   ListChecks,
-  Megaphone,
   Mic2,
   PlayCircle,
   RefreshCw,
@@ -62,7 +61,11 @@ import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-me
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
-import { getRunNextActionPlan, type RunNextActionPlan } from "@/lib/run-next-actions";
+import {
+  getRunNextActionPlan,
+  type RunNextActionPlan,
+  type RunPrimaryActionId,
+} from "@/lib/run-next-actions";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
@@ -349,16 +352,161 @@ function SummaryGrid({ run }: { run: RunSummary }) {
   );
 }
 
-function RunNextActionPanel({ plan }: { plan: RunNextActionPlan }) {
+function WorkflowActionButton({
+  actionId,
+  run,
+}: {
+  actionId: RunPrimaryActionId;
+  run: RunSummary;
+}) {
+  const runId = run.id;
+  switch (actionId) {
+    case "source-enrich":
+      return <EnrichSourcesButton runId={runId} />;
+    case "draft-flow":
+      return <RunDraftFlowButton runId={runId} />;
+    case "analysis-draft":
+      return <AnalysisDraftButton runId={runId} />;
+    case "analysis-refine":
+      return <AnalysisRefineButton runId={runId} />;
+    case "script-draft":
+      return <ScriptDraftButton runId={runId} />;
+    case "script-refine":
+      return <ScriptRefineButton runId={runId} />;
+    case "storyboard-draft":
+      return <StoryboardDraftButton runId={runId} />;
+    case "media-draft":
+      return <MediaPromptDraftButton runId={runId} />;
+    case "asset-manifest":
+      return <AssetManifestButton runId={runId} />;
+    case "generation-queue":
+      return <GenerationQueueButton runId={runId} />;
+    case "subtitle-draft":
+      return <SubtitleDraftButton runId={runId} />;
+    case "render-manifest":
+      return <RenderManifestButton runId={runId} />;
+    case "render-job":
+      return <RenderWorkerJobButton runId={runId} />;
+    case "local-render":
+      return <LocalRenderButton runId={runId} />;
+    case "publishing-draft":
+      return <PublishingDraftButton runId={runId} />;
+    case "publishing-handoff":
+      return <PublishingHandoffButton runId={runId} />;
+    case "youtube-upload-job":
+      return <YouTubeUploadJobButton runId={runId} />;
+    case "performance-snapshot":
+      return (
+        <PerformanceSnapshotButton
+          runId={runId}
+          videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+        />
+      );
+    case "feedback-flow":
+      return (
+        <FeedbackLoopFlowButton
+          runId={runId}
+          videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+        />
+      );
+    case "feedback-insights":
+      return <FeedbackInsightsButton runId={runId} />;
+    case "learning-log":
+      return <AbLearningLogButton runId={runId} />;
+    case "channel-memory":
+      return <ChannelMemoryButton runId={runId} />;
+    case "qa-draft":
+      return <QaDraftButton runId={runId} />;
+    case "open-settings":
+      return (
+        <Link className="text-button primary" href="/settings">
+          <Settings size={15} />
+          제공자 설정
+        </Link>
+      );
+  }
+}
+
+function AdvancedActionMenu({ run }: { run: RunSummary }) {
+  return (
+    <details className="advanced-action-menu">
+      <summary className="text-button">고급 도구</summary>
+      <div className="advanced-action-grid">
+        <div>
+          <strong>초안</strong>
+          <RunDraftFlowButton runId={run.id} />
+          <AnalysisDraftButton runId={run.id} />
+          <ScriptDraftButton runId={run.id} />
+          <StoryboardDraftButton runId={run.id} />
+          <MediaPromptDraftButton runId={run.id} />
+          <PublishingDraftButton runId={run.id} />
+          <QaDraftButton runId={run.id} />
+        </div>
+        <div>
+          <strong>고도화</strong>
+          <AnalysisRefineButton runId={run.id} />
+          <ScriptRefineButton runId={run.id} />
+          <EnrichSourcesButton runId={run.id} />
+          <AssetManifestButton runId={run.id} />
+          <GenerationQueueButton runId={run.id} />
+          <SubtitleDraftButton runId={run.id} />
+        </div>
+        <div>
+          <strong>렌더/배포</strong>
+          <RenderManifestButton runId={run.id} />
+          <RenderWorkerJobButton runId={run.id} />
+          <LocalRenderButton runId={run.id} />
+          <PublishingHandoffButton runId={run.id} />
+          <YouTubeUploadJobButton runId={run.id} />
+        </div>
+        <div>
+          <strong>피드백</strong>
+          <PerformanceSnapshotButton
+            runId={run.id}
+            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+          />
+          <FeedbackLoopFlowButton
+            runId={run.id}
+            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+          />
+          <FeedbackInsightsButton runId={run.id} />
+          <AbLearningLogButton runId={run.id} />
+          <ChannelMemoryButton runId={run.id} />
+        </div>
+      </div>
+    </details>
+  );
+}
+
+function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+  const secondaryActions = plan.secondaryActionIds ?? [];
   return (
     <section className="panel next-action-panel">
       <div className="next-action-main">
         <div>
-          <p className="eyebrow">다음 작업</p>
+          <p className="eyebrow">
+            {plan.stageIndex}/{plan.totalStages} {plan.stageLabel}
+          </p>
           <h3>{plan.headline}</h3>
           <p>{plan.detail}</p>
         </div>
         <StatusPill status={plan.status} />
+      </div>
+      <div className="next-action-cta">
+        {plan.primaryActionId ? (
+          <div className="guide-action-primary">
+            <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+          </div>
+        ) : (
+          <p className="next-action-note">오른쪽 패널에서 승인 또는 수동 확인을 완료하세요.</p>
+        )}
+        {secondaryActions.length > 0 ? (
+          <div className="guide-action-secondary">
+            {secondaryActions.map((actionId) => (
+              <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+            ))}
+          </div>
+        ) : null}
       </div>
       <div className="next-action-list">
         {plan.items.map((item) => (
@@ -804,52 +952,16 @@ export default async function Home({
               <button className="icon-button" title="실행 데이터 새로고침" type="button">
                 <RefreshCw size={16} />
               </button>
-              <button className="icon-button" title="미디어 대기열 열기" type="button">
-                <Megaphone size={16} />
-              </button>
               <Link className="icon-button" href="/settings" title="제공자 설정">
                 <Settings size={16} />
               </Link>
-              <RunDraftFlowButton runId={activeRun.id} />
-              <AnalysisDraftButton runId={activeRun.id} />
-              <AnalysisRefineButton runId={activeRun.id} />
-              <ScriptDraftButton runId={activeRun.id} />
-              <ScriptRefineButton runId={activeRun.id} />
-              <StoryboardDraftButton runId={activeRun.id} />
-              <MediaPromptDraftButton runId={activeRun.id} />
-              <AssetManifestButton runId={activeRun.id} />
-              <GenerationQueueButton runId={activeRun.id} />
-              <SubtitleDraftButton runId={activeRun.id} />
-              <RenderManifestButton runId={activeRun.id} />
-              <RenderWorkerJobButton runId={activeRun.id} />
-              <LocalRenderButton runId={activeRun.id} />
-              <PublishingDraftButton runId={activeRun.id} />
-              <PublishingHandoffButton runId={activeRun.id} />
-              <YouTubeUploadJobButton runId={activeRun.id} />
-              <PerformanceSnapshotButton
-                runId={activeRun.id}
-                videoId={
-                  activeRun.package.publishing_handoff?.uploaded_video_id ??
-                  activeRun.package.feedback_loop?.video_id
-                }
-              />
-              <FeedbackLoopFlowButton
-                runId={activeRun.id}
-                videoId={
-                  activeRun.package.publishing_handoff?.uploaded_video_id ??
-                  activeRun.package.feedback_loop?.video_id
-                }
-              />
-              <FeedbackInsightsButton runId={activeRun.id} />
-              <AbLearningLogButton runId={activeRun.id} />
-              <ChannelMemoryButton runId={activeRun.id} />
-              <QaDraftButton runId={activeRun.id} />
+              <AdvancedActionMenu run={activeRun} />
             </div>
           </div>
 
           <SummaryGrid run={activeRun} />
 
-          {nextActionPlan ? <RunNextActionPanel plan={nextActionPlan} /> : null}
+          {nextActionPlan ? <RunNextActionPanel plan={nextActionPlan} run={activeRun} /> : null}
 
           <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
 

@@ -172,7 +172,7 @@ a {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
-  max-width: 760px;
+  max-width: 360px;
 }
 
 .icon-button,
@@ -275,6 +275,43 @@ a {
   line-height: 1.45;
 }
 
+.next-action-cta {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 12px;
+}
+
+.guide-action-primary,
+.guide-action-secondary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.guide-action-primary .text-button {
+  min-height: 42px;
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #ffffff;
+  padding: 0 16px;
+  font-size: 14px;
+}
+
+.guide-action-secondary .text-button {
+  background: var(--surface);
+}
+
+.next-action-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 750;
+}
+
 .next-action-list {
   display: grid;
   gap: 8px;
@@ -318,6 +355,56 @@ a {
     "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
   line-height: 1.45;
+}
+
+.advanced-action-menu {
+  position: relative;
+}
+
+.advanced-action-menu summary {
+  list-style: none;
+}
+
+.advanced-action-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-action-grid {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  display: grid;
+  width: min(720px, 86vw);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+
+.advanced-action-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.advanced-action-grid strong {
+  color: #556174;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.advanced-action-grid .draft-action,
+.advanced-action-grid .source-action {
+  align-items: stretch;
+}
+
+.advanced-action-grid .text-button {
+  width: 100%;
 }
 
 .workspace-grid {
@@ -2156,6 +2243,7 @@ a {
   .workspace-grid,
   .next-action-main,
   .next-action-item,
+  .advanced-action-grid,
   .provider-grid,
   .deployment-status-grid,
   .provider-readiness-grid,
@@ -2243,5 +2331,15 @@ a {
   .toolbar {
     justify-content: flex-start;
     max-width: none;
+  }
+
+  .advanced-action-menu {
+    width: 100%;
+  }
+
+  .advanced-action-grid {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
   }
 }
