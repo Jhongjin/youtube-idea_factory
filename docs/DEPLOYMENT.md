@@ -70,6 +70,7 @@ See `docs/YOUTUBE_UPLOAD_WORKER.md` for the dry-run and upload commands, and
 
 All mutating dashboard API routes (`POST`, `PUT`, `DELETE`) are protected by `proxy.ts`.
 On Vercel, set `DASHBOARD_ADMIN_TOKEN` before using the production dashboard. The browser does not receive this value from the server; enter the same token in the dashboard's floating 관리자 토큰 panel so client-side requests can attach it as `X-YIF-Admin-Token`.
+The panel verifies the token with `POST /api/admin/verify` before saving it to browser local storage.
 
 If `DASHBOARD_ADMIN_TOKEN` is missing on Vercel, mutating API routes return a locked response instead of running. Local development remains unrestricted unless a token is configured.
 

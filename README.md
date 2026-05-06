@@ -68,6 +68,7 @@ Open `http://localhost:3000/settings` to choose providers and register API keys 
 In local mode, settings are stored in `config/provider-settings.local.json`, which is ignored by git. In `APP_STORAGE_MODE=supabase`, settings are stored server-side in the Supabase `provider_settings` table. The API route is `GET/PUT /api/settings/providers`; GET responses only return masked key status, never raw API keys.
 
 On Vercel, set `DASHBOARD_ADMIN_TOKEN` and enter it in the floating 관리자 토큰 panel before saving settings, creating runs, generating assets, rendering, or deleting data. Mutating API routes are locked without this token.
+The panel verifies the token with `POST /api/admin/verify` before storing it in the browser.
 
 Before running an adapter directly, check that its provider role is configured:
 

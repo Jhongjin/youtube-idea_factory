@@ -1519,6 +1519,18 @@ a {
   font-weight: 800;
 }
 
+.admin-access-status.verified {
+  color: var(--green);
+}
+
+.admin-access-status.error {
+  color: var(--red);
+}
+
+.admin-access-status.verifying {
+  color: var(--blue);
+}
+
 .approval-list {
   display: grid;
   gap: 10px;
