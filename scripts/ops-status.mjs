@@ -2,8 +2,10 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { loadLocalEnv } from "./load-local-env.mjs";
+import { warnIfInsecureTls } from "./runtime-warnings.mjs";
 
 loadLocalEnv();
+warnIfInsecureTls();
 
 const root = process.cwd();
 const runsDir = path.join(root, "runs");
@@ -223,8 +225,5 @@ async function main() {
 
 main().catch((error) => {
   console.error(error instanceof Error ? error.message : String(error));
-  if (process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0") {
-    console.error("Warning: NODE_TLS_REJECT_UNAUTHORIZED=0 disables TLS certificate verification.");
-  }
   process.exitCode = 1;
 });

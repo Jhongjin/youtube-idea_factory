@@ -2,8 +2,10 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { loadLocalEnv } from "./load-local-env.mjs";
+import { warnIfInsecureTls } from "./runtime-warnings.mjs";
 
 loadLocalEnv();
+warnIfInsecureTls();
 
 const root = process.cwd();
 const runsDir = path.join(root, "runs");

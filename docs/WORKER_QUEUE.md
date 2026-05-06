@@ -55,6 +55,21 @@ npm run ops:status -- --storage supabase
 ```
 
 Use `NODE_TLS_REJECT_UNAUTHORIZED=0` only as a short-lived local diagnostic workaround.
+If a terminal was already set to that workaround, remove it before running real workers:
+
+```powershell
+Remove-Item Env:NODE_TLS_REJECT_UNAUTHORIZED -ErrorAction SilentlyContinue
+```
+
+If the warning returns after opening a fresh terminal, check whether `NODE_TLS_REJECT_UNAUTHORIZED=0`
+was added to Windows environment variables or `.env.local`, then remove it there as well.
+On Windows, a user-level variable can override a safer machine-level value:
+
+```powershell
+[Environment]::GetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", "User")
+[Environment]::GetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", "Machine")
+[Environment]::SetEnvironmentVariable("NODE_TLS_REJECT_UNAUTHORIZED", $null, "User")
+```
 
 ## Render Worker
 

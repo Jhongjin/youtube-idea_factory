@@ -4,8 +4,10 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { promisify } from "node:util";
 import { loadLocalEnv } from "./load-local-env.mjs";
+import { warnIfInsecureTls } from "./runtime-warnings.mjs";
 
 loadLocalEnv();
+warnIfInsecureTls();
 
 const execFileAsync = promisify(execFile);
 const root = process.cwd();
