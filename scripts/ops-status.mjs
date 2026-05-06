@@ -163,6 +163,58 @@ function printRows(title, rows, columns, emptyMessage) {
   }
 }
 
+function printNextActions({ jobs, queuedJobs, runningJobs, runs, storageMode }) {
+  console.log("\nNext actions");
+
+  if (runs.length === 0) {
+    console.log("  Create a run in the dashboard before starting render or upload workers.");
+    return;
+  }
+
+  const latestRun = runs[0];
+  console.log(`  Latest run: ${latestRun.id} (${latestRun.status ?? "unknown"})`);
+
+  if (runningJobs.length > 0) {
+    console.log("  A worker job is already running. Check its log before starting another worker.");
+    return;
+  }
+
+  if (queuedJobs.length === 0) {
+    console.log(
+      "  No queued worker jobs. Continue the dashboard review/generation flow, then queue render or upload from the run page.",
+    );
+    if (latestRun.status === "needs_review") {
+      console.log(
+        "  Status is needs_review: resolve approvals and QA gates before paid generation, render, or upload.",
+      );
+    } else if (latestRun.status === "blocked") {
+      console.log("  Status is blocked: open the run and clear the listed blockers first.");
+    }
+    return;
+  }
+
+  const queuedKinds = new Set(queuedJobs.map((job) => job.kind));
+  if (queuedKinds.has("render")) {
+    console.log(
+      `  Run queued renders: npm run render:worker -- --next --confirm RUN_RENDER_WORKER --storage ${storageMode}`,
+    );
+  }
+  if (queuedKinds.has("youtube-upload")) {
+    console.log(
+      `  Run queued YouTube uploads: npm run youtube:upload-worker -- --next --confirm RUN_YOUTUBE_UPLOAD --storage ${storageMode}`,
+    );
+  }
+
+  const unknownKinds = [...queuedKinds].filter((kind) => kind !== "render" && kind !== "youtube-upload");
+  if (unknownKinds.length > 0) {
+    console.log(`  Queued unsupported job kinds: ${unknownKinds.join(", ")}`);
+  }
+
+  if (jobs.some((job) => job.status === "failed")) {
+    console.log("  Failed jobs are present. Review last-error, then retry from the dashboard when fixed.");
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const storageMode = args.storage ?? process.env.APP_STORAGE_MODE ?? "local";
@@ -214,9 +266,11 @@ async function main() {
     "No worker jobs found.",
   );
 
+  printNextActions({ jobs, queuedJobs, runningJobs, runs, storageMode });
+
   const firstRunId = runs[0]?.id;
   if (firstRunId) {
-    console.log("\nUse a real run id like this:");
+    console.log("\nDirect upload preflight after publishing handoff exists:");
     console.log(
       `  npm run youtube:upload-worker -- --run-id ${firstRunId} --confirm RUN_YOUTUBE_UPLOAD --storage ${storageMode} --dry-run`,
     );

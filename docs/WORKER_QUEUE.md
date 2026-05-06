@@ -33,6 +33,8 @@ PowerShell `$env:` values override `.env.local` for the current terminal.
 
 The command prints real `run-id` values and an upload dry-run example so placeholders such as
 `<run-id>` are not pasted into PowerShell.
+It also prints a short next-action block. If a run exists but `Recent worker jobs` is empty, keep
+working in the dashboard until render or upload jobs are explicitly queued from the run page.
 
 If this command reports `Supabase request failed`, first confirm the current PowerShell window has
 `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set. If worker commands only work when
