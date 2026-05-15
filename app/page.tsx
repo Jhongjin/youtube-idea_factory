@@ -154,6 +154,67 @@ const pipelineStageTargets = [
   { href: "#artifact-qa", label: "검수 탭" },
 ];
 
+function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
+  if (
+    plan.primaryActionId === "source-enrich" ||
+    plan.stageLabel === "리서치" ||
+    plan.stageLabel === "소스 검토"
+  ) {
+    return 1;
+  }
+  if (
+    plan.primaryActionId === "analysis-draft" ||
+    plan.primaryActionId === "analysis-refine" ||
+    plan.primaryActionId === "draft-flow" ||
+    plan.stageLabel === "영상 분석"
+  ) {
+    return 2;
+  }
+  if (
+    plan.primaryActionId === "script-draft" ||
+    plan.primaryActionId === "script-refine" ||
+    plan.stageLabel === "대본"
+  ) {
+    return 4;
+  }
+  if (plan.primaryActionId === "storyboard-draft" || plan.stageLabel === "스토리보드") {
+    return 5;
+  }
+  if (
+    plan.primaryActionId === "media-draft" ||
+    plan.primaryActionId === "asset-manifest" ||
+    plan.primaryActionId === "generation-queue" ||
+    plan.primaryActionId === "subtitle-draft" ||
+    plan.stageLabel === "미디어 설계" ||
+    plan.stageLabel === "자산 구성" ||
+    plan.stageLabel === "자산 생성" ||
+    plan.stageLabel === "생성 승인"
+  ) {
+    return 6;
+  }
+  if (
+    plan.primaryActionId === "publishing-draft" ||
+    plan.primaryActionId === "publishing-handoff" ||
+    plan.primaryActionId === "youtube-upload-job" ||
+    plan.stageLabel === "배포 초안" ||
+    plan.stageLabel === "배포" ||
+    plan.stageLabel === "피드백"
+  ) {
+    return 7;
+  }
+  if (plan.primaryActionId === "qa-draft" || plan.stageLabel === "검수" || plan.stageLabel === "패키지 보정") {
+    return 8;
+  }
+  if (
+    plan.primaryActionId === "render-manifest" ||
+    plan.primaryActionId === "render-job" ||
+    plan.primaryActionId === "local-render"
+  ) {
+    return 7;
+  }
+  return 0;
+}
+
 const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
@@ -562,8 +623,9 @@ function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSu
   );
 }
 
-function PipelinePanel({ run }: { run: RunSummary }) {
+function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionPlan; run: RunSummary }) {
   const stages = getStageState(run.package);
+  const currentStageIndex = getCurrentPipelineStageIndex(nextActionPlan);
   return (
     <section className="panel" id="pipeline-panel">
       <div className="panel-header">
@@ -574,15 +636,21 @@ function PipelinePanel({ run }: { run: RunSummary }) {
         <div className="stage-list">
           {stages.map((stage, index) => {
             const target = pipelineStageTargets[index] ?? { href: "#next-action", label: "보기" };
+            const isCurrent = index === currentStageIndex;
             return (
-              <a className="stage-row" href={target.href} key={stage.name}>
+              <a
+                aria-current={isCurrent ? "step" : undefined}
+                className={`stage-row ${isCurrent ? "current" : ""}`}
+                href={target.href}
+                key={stage.name}
+              >
                 <div className="stage-index">{String(index + 1).padStart(2, "0")}</div>
                 <div>
                   <p className="stage-name">{stage.name}</p>
                   <p className="stage-meta">{stage.meta}</p>
                 </div>
                 <div className="stage-row-action">
-                  <span>{target.label}</span>
+                  <span>{isCurrent ? "현재 단계" : target.label}</span>
                   <StatusPill status={stage.status} />
                 </div>
               </a>
@@ -1143,7 +1211,7 @@ export default async function Home({
           </div>
 
           <div className="workspace-grid">
-            <PipelinePanel run={activeRun} />
+            <PipelinePanel nextActionPlan={nextActionPlan!} run={activeRun} />
             <SourcesPanel run={activeRun} />
           </div>
 

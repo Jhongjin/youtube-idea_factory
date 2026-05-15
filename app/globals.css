@@ -536,6 +536,21 @@ a {
   background: #f8fafc;
 }
 
+.stage-row.current {
+  border-color: var(--blue);
+  background: #edf4ff;
+}
+
+.stage-row.current .stage-index {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.stage-row.current .stage-name,
+.stage-row.current .stage-row-action > span {
+  color: var(--blue);
+}
+
 .stage-row:active {
   transform: translateY(1px);
 }
