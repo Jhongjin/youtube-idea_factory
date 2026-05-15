@@ -334,6 +334,69 @@ a {
   color: var(--blue);
 }
 
+.first-run-guide {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #cfe3d7;
+  border-radius: 8px;
+  background: #f4fbf6;
+  padding: 12px;
+}
+
+.first-run-guide-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.first-run-guide-heading strong {
+  color: #182235;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.first-run-guide-heading span {
+  color: #346538;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.first-run-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.first-run-guide-steps a {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  border: 1px solid #dbece0;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.first-run-guide-steps span {
+  color: #346538;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.first-run-guide-steps strong {
+  color: #182235;
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.first-run-guide-steps small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
 .next-action-cta {
   display: grid;
   gap: 10px;

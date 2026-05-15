@@ -564,6 +564,48 @@ function AdvancedActionMenu({ run }: { run: RunSummary }) {
   );
 }
 
+function isEarlyProductionRun(run: RunSummary) {
+  return (
+    run.package.claim_ledger.length === 0 &&
+    run.package.storyboard.length === 0 &&
+    (run.package.media_prompts.image_prompts?.length ?? 0) === 0 &&
+    (run.package.media_prompts.video_prompts?.length ?? 0) === 0
+  );
+}
+
+function FirstRunGuide({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+  if (!isEarlyProductionRun(run) || plan.stageIndex > 3) {
+    return null;
+  }
+
+  const sourceCount = run.package.sources.length;
+  return (
+    <div className="first-run-guide">
+      <div className="first-run-guide-heading">
+        <strong>새 실행 다음 순서</strong>
+        <span>시드 소스 {sourceCount}개로 시작했습니다.</span>
+      </div>
+      <div className="first-run-guide-steps">
+        <a href="#youtube-finder">
+          <span>01</span>
+          <strong>후보 더 찾기</strong>
+          <small>유튜브 파인더에서 관련 소스를 보강합니다.</small>
+        </a>
+        <a href="#sources-panel">
+          <span>02</span>
+          <strong>스크립트 확인</strong>
+          <small>자막 슬롯을 채우거나 STT를 실행합니다.</small>
+        </a>
+        <a href="#next-action">
+          <span>03</span>
+          <strong>초안 실행</strong>
+          <small>현재 단계 버튼으로 분석과 대본 흐름을 시작합니다.</small>
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
   const secondaryActions = plan.secondaryActionIds ?? [];
   return (
@@ -591,6 +633,7 @@ function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSu
           );
         })}
       </div>
+      <FirstRunGuide plan={plan} run={run} />
       <div className="next-action-cta">
         {plan.primaryActionId ? (
           <div className="guide-action-primary">
