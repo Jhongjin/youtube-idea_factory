@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ProviderSettingsForm } from "@/app/components/provider-settings-form";
+import { requireUser } from "@/lib/auth";
 import { getDeploymentReadiness, type DeploymentReadiness } from "@/lib/deployment-readiness";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles } from "@/lib/provider-settings-shared";
@@ -60,9 +61,9 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
               <strong>관리자 게이트</strong>
               <span>
                 {readiness.security.mutationGate === "token-protected"
-                  ? "토큰 보호"
+                  ? "로그인 보호"
                   : readiness.security.mutationGate === "locked-missing-token"
-                    ? "토큰 필요"
+                    ? "세션 비밀키 필요"
                     : "로컬 제한 없음"}
               </span>
             </div>
@@ -95,6 +96,12 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
           </span>
           <span className={readiness.supabase.schema.providerSettings ? "ready" : "blocked"}>
             provider_settings
+          </span>
+          <span className={readiness.supabase.schema.appUsers ? "ready" : "blocked"}>
+            app_users
+          </span>
+          <span className={readiness.supabase.schema.youtubeChannels ? "ready" : "blocked"}>
+            youtube_channels
           </span>
         </div>
 
@@ -190,6 +197,7 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
 }
 
 export default async function SettingsPage() {
+  await requireUser({ redirectTo: "/login?next=/settings", role: "admin" });
   const [settings, readiness] = await Promise.all([
     getSafeProviderSettings(),
     getDeploymentReadiness(),
@@ -198,7 +206,7 @@ export default async function SettingsPage() {
   return (
     <main className="settings-page">
       <div className="settings-topbar">
-        <Link className="text-button" href="/">
+        <Link className="text-button" href="/dashboard">
           <ArrowLeft size={15} />
           대시보드
         </Link>

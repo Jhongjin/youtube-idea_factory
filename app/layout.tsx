@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AdminAccessPanel } from "@/app/components/admin-access-panel";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +21,6 @@ export default function RootLayout({
           본문으로 이동
         </a>
         {children}
-        <AdminAccessPanel />
       </body>
     </html>
   );

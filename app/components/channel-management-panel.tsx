@@ -1,0 +1,192 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { BadgeCheck, KeyRound, Save, Tv } from "lucide-react";
+import type { SafeYouTubeChannel, YouTubeChannelStatus } from "@/lib/channels";
+
+const statusLabels: Record<YouTubeChannelStatus, string> = {
+  active: "운영 중",
+  paused: "일시정지",
+  setup: "설정 중",
+};
+
+export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChannel[] }) {
+  const router = useRouter();
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function createChannel(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    const data = new FormData(event.currentTarget);
+    const response = await fetch("/api/admin/channels", {
+      body: JSON.stringify(Object.fromEntries(data.entries())),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (!response.ok) {
+      setError(body?.error ?? "채널을 저장하지 못했습니다.");
+      return;
+    }
+    event.currentTarget.reset();
+    setMessage("채널을 저장했습니다.");
+    router.refresh();
+  }
+
+  async function updateChannel(event: FormEvent<HTMLFormElement>, channelId: string) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    const data = new FormData(event.currentTarget);
+    const payload = Object.fromEntries(
+      Array.from(data.entries()).filter(([, value]) => String(value).trim() !== ""),
+    );
+    const response = await fetch(`/api/admin/channels/${encodeURIComponent(channelId)}`, {
+      body: JSON.stringify(payload),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (!response.ok) {
+      setError(body?.error ?? "채널을 수정하지 못했습니다.");
+      return;
+    }
+    setMessage("채널 정보를 저장했습니다.");
+    router.refresh();
+  }
+
+  return (
+    <div className="admin-stack">
+      <section className="admin-card channel-hero-card">
+        <div className="admin-card-header">
+          <div>
+            <h2>브랜드 채널 등록</h2>
+            <p>
+              브랜드 채널별 업로드 OAuth와 Analytics OAuth 상태를 분리해 관리합니다. 토큰 값은 목록에 다시
+              노출하지 않습니다.
+            </p>
+          </div>
+          <Tv size={19} />
+        </div>
+        <form className="channel-form-grid" onSubmit={createChannel}>
+          <label>
+            <span>브랜드명</span>
+            <input name="brand_name" placeholder="Senior Shorts Lab" required />
+          </label>
+          <label>
+            <span>채널명</span>
+            <input name="channel_name" placeholder="AI 뉴스 쇼츠" required />
+          </label>
+          <label>
+            <span>채널 ID</span>
+            <input name="channel_id" placeholder="UC..." />
+          </label>
+          <label>
+            <span>핸들</span>
+            <input name="youtube_handle" placeholder="@brand-channel" />
+          </label>
+          <label>
+            <span>담당자 이메일</span>
+            <input name="owner_email" placeholder="operator@example.com" type="email" />
+          </label>
+          <label>
+            <span>기본 언어</span>
+            <input defaultValue="ko" name="default_language" />
+          </label>
+          <label>
+            <span>업로드 refresh token</span>
+            <input name="upload_refresh_token" placeholder="youtube.upload scope" type="password" />
+          </label>
+          <label>
+            <span>Analytics refresh token</span>
+            <input name="analytics_refresh_token" placeholder="yt-analytics.readonly scope" type="password" />
+          </label>
+          <label>
+            <span>상태</span>
+            <select defaultValue="setup" name="status">
+              {Object.entries(statusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="channel-notes">
+            <span>메모</span>
+            <textarea name="notes" placeholder="콘텐츠 포지션, 업로드 주기, 주의할 브랜드 톤" rows={3} />
+          </label>
+          <button className="text-button primary" type="submit">
+            <Save size={15} />
+            채널 저장
+          </button>
+        </form>
+      </section>
+
+      {error ? <p className="settings-message error">{error}</p> : null}
+      {message ? <p className="settings-message saved">{message}</p> : null}
+
+      <section className="channel-grid">
+        {channels.length === 0 ? (
+          <div className="admin-empty">
+            <KeyRound size={28} />
+            <h2>등록된 채널이 없습니다</h2>
+            <p>브랜드 채널 10개를 운영한다면 채널마다 업로드/분석 권한 상태를 따로 관리하세요.</p>
+          </div>
+        ) : null}
+        {channels.map((channel) => (
+          <article className="channel-card" key={channel.id}>
+            <div className="channel-card-top">
+              <div>
+                <span>{channel.brand_name}</span>
+                <h2>{channel.channel_name}</h2>
+                <p>{channel.youtube_handle || channel.channel_id || "채널 식별자 미입력"}</p>
+              </div>
+              <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
+            </div>
+            <div className="channel-token-grid">
+              <span className={channel.has_upload_refresh_token ? "ready" : "missing"}>
+                <BadgeCheck size={14} />
+                업로드 OAuth {channel.has_upload_refresh_token ? "등록" : "필요"}
+              </span>
+              <span className={channel.has_analytics_refresh_token ? "ready" : "missing"}>
+                <BadgeCheck size={14} />
+                Analytics OAuth {channel.has_analytics_refresh_token ? "등록" : "필요"}
+              </span>
+            </div>
+            <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
+              <label>
+                <span>상태</span>
+                <select defaultValue={channel.status} name="status">
+                  {Object.entries(statusLabels).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span>업로드 토큰 교체</span>
+                <input name="upload_refresh_token" placeholder="비워두면 유지" type="password" />
+              </label>
+              <label>
+                <span>분석 토큰 교체</span>
+                <input name="analytics_refresh_token" placeholder="비워두면 유지" type="password" />
+              </label>
+              <label>
+                <span>메모</span>
+                <input defaultValue={channel.notes ?? ""} name="notes" placeholder="운영 메모" />
+              </label>
+              <button className="text-button" type="submit">
+                <Save size={15} />
+                업데이트
+              </button>
+            </form>
+          </article>
+        ))}
+      </section>
+    </div>
+  );
+}

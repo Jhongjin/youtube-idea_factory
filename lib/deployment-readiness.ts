@@ -40,6 +40,8 @@ export type DeploymentReadiness = {
       providerSettings: boolean;
       runApprovals: boolean;
       runArtifacts: boolean;
+      appUsers: boolean;
+      youtubeChannels: boolean;
       workerJobs: boolean;
     };
   };
@@ -150,6 +152,8 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     providerSettings: false,
     runApprovals: false,
     runArtifacts: false,
+    appUsers: false,
+    youtubeChannels: false,
     workerJobs: false,
   };
   const supabase = {
@@ -164,16 +168,20 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   };
   const vercel = Boolean(process.env.VERCEL);
   const adminToken =
-    hasEnv("DASHBOARD_ADMIN_TOKEN") || hasEnv("YIF_ADMIN_TOKEN") || hasEnv("ADMIN_ACCESS_TOKEN");
+    hasEnv("DASHBOARD_ADMIN_PASSWORD") ||
+    hasEnv("DASHBOARD_ADMIN_TOKEN") ||
+    hasEnv("DASHBOARD_SESSION_SECRET") ||
+    hasEnv("YIF_ADMIN_TOKEN") ||
+    hasEnv("ADMIN_ACCESS_TOKEN");
   const blockers: string[] = [];
   const warnings: string[] = [];
 
   if (adminToken) {
-    // Mutating API routes are protected by middleware when a token is configured.
+    // Mutating API routes are protected by login sessions when credentials are configured.
   } else if (vercel) {
-    blockers.push("DASHBOARD_ADMIN_TOKEN is missing; production mutation APIs are locked.");
+    blockers.push("DASHBOARD_ADMIN_PASSWORD or DASHBOARD_ADMIN_TOKEN is missing; production login is locked.");
   } else {
-    warnings.push("DASHBOARD_ADMIN_TOKEN is missing; local mutation APIs remain unrestricted.");
+    warnings.push("DASHBOARD_ADMIN_PASSWORD is missing; local login falls back to development-only session settings.");
   }
 
   if (vercel && appStorageMode === "local") {
@@ -184,12 +192,22 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   }
   if (appStorageMode === "supabase" && supabase.readyForServerAdapters) {
     try {
-      const [productionRuns, runArtifacts, runApprovals, providerSettings, workerJobs] =
+      const [
+        productionRuns,
+        runArtifacts,
+        runApprovals,
+        providerSettings,
+        appUsers,
+        youtubeChannels,
+        workerJobs,
+      ] =
         await Promise.all([
           hasSupabaseTable("production_runs"),
           hasSupabaseTable("run_artifacts"),
           hasSupabaseTable("run_approvals"),
           hasSupabaseTable("provider_settings"),
+          hasSupabaseTable("app_users"),
+          hasSupabaseTable("youtube_channels"),
           hasSupabaseTable("worker_jobs"),
         ]);
       schema.checked = true;
@@ -197,6 +215,8 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       schema.runArtifacts = runArtifacts;
       schema.runApprovals = runApprovals;
       schema.providerSettings = providerSettings;
+      schema.appUsers = appUsers;
+      schema.youtubeChannels = youtubeChannels;
       schema.workerJobs = workerJobs;
       supabase.durableRunStateEnabled = productionRuns && runArtifacts && runApprovals;
       supabase.providerSettingsEnabled = providerSettings;
@@ -205,6 +225,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       }
       if (!workerJobs) {
         warnings.push("Supabase worker_jobs table is missing; external worker queue records will fall back to JSON artifacts.");
+      }
+      if (!appUsers || !youtubeChannels) {
+        warnings.push("Supabase auth/channel tables are missing. Run docs/templates/supabase-auth-schema.sql for persistent login and channel management.");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

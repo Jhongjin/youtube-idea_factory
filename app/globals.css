@@ -2183,81 +2183,6 @@ button:disabled,
   color: var(--blue);
 }
 
-.admin-access-panel {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 30;
-  display: grid;
-  grid-template-columns: 34px minmax(190px, 240px) auto;
-  gap: 8px;
-  align-items: center;
-  max-width: calc(100vw - 36px);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: var(--shadow);
-  padding: 10px;
-}
-
-.admin-access-icon {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border-radius: 8px;
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
-.admin-access-field {
-  display: grid;
-  gap: 4px;
-}
-
-.admin-access-field span {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 850;
-}
-
-.admin-access-field input {
-  width: 100%;
-  min-height: 34px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--ink);
-  padding: 7px 9px;
-  outline: none;
-}
-
-.admin-access-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.admin-access-panel p {
-  grid-column: 2 / -1;
-  margin: -2px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.admin-access-status.verified {
-  color: var(--green);
-}
-
-.admin-access-status.error {
-  color: var(--red);
-}
-
-.admin-access-status.verifying {
-  color: var(--blue);
-}
-
 .approval-list {
   display: grid;
   gap: 10px;
@@ -2833,7 +2758,6 @@ button:disabled,
   .asset-register,
   .asset-action-row,
   .upload-job-grid,
-  .admin-access-panel,
   .form-grid,
   .format-presets,
   .run-builder-steps {
@@ -2843,16 +2767,6 @@ button:disabled,
   .upload-job-popover {
     left: 0;
     right: auto;
-  }
-
-  .admin-access-panel {
-    position: static;
-    margin: 0 12px 12px;
-    max-width: none;
-  }
-
-  .admin-access-panel p {
-    grid-column: 1;
   }
 
   .finder-form {
@@ -2910,5 +2824,887 @@ button:disabled,
     position: static;
     width: 100%;
     margin-top: 8px;
+  }
+}
+
+.marketing-page {
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(15, 118, 110, 0.16), transparent 28rem),
+    linear-gradient(135deg, #f7faf9 0%, #eef3f1 48%, #f8fbff 100%);
+  color: #101923;
+}
+
+.marketing-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 22px 0;
+}
+
+.marketing-brand,
+.marketing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.marketing-brand {
+  font-weight: 900;
+}
+
+.marketing-brand-mark {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 10px;
+  background: #102027;
+  color: #ffffff;
+}
+
+.marketing-nav-links {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.marketing-nav-links a {
+  color: #3d4d5f;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.marketing-nav-links .marketing-nav-cta {
+  border: 1px solid rgba(16, 32, 39, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #102027;
+  padding: 9px 12px;
+  box-shadow: 0 16px 45px rgba(31, 45, 61, 0.08);
+}
+
+.marketing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(420px, 1.08fr);
+  gap: clamp(24px, 5vw, 76px);
+  align-items: center;
+  width: min(1180px, calc(100% - 40px));
+  min-height: calc(100dvh - 86px);
+  margin: 0 auto;
+  padding: 52px 0 86px;
+}
+
+.hero-copy {
+  display: grid;
+  align-content: center;
+  gap: 22px;
+}
+
+.hero-kicker {
+  margin: 0;
+  color: #0f766e;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-copy h1,
+.marketing-section h2,
+.marketing-cta h2,
+.auth-copy h1,
+.admin-hero h1,
+.account-hero h1 {
+  margin: 0;
+  color: #101923;
+  font-size: clamp(42px, 6vw, 76px);
+  line-height: 0.98;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.hero-copy p,
+.section-heading p,
+.marketing-cta p,
+.auth-copy p,
+.admin-hero p,
+.account-hero p {
+  max-width: 64ch;
+  margin: 0;
+  color: #526173;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.digital-art-panel {
+  position: relative;
+  min-height: 560px;
+  overflow: hidden;
+  border: 1px solid rgba(16, 32, 39, 0.12);
+  border-radius: 28px;
+  background:
+    linear-gradient(145deg, rgba(16, 32, 39, 0.96), rgba(21, 37, 48, 0.92)),
+    url("https://picsum.photos/seed/youtube-idea-factory-console/1200/900");
+  background-blend-mode: multiply;
+  background-position: center;
+  background-size: cover;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 40px 80px rgba(22, 41, 51, 0.22);
+}
+
+.digital-art-panel::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(135deg, rgba(0, 0, 0, 0.95), transparent 86%);
+}
+
+.orbital-board {
+  position: absolute;
+  inset: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.orbit-ring {
+  position: absolute;
+  border: 1px solid rgba(168, 232, 218, 0.2);
+  border-radius: 999px;
+  animation: drift 8s ease-in-out infinite alternate;
+}
+
+.orbit-ring.one {
+  width: 58%;
+  height: 58%;
+}
+
+.orbit-ring.two {
+  width: 78%;
+  height: 34%;
+  transform: rotate(-18deg);
+  animation-delay: 1.2s;
+}
+
+.signal-column {
+  position: absolute;
+  top: 13%;
+  display: grid;
+  gap: 8px;
+}
+
+.signal-column.left {
+  left: 9%;
+}
+
+.signal-column.right {
+  right: 9%;
+}
+
+.signal-column span {
+  display: block;
+  width: 72px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(168, 232, 218, 0.18);
+}
+
+.core-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 178px;
+  height: 178px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  background: rgba(11, 20, 27, 0.82);
+  color: #ffffff;
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.34);
+  text-align: center;
+}
+
+.core-node strong,
+.core-node small {
+  display: block;
+}
+
+.core-node strong {
+  font-size: 16px;
+}
+
+.core-node small {
+  margin-top: -18px;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.floating-node {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e9fffa;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  backdrop-filter: blur(14px);
+  animation: floaty 5.5s ease-in-out infinite;
+}
+
+.node-a {
+  top: 22%;
+  left: 18%;
+}
+
+.node-b {
+  right: 15%;
+  bottom: 26%;
+  animation-delay: 0.8s;
+}
+
+.node-c {
+  right: 24%;
+  top: 25%;
+  animation-delay: 1.4s;
+}
+
+.marketing-section,
+.marketing-cta {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+}
+
+.marketing-section {
+  padding: 88px 0 42px;
+}
+
+.section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(280px, 0.75fr);
+  gap: 30px;
+  align-items: end;
+  margin-bottom: 28px;
+}
+
+.marketing-section h2,
+.marketing-cta h2,
+.auth-copy h1,
+.admin-hero h1,
+.account-hero h1 {
+  font-size: clamp(34px, 4.6vw, 58px);
+}
+
+.feature-masonry {
+  display: grid;
+  grid-auto-flow: dense;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.feature-tile {
+  display: grid;
+  align-content: end;
+  min-height: 260px;
+  grid-column: span 2;
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(31, 45, 61, 0.08);
+}
+
+.feature-tile.tile-2 {
+  grid-column: span 2;
+  min-height: 330px;
+  background: #102027;
+  color: #ffffff;
+}
+
+.feature-tile.tile-2 p,
+.feature-tile.tile-2 h3 {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.feature-tile.wide {
+  grid-column: span 6;
+  grid-template-columns: minmax(220px, 0.5fr) minmax(0, 1fr);
+  align-items: end;
+  min-height: 210px;
+  background: #e7f3ef;
+}
+
+.feature-tile h3 {
+  margin: 14px 0 8px;
+  font-size: 22px;
+  line-height: 1.12;
+}
+
+.feature-tile p {
+  margin: 0;
+  color: #526173;
+  line-height: 1.6;
+}
+
+.pipeline-strip {
+  display: grid;
+  grid-auto-columns: minmax(180px, 1fr);
+  grid-auto-flow: column;
+  gap: 1px;
+  width: min(1180px, calc(100% - 40px));
+  overflow-x: auto;
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 18px;
+  margin: 56px auto 0;
+  background: rgba(16, 32, 39, 0.1);
+}
+
+.pipeline-strip-item {
+  display: grid;
+  gap: 18px;
+  min-height: 130px;
+  background: rgba(255, 255, 255, 0.76);
+  padding: 18px;
+}
+
+.pipeline-strip-item span {
+  color: #0f766e;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.pipeline-strip-item strong {
+  align-self: end;
+  font-size: 16px;
+}
+
+.marketing-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 26px;
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 24px;
+  margin-top: 74px;
+  margin-bottom: 48px;
+  background: #ffffff;
+  padding: clamp(24px, 5vw, 48px);
+  box-shadow: 0 24px 60px rgba(31, 45, 61, 0.08);
+}
+
+.auth-page,
+.account-page,
+.admin-page {
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(15, 118, 110, 0.12), transparent 26rem),
+    #f4f7f6;
+  padding: 28px;
+}
+
+.auth-back,
+.account-nav,
+.admin-nav {
+  width: min(1120px, 100%);
+  margin: 0 auto 18px;
+}
+
+.account-nav,
+.admin-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-nav > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.auth-card {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.72fr) minmax(0, 0.85fr);
+  gap: 0;
+  width: min(1120px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 26px;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 30px 80px rgba(31, 45, 61, 0.1);
+}
+
+.auth-art,
+.signup-aside {
+  position: relative;
+  display: grid;
+  min-height: 620px;
+  place-items: center;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(16, 32, 39, 0.95), rgba(23, 48, 54, 0.94)),
+    url("https://picsum.photos/seed/youtube-auth-console/1000/1200");
+  background-blend-mode: multiply;
+  background-position: center;
+  background-size: cover;
+  color: #ffffff;
+}
+
+.auth-art-grid {
+  position: absolute;
+  inset: 42px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.auth-art-grid span {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.auth-copy,
+.signup-aside {
+  display: grid;
+  align-content: center;
+  gap: 18px;
+  padding: clamp(28px, 5vw, 58px);
+}
+
+.auth-copy code {
+  border-radius: 6px;
+  background: #eef4f1;
+  padding: 2px 6px;
+}
+
+.auth-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.auth-form label,
+.admin-form-grid label,
+.user-row label,
+.channel-form-grid label,
+.channel-update-grid label {
+  display: grid;
+  gap: 6px;
+}
+
+.auth-form span,
+.admin-form-grid span,
+.user-row label span,
+.channel-form-grid span,
+.channel-update-grid span {
+  color: #667386;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.auth-form input,
+.admin-form-grid input,
+.admin-form-grid select,
+.user-row input,
+.user-row select,
+.channel-form-grid input,
+.channel-form-grid select,
+.channel-form-grid textarea,
+.channel-update-grid input,
+.channel-update-grid select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d6dee7;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #101923;
+  padding: 9px 11px;
+  outline: none;
+}
+
+.auth-submit {
+  min-height: 44px;
+}
+
+.auth-footnote {
+  font-size: 13px;
+}
+
+.auth-footnote a {
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.signup-card {
+  grid-template-columns: minmax(0, 0.9fr) minmax(320px, 0.55fr);
+}
+
+.signup-aside {
+  min-height: auto;
+  place-items: start;
+}
+
+.signup-aside h2,
+.signup-aside p {
+  margin: 0;
+}
+
+.account-hero,
+.admin-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+  width: min(1120px, 100%);
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 24px;
+  margin: 0 auto 18px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: clamp(24px, 5vw, 46px);
+  box-shadow: 0 24px 60px rgba(31, 45, 61, 0.08);
+}
+
+.account-role,
+.admin-count,
+.admin-hero-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  border-radius: 999px;
+  background: #e7f3ef;
+  color: #0f766e;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.account-grid,
+.admin-stack {
+  display: grid;
+  gap: 14px;
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.account-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.account-action-card,
+.admin-card,
+.channel-card,
+.admin-empty {
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(31, 45, 61, 0.07);
+}
+
+.account-action-card {
+  display: grid;
+  gap: 10px;
+  min-height: 190px;
+  align-content: end;
+  padding: 22px;
+}
+
+.account-action-card strong {
+  font-size: 20px;
+}
+
+.account-action-card span {
+  color: #526173;
+  line-height: 1.55;
+}
+
+.admin-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.admin-card,
+.channel-card,
+.admin-empty {
+  padding: 20px;
+}
+
+.admin-card-header,
+.channel-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.admin-card-header h2,
+.channel-card h2,
+.admin-empty h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.admin-card-header p,
+.channel-card p,
+.admin-empty p {
+  margin: 6px 0 0;
+  color: #526173;
+  line-height: 1.55;
+}
+
+.admin-form-grid,
+.channel-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.channel-form-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.channel-notes {
+  grid-column: span 2;
+}
+
+.user-list {
+  display: grid;
+  gap: 10px;
+}
+
+.user-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(120px, 0.7fr)) auto;
+  gap: 10px;
+  align-items: end;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 12px;
+}
+
+.user-identity {
+  display: grid;
+  gap: 4px;
+  align-self: center;
+}
+
+.user-identity span,
+.user-identity small {
+  color: #667386;
+}
+
+.user-identity small {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.channel-hero-card {
+  overflow: hidden;
+}
+
+.channel-card-top span {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-status {
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.channel-status.active {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.channel-status.setup {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.channel-status.paused {
+  background: var(--surface-2);
+  color: #59677a;
+}
+
+.channel-token-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.channel-token-grid span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-token-grid .ready {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.channel-token-grid .missing {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.channel-update-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.admin-empty {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  grid-column: 1 / -1;
+  text-align: center;
+}
+
+@keyframes drift {
+  from {
+    opacity: 0.58;
+    transform: translate3d(0, 0, 0) rotate(-8deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(10px, -12px, 0) rotate(8deg);
+  }
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@media (max-width: 980px) {
+  .marketing-hero,
+  .section-heading,
+  .auth-card,
+  .signup-card,
+  .account-grid,
+  .channel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .digital-art-panel,
+  .auth-art {
+    min-height: 420px;
+  }
+
+  .feature-masonry,
+  .admin-form-grid,
+  .channel-form-grid,
+  .user-row,
+  .channel-update-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-tile,
+  .feature-tile.tile-2,
+  .feature-tile.wide,
+  .channel-notes {
+    grid-column: span 1;
+  }
+
+  .feature-tile.wide {
+    grid-template-columns: 1fr;
+  }
+
+  .account-hero,
+  .admin-hero,
+  .marketing-cta {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 640px) {
+  .marketing-nav,
+  .marketing-nav-links,
+  .account-nav,
+  .admin-nav {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .marketing-hero,
+  .marketing-section,
+  .marketing-cta,
+  .pipeline-strip {
+    width: min(100% - 24px, 1180px);
+  }
+
+  .auth-page,
+  .account-page,
+  .admin-page {
+    padding: 16px;
+  }
+
+  .hero-copy h1,
+  .marketing-section h2,
+  .marketing-cta h2,
+  .auth-copy h1,
+  .admin-hero h1,
+  .account-hero h1 {
+    font-size: clamp(34px, 12vw, 48px);
   }
 }

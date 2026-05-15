@@ -15,6 +15,8 @@ This queue keeps the build loop explicit:
 
 | ID | Phase | Status | Owner | Can Skip | Next Action |
 | --- | --- | --- | --- | --- | --- |
+| public-home-auth-admin-channels | Phase 7 | done | codex | no | Public homepage, login/signup/my page, admin users, and channel management are implemented. |
+| channel-oauth-inventory | Phase 7 | done | codex | no | Apply `docs/templates/supabase-auth-schema.sql` in Supabase for durable channel/user records. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
 | youtube-analytics-oauth | Phase 6 | deferred | operator | no | Enable YouTube Analytics API and issue a refresh token with analytics read scope. |
