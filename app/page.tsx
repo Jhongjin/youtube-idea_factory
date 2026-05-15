@@ -1032,6 +1032,7 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
   const missingTranscripts = run.package.sources.filter(
     (source) => source.transcript_status !== "manual_transcript" && source.transcript_status !== "available",
   ).length;
+  const secondaryActions = plan.secondaryActionIds ?? [];
   return (
     <section className="panel focus-inspector-panel">
       <div className="panel-header">
@@ -1047,6 +1048,35 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
         <div className="stage-focus-summary">
           <strong>{plan.headline}</strong>
           <span>{plan.detail}</span>
+        </div>
+        <div className="stage-focus-actions">
+          {plan.primaryActionId ? (
+            <div className="stage-focus-primary-action">
+              <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+            </div>
+          ) : (
+            <p className="stage-focus-note">승인, 수동 등록, 또는 워커 실행처럼 버튼 밖의 확인이 필요한 단계입니다.</p>
+          )}
+          {secondaryActions.length > 0 ? (
+            <div className="stage-focus-secondary-actions">
+              {secondaryActions.map((actionId) => (
+                <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+              ))}
+            </div>
+          ) : null}
+        </div>
+        <div className="stage-focus-inputs">
+          <p>필요한 확인</p>
+          {plan.items.map((item) => (
+            <div className="stage-focus-input" key={`${item.title}-${item.detail}`}>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{item.detail}</span>
+                {item.command ? <code>{item.command}</code> : null}
+              </div>
+              <StatusPill status={item.status} />
+            </div>
+          ))}
         </div>
         <div className="stage-focus-checks">
           <div>
@@ -1097,15 +1127,18 @@ function Inspector({
   const showAssembly = stage === "렌더" || stage === "배포";
   const showFeedback = stage === "피드백";
   const showProviderReadiness = showGeneration || nextActionPlan.primaryActionId === "open-settings";
+  const showValidationImmediate = validation.status === "fail";
+  const showBlockersImmediate =
+    run.package.qa.blockers.length > 0 && (stage === "검수" || nextActionPlan.status === "blocked");
 
   return (
     <aside className="inspector">
       <div className="detail-stack">
         <StageFocusPanel plan={nextActionPlan} run={run} />
 
-        <PackageValidationPanel initialResult={validation} runId={run.id} />
+        {showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
 
-        <BlockersPanel blockers={run.package.qa.blockers} />
+        {showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
 
         {showApprovals ? (
           <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
@@ -1122,7 +1155,15 @@ function Inspector({
         {showFeedback ? <FeedbackPanel run={run} /> : null}
 
         <details className="inspector-more">
-          <summary>기타 운영 패널</summary>
+          <summary>검증 세부</summary>
+          <div className="detail-stack">
+            {!showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
+            {!showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
+          </div>
+        </details>
+
+        <details className="inspector-more">
+          <summary>운영 세부</summary>
           <div className="detail-stack">
             <NewRunPanel />
             <BriefPanel run={run} />

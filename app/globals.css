@@ -1033,6 +1033,102 @@ a {
   line-height: 1.45;
 }
 
+.stage-focus-actions {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.stage-focus-primary-action,
+.stage-focus-secondary-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stage-focus-primary-action .text-button {
+  width: 100%;
+  min-height: 42px;
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.stage-focus-secondary-actions .text-button {
+  flex: 1 1 138px;
+  min-width: 0;
+  background: #ffffff;
+}
+
+.stage-focus-note {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--muted);
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.stage-focus-inputs {
+  display: grid;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.stage-focus-inputs > p {
+  margin: 0;
+  color: #455366;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.stage-focus-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 9px;
+}
+
+.stage-focus-input div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.stage-focus-input strong {
+  color: #182235;
+  font-size: 12px;
+}
+
+.stage-focus-input span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.stage-focus-input code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #182235;
+  padding: 8px;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .stage-focus-checks {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

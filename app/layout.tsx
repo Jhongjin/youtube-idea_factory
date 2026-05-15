@@ -5,6 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "YouTube Idea Factory",
   description: "AI-assisted YouTube production operations dashboard",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
