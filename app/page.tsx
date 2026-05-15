@@ -129,6 +129,19 @@ const feedbackStatusCopy: Record<string, string> = {
   watch: "주의 관찰",
 };
 
+const workflowStageLabels = [
+  "리서치",
+  "소스",
+  "분석",
+  "대본",
+  "스토리보드",
+  "미디어",
+  "배포 초안",
+  "검수",
+  "생성",
+  "렌더/배포",
+];
+
 const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
@@ -491,6 +504,19 @@ function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSu
           <p>{plan.detail}</p>
         </div>
         <StatusPill status={plan.status} />
+      </div>
+      <div aria-label="제작 단계" className="stage-rail">
+        {workflowStageLabels.map((label, index) => {
+          const stageNumber = index + 1;
+          const state =
+            stageNumber < plan.stageIndex ? "done" : stageNumber === plan.stageIndex ? "current" : "pending";
+          return (
+            <div className={`stage-rail-item ${state}`} key={label}>
+              <span>{stageNumber.toString().padStart(2, "0")}</span>
+              <strong>{label}</strong>
+            </div>
+          );
+        })}
       </div>
       <div className="next-action-cta">
         {plan.primaryActionId ? (
