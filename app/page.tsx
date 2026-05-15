@@ -1270,7 +1270,7 @@ export default async function Home({
         workQueueSummary={workQueueSummary}
       />
       {activeRun ? (
-        <main className="main">
+        <main className="main" id="main-content">
           <div className="topbar">
             <div>
               <p className="eyebrow">1단계 제작 실행</p>

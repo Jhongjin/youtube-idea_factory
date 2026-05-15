@@ -18,6 +18,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <a className="skip-link" href="#main-content">
+          본문으로 이동
+        </a>
         {children}
         <AdminAccessPanel />
       </body>

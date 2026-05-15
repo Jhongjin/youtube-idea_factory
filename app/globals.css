@@ -40,6 +40,26 @@ body {
     sans-serif;
 }
 
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 80;
+  transform: translateY(-140%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #182235;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 850;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 #next-action,
 #youtube-finder,
 #pipeline-panel,
@@ -199,7 +219,52 @@ a {
   background: var(--surface);
   color: #263447;
   box-shadow: none;
-  cursor: default;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.icon-button:hover,
+.text-button:hover {
+  border-color: #b8c5d5;
+  background: #f8fafc;
+}
+
+.text-button.primary:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.text-button.danger:hover {
+  border-color: #e8a5a1;
+  background: #fff1ef;
+}
+
+.icon-button:active,
+.text-button:active {
+  transform: translateY(1px);
+}
+
+.icon-button:focus-visible,
+.text-button:focus-visible,
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+button:disabled,
+.text-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
 }
 
 .icon-button {
@@ -1228,7 +1293,7 @@ a {
 
 .inspector-more summary {
   min-height: 42px;
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   padding: 12px 14px;
   color: #334155;
@@ -1635,6 +1700,21 @@ a {
   padding: 0 8px;
   font-size: 11px;
   font-weight: 850;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.format-presets button:hover {
+  border-color: #b8c5d5;
+  background: #f8fafc;
+}
+
+.format-presets button:active {
+  transform: translateY(1px);
 }
 
 .format-presets button.active {
@@ -1651,7 +1731,7 @@ a {
 
 .new-run-advanced summary {
   min-height: 38px;
-  cursor: default;
+  cursor: pointer;
   list-style: none;
   padding: 10px 11px;
   color: #334155;
@@ -2467,7 +2547,11 @@ a {
   color: #455366;
   padding: 0 10px;
   text-align: left;
-  cursor: default;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
 }
 
 .artifact-tab span {

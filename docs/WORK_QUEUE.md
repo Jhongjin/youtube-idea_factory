@@ -18,6 +18,7 @@ This queue keeps the build loop explicit:
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
 | youtube-analytics-oauth | Phase 6 | deferred | operator | no | Enable YouTube Analytics API and issue a refresh token with analytics read scope. |
+| taste-interaction-polish | Phase 5 | done | codex | no | Apply TasteSkill interaction/accessibility polish: skip link, focus rings, pointer cursors, and hover/active states. |
 | first-run-next-step-guide | Phase 5 | done | codex | no | Show a three-step guide after new run creation so operators move from sources to draft execution. |
 | new-run-onboarding-form | Phase 5 | done | codex | no | Rework the new-run form into brief, source, and advanced option sections with preset buttons. |
 | inspector-action-focus | Phase 5 | done | codex | no | Put current-stage action buttons and required inputs in the inspector focus card, with validation/operations folded. |
