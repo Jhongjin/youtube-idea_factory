@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, Save } from "lucide-react";
 import type { RunArtifact } from "@/lib/artifacts";
 
@@ -22,6 +22,24 @@ export function ArtifactWorkspace({
   );
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    function selectArtifactFromHash() {
+      const artifactId = window.location.hash.replace(/^#artifact-/, "");
+      if (!artifactId || artifactId === window.location.hash) {
+        return;
+      }
+      if (artifacts.some((artifact) => artifact.id === artifactId)) {
+        setActiveId(artifactId);
+        setSaveState("idle");
+        setError("");
+      }
+    }
+
+    selectArtifactFromHash();
+    window.addEventListener("hashchange", selectArtifactFromHash);
+    return () => window.removeEventListener("hashchange", selectArtifactFromHash);
+  }, [artifacts]);
 
   const activeArtifact = useMemo(
     () => artifacts.find((artifact) => artifact.id === activeId) ?? artifacts[0],
@@ -67,7 +85,7 @@ export function ArtifactWorkspace({
   }
 
   return (
-    <section className="panel artifact-workspace">
+    <section className="panel artifact-workspace" id="artifact-workspace">
       <div className="panel-header">
         <div>
           <h3 className="panel-title">작업 산출물 편집기</h3>
@@ -90,6 +108,7 @@ export function ArtifactWorkspace({
             <button
               aria-selected={artifact.id === activeArtifact.id}
               className={`artifact-tab ${artifact.id === activeArtifact.id ? "active" : ""}`}
+              id={`artifact-${artifact.id}`}
               key={artifact.id}
               onClick={() => {
                 setActiveId(artifact.id);

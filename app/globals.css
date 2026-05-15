@@ -27,13 +27,26 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Geist", "Geist Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+}
+
+#next-action,
+#youtube-finder,
+#pipeline-panel,
+#sources-panel,
+#artifact-workspace,
+[id^="artifact-"] {
+  scroll-margin-top: 18px;
 }
 
 button,
@@ -504,7 +517,7 @@ a {
 
 .stage-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
+  grid-template-columns: 34px minmax(0, 1fr) minmax(132px, auto);
   gap: 12px;
   align-items: center;
   min-height: 56px;
@@ -512,6 +525,24 @@ a {
   border-radius: 8px;
   padding: 9px 11px;
   background: #ffffff;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.stage-row:hover {
+  border-color: #b8c5d5;
+  background: #f8fafc;
+}
+
+.stage-row:active {
+  transform: translateY(1px);
+}
+
+.stage-row:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }
 
 .stage-index {
@@ -535,6 +566,21 @@ a {
 .stage-meta {
   margin: 0;
   font-size: 12px;
+}
+
+.stage-row-action {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stage-row-action > span {
+  color: #556174;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
 }
 
 .status-pill {

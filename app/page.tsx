@@ -142,6 +142,18 @@ const workflowStageLabels = [
   "렌더/배포",
 ];
 
+const pipelineStageTargets = [
+  { href: "#next-action", label: "현재 작업" },
+  { href: "#youtube-finder", label: "후보 검색" },
+  { href: "#artifact-video-analysis", label: "분석 탭" },
+  { href: "#artifact-claim-ledger", label: "클레임 탭" },
+  { href: "#artifact-script-plan", label: "대본 탭" },
+  { href: "#artifact-storyboard", label: "씬 탭" },
+  { href: "#artifact-media-prompts", label: "프롬프트 탭" },
+  { href: "#artifact-publishing", label: "배포 탭" },
+  { href: "#artifact-qa", label: "검수 탭" },
+];
+
 const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
@@ -494,7 +506,7 @@ function AdvancedActionMenu({ run }: { run: RunSummary }) {
 function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
   const secondaryActions = plan.secondaryActionIds ?? [];
   return (
-    <section className="panel next-action-panel">
+    <section className="panel next-action-panel" id="next-action">
       <div className="next-action-main">
         <div>
           <p className="eyebrow">
@@ -553,23 +565,29 @@ function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSu
 function PipelinePanel({ run }: { run: RunSummary }) {
   const stages = getStageState(run.package);
   return (
-    <section className="panel">
+    <section className="panel" id="pipeline-panel">
       <div className="panel-header">
         <h3 className="panel-title">파이프라인</h3>
         <span className="meta">{qaStatusCopy[run.package.qa.status] ?? run.package.qa.status}</span>
       </div>
       <div className="panel-body">
         <div className="stage-list">
-          {stages.map((stage, index) => (
-            <div className="stage-row" key={stage.name}>
-              <div className="stage-index">{String(index + 1).padStart(2, "0")}</div>
-              <div>
-                <p className="stage-name">{stage.name}</p>
-                <p className="stage-meta">{stage.meta}</p>
-              </div>
-              <StatusPill status={stage.status} />
-            </div>
-          ))}
+          {stages.map((stage, index) => {
+            const target = pipelineStageTargets[index] ?? { href: "#next-action", label: "보기" };
+            return (
+              <a className="stage-row" href={target.href} key={stage.name}>
+                <div className="stage-index">{String(index + 1).padStart(2, "0")}</div>
+                <div>
+                  <p className="stage-name">{stage.name}</p>
+                  <p className="stage-meta">{stage.meta}</p>
+                </div>
+                <div className="stage-row-action">
+                  <span>{target.label}</span>
+                  <StatusPill status={stage.status} />
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -578,7 +596,7 @@ function PipelinePanel({ run }: { run: RunSummary }) {
 
 function SourcesPanel({ run }: { run: RunSummary }) {
   return (
-    <section className="panel">
+    <section className="panel" id="sources-panel">
       <div className="panel-header">
         <h3 className="panel-title">소스 영상</h3>
         <EnrichSourcesButton runId={run.id} />
@@ -1120,7 +1138,9 @@ export default async function Home({
 
           {nextActionPlan ? <RunNextActionPanel plan={nextActionPlan} run={activeRun} /> : null}
 
-          <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
+          <div id="youtube-finder">
+            <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
+          </div>
 
           <div className="workspace-grid">
             <PipelinePanel run={activeRun} />
