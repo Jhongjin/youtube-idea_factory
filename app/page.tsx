@@ -1154,6 +1154,13 @@ function Inspector({
 
         {showFeedback ? <FeedbackPanel run={run} /> : null}
 
+        <details className="inspector-more new-run-drawer">
+          <summary>새 실행 만들기</summary>
+          <div className="detail-stack">
+            <NewRunPanel />
+          </div>
+        </details>
+
         <details className="inspector-more">
           <summary>검증 세부</summary>
           <div className="detail-stack">
@@ -1165,7 +1172,6 @@ function Inspector({
         <details className="inspector-more">
           <summary>운영 세부</summary>
           <div className="detail-stack">
-            <NewRunPanel />
             <BriefPanel run={run} />
             {!showApprovals ? (
               <RunApprovalsPanel key={`${run.id}-more`} initialApprovals={approvals} runId={run.id} />

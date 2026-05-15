@@ -1185,6 +1185,10 @@ a {
   padding: 12px;
 }
 
+.new-run-drawer summary {
+  color: var(--blue);
+}
+
 .detail-stack {
   display: grid;
   gap: 12px;
@@ -1443,7 +1447,7 @@ a {
 
 .new-run-form {
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .new-run-form label {
@@ -1472,6 +1476,138 @@ a {
 
 .new-run-form textarea {
   resize: vertical;
+}
+
+.run-builder-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.run-builder-steps span {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--muted);
+  padding: 8px 7px;
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.run-builder-steps span.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.new-run-section {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 11px;
+}
+
+.new-run-section.primary {
+  border-color: #c8d6f7;
+  background: #fbfdff;
+}
+
+.new-run-section-heading {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+}
+
+.new-run-section-heading > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: #455366;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.new-run-section.primary .new-run-section-heading > span {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+.new-run-section-heading strong,
+.new-run-section-heading p {
+  margin: 0;
+}
+
+.new-run-section-heading strong {
+  color: #182235;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.new-run-section-heading p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.format-presets {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.format-presets button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.format-presets button.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.new-run-advanced {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.new-run-advanced summary {
+  min-height: 38px;
+  cursor: default;
+  list-style: none;
+  padding: 10px 11px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.new-run-advanced summary::-webkit-details-marker {
+  display: none;
+}
+
+.new-run-advanced[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.new-run-advanced-body {
+  display: grid;
+  gap: 10px;
+  padding: 11px;
 }
 
 .form-grid {
@@ -2550,7 +2686,10 @@ a {
   .asset-register,
   .asset-action-row,
   .upload-job-grid,
-  .admin-access-panel {
+  .admin-access-panel,
+  .form-grid,
+  .format-presets,
+  .run-builder-steps {
     grid-template-columns: 1fr;
   }
 
