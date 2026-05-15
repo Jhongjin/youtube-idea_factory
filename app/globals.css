@@ -902,6 +902,86 @@ a {
   box-shadow: none;
 }
 
+.focus-inspector-panel {
+  border-color: #c8d6f7;
+  background: #fbfdff;
+}
+
+.stage-focus-summary {
+  display: grid;
+  gap: 6px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.stage-focus-summary strong {
+  color: #182235;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.stage-focus-summary span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.stage-focus-checks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.stage-focus-checks div {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 9px;
+}
+
+.stage-focus-checks span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.stage-focus-checks strong {
+  color: #182235;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+.inspector-more {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.inspector-more summary {
+  min-height: 42px;
+  cursor: default;
+  list-style: none;
+  padding: 12px 14px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.inspector-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspector-more[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.inspector-more > .detail-stack {
+  padding: 12px;
+}
+
 .detail-stack {
   display: grid;
   gap: 12px;

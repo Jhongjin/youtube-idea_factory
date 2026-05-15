@@ -599,12 +599,373 @@ function narrationFromStoryboard(storyboard: unknown[]) {
     .join("\n\n");
 }
 
+function NewRunPanel() {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">새 실행</h3>
+        <Rocket size={16} />
+      </div>
+      <div className="panel-body">
+        <NewRunForm />
+      </div>
+    </section>
+  );
+}
+
+function ProviderReadinessPanel({
+  providerSettings,
+}: {
+  providerSettings: SafeProviderSettings;
+}) {
+  const readyProviderCount = providerRoles.filter((role) => {
+    const setting = providerSettings.roles[role.id];
+    return setting.enabled && setting.hasApiKey;
+  }).length;
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">제공자 준비 상태</h3>
+        <KeyRound size={16} />
+      </div>
+      <div className="panel-body">
+        <div className="detail-stack">
+          <div className="detail-row">
+            <span>준비됨</span>
+            <span>
+              {readyProviderCount}/{providerRoles.length}
+            </span>
+          </div>
+          {providerRoles.map((role) => {
+            const setting = providerSettings.roles[role.id];
+            const status =
+              setting.enabled && setting.hasApiKey
+                ? "준비됨"
+                : setting.enabled
+                  ? "키 필요"
+                  : "꺼짐";
+            return (
+              <div className="detail-row" key={role.id}>
+                <span>{role.label}</span>
+                <span>{status}</span>
+              </div>
+            );
+          })}
+          <Link className="text-button form-submit" href="/settings">
+            <Settings size={15} />
+            제공자 설정
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BriefPanel({ run }: { run: RunSummary }) {
+  const brief = run.package.brief;
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">실행 브리프</h3>
+        <BarChart3 size={16} />
+      </div>
+      <div className="panel-body">
+        <div className="detail-stack">
+          <div className="detail-row">
+            <span>실행</span>
+            <span>{run.id}</span>
+          </div>
+          <div className="detail-row">
+            <span>주제</span>
+            <span>{brief.topic}</span>
+          </div>
+          <div className="detail-row">
+            <span>카테고리</span>
+            <span>{brief.category || "미지정"}</span>
+          </div>
+          <div className="detail-row">
+            <span>형식</span>
+            <span>{formatCopy[brief.format] ?? brief.format}</span>
+          </div>
+          <div className="detail-row">
+            <span>언어</span>
+            <span>{languageCopy[brief.language] ?? brief.language}</span>
+          </div>
+          <div className="detail-row">
+            <span>길이</span>
+            <span>{brief.target_duration_seconds ?? 0}s</span>
+          </div>
+          <RunDeleteButton runId={run.id} topic={brief.topic} />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BlockersPanel({ blockers }: { blockers: string[] }) {
+  if (blockers.length === 0) {
+    return null;
+  }
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">검수 차단 항목</h3>
+        <AlertTriangle size={16} />
+      </div>
+      <div className="panel-body">
+        <ul className="blocker-list">
+          {blockers.map((blocker) => (
+            <li key={blocker}>
+              <AlertTriangle size={15} color="#b7791f" />
+              <span>{blocker}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+function GenerationConsolePanel({
+  generationState,
+  run,
+}: {
+  generationState: AssetGenerationState;
+  run: RunSummary;
+}) {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">생성 콘솔</h3>
+        <Sparkles size={16} />
+      </div>
+      <div className="panel-body">
+        <AssetGenerationConsole
+          defaultNarration={narrationFromStoryboard(run.package.storyboard)}
+          runId={run.id}
+          state={generationState}
+        />
+      </div>
+    </section>
+  );
+}
+
+function AssemblyPanel({
+  run,
+  storageMode,
+  workerStatus,
+}: {
+  run: RunSummary;
+  storageMode: string;
+  workerStatus: RunWorkerStatus;
+}) {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">영상 조립</h3>
+        <Mic2 size={16} />
+      </div>
+      <div className="panel-body">
+        <div className="detail-stack">
+          <div className="detail-row">
+            <span>음성</span>
+            <span>대기</span>
+          </div>
+          <div className="detail-row">
+            <span>자막</span>
+            <span>대기</span>
+          </div>
+          <div className="detail-row">
+            <span>BGM</span>
+            <span>대기</span>
+          </div>
+          <div className="detail-row">
+            <span>렌더</span>
+            <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>최종 파일</span>
+            <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>렌더 작업</span>
+            <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>자산 매니페스트</span>
+            <span>{run.package.asset_manifest ? `${run.package.asset_manifest.items}개` : "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>생성 대기열</span>
+            <span>{run.package.asset_manifest?.ready_for_generation ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>대기열 차단</span>
+            <span>{run.package.asset_manifest?.blocked ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>렌더 차단</span>
+            <span>{run.package.render_manifest?.blockers ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>배포 핸드오프</span>
+            <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>업로드 작업</span>
+            <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
+          </div>
+          <WorkerStatusPanel runId={run.id} status={workerStatus} />
+          <YouTubeUploadWorkerPanel
+            runId={run.id}
+            storageMode={storageMode}
+            uploadJobStatus={run.package.publishing_handoff?.upload_job_status}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FeedbackPanel({ run }: { run: RunSummary }) {
+  return (
+    <section className="panel">
+      <div className="panel-header">
+        <h3 className="panel-title">피드백 루프</h3>
+        <BarChart3 size={16} />
+      </div>
+      <div className="panel-body">
+        <div className="detail-stack">
+          <div className="detail-row">
+            <span>영상 ID</span>
+            <span>{run.package.feedback_loop?.video_id ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>조회수</span>
+            <span>{run.package.feedback_loop?.view_count ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>좋아요</span>
+            <span>{run.package.feedback_loop?.like_count ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>댓글</span>
+            <span>{run.package.feedback_loop?.comment_count ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>수집 시각</span>
+            <span>{run.package.feedback_loop?.fetched_at ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>누적 스냅샷</span>
+            <span>{run.package.feedback_loop?.snapshot_count ?? 0}</span>
+          </div>
+          <PerformanceSnapshotButton
+            runId={run.id}
+            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+          />
+          <FeedbackLoopFlowButton
+            runId={run.id}
+            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
+          />
+          <FeedbackInsightsButton runId={run.id} />
+          <AbLearningLogButton runId={run.id} />
+          <ChannelMemoryButton runId={run.id} />
+          <div className="detail-row">
+            <span>인사이트</span>
+            <span>
+              {run.package.feedback_insights?.status
+                ? feedbackStatusCopy[run.package.feedback_insights.status] ??
+                  run.package.feedback_insights.status
+                : "대기"}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span>추천 항목</span>
+            <span>{run.package.feedback_insights?.recommendations ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>A/B 로그</span>
+            <span>
+              {run.package.learning_log?.status
+                ? learningStatusCopy[run.package.learning_log.status] ?? run.package.learning_log.status
+                : "대기"}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span>변형 카드</span>
+            <span>{run.package.learning_log?.variants ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>채널 메모리</span>
+            <span>
+              {run.package.channel_memory_update?.status
+                ? memoryStatusCopy[run.package.channel_memory_update.status] ??
+                  run.package.channel_memory_update.status
+                : "대기"}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span>메모리 항목</span>
+            <span>{run.package.channel_memory_update?.items ?? 0}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+  const sourceCount = run.package.sources.length;
+  const missingTranscripts = run.package.sources.filter(
+    (source) => source.transcript_status !== "manual_transcript" && source.transcript_status !== "available",
+  ).length;
+  return (
+    <section className="panel focus-inspector-panel">
+      <div className="panel-header">
+        <div>
+          <h3 className="panel-title">현재 단계</h3>
+          <p className="panel-subtitle">
+            {plan.stageIndex}/{plan.totalStages} {plan.stageLabel}
+          </p>
+        </div>
+        <StatusPill status={plan.status} />
+      </div>
+      <div className="panel-body">
+        <div className="stage-focus-summary">
+          <strong>{plan.headline}</strong>
+          <span>{plan.detail}</span>
+        </div>
+        <div className="stage-focus-checks">
+          <div>
+            <span>소스</span>
+            <strong>{sourceCount}</strong>
+          </div>
+          <div>
+            <span>미확인 스크립트</span>
+            <strong>{missingTranscripts}</strong>
+          </div>
+          <div>
+            <span>클레임</span>
+            <strong>{run.package.claim_ledger.length}</strong>
+          </div>
+          <div>
+            <span>씬</span>
+            <strong>{run.package.storyboard.length}</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Inspector({
   run,
   validation,
   providerSettings,
   approvals,
   generationState,
+  nextActionPlan,
   storageMode,
   workerStatus,
 }: {
@@ -613,287 +974,57 @@ function Inspector({
   providerSettings: SafeProviderSettings;
   approvals: RunApprovals;
   generationState: AssetGenerationState;
+  nextActionPlan: RunNextActionPlan;
   storageMode: string;
   workerStatus: RunWorkerStatus;
 }) {
-  const brief = run.package.brief;
-  const readyProviderCount = providerRoles.filter((role) => {
-    const setting = providerSettings.roles[role.id];
-    return setting.enabled && setting.hasApiKey;
-  }).length;
+  const stage = nextActionPlan.stageLabel;
+  const showApprovals = nextActionPlan.headline.includes("승인");
+  const showGeneration =
+    stage === "생성 승인" || stage === "자산 구성" || stage === "자산 생성";
+  const showAssembly = stage === "렌더" || stage === "배포";
+  const showFeedback = stage === "피드백";
+  const showProviderReadiness = showGeneration || nextActionPlan.primaryActionId === "open-settings";
+
   return (
     <aside className="inspector">
       <div className="detail-stack">
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">새 실행</h3>
-            <Rocket size={16} />
-          </div>
-          <div className="panel-body">
-            <NewRunForm />
-          </div>
-        </section>
+        <StageFocusPanel plan={nextActionPlan} run={run} />
 
         <PackageValidationPanel initialResult={validation} runId={run.id} />
 
-        <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
+        <BlockersPanel blockers={run.package.qa.blockers} />
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">생성 콘솔</h3>
-            <Sparkles size={16} />
-          </div>
-          <div className="panel-body">
-            <AssetGenerationConsole
-              defaultNarration={narrationFromStoryboard(run.package.storyboard)}
-              runId={run.id}
-              state={generationState}
-            />
-          </div>
-        </section>
+        {showApprovals ? (
+          <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
+        ) : null}
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">제공자 준비 상태</h3>
-            <KeyRound size={16} />
-          </div>
-          <div className="panel-body">
-            <div className="detail-stack">
-              <div className="detail-row">
-                <span>준비됨</span>
-                <span>
-                  {readyProviderCount}/{providerRoles.length}
-                </span>
-              </div>
-              {providerRoles.map((role) => {
-                const setting = providerSettings.roles[role.id];
-                const status =
-                  setting.enabled && setting.hasApiKey
-                    ? "준비됨"
-                    : setting.enabled
-                      ? "키 필요"
-                      : "꺼짐";
-                return (
-                  <div className="detail-row" key={role.id}>
-                    <span>{role.label}</span>
-                    <span>{status}</span>
-                  </div>
-                );
-              })}
-              <Link className="text-button form-submit" href="/settings">
-                <Settings size={15} />
-                제공자 설정
-              </Link>
-            </div>
-          </div>
-        </section>
+        {showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">실행 브리프</h3>
-            <BarChart3 size={16} />
-          </div>
-          <div className="panel-body">
-            <div className="detail-stack">
-              <div className="detail-row">
-                <span>실행</span>
-                <span>{run.id}</span>
-              </div>
-              <div className="detail-row">
-                <span>주제</span>
-                <span>{brief.topic}</span>
-              </div>
-              <div className="detail-row">
-                <span>카테고리</span>
-                <span>{brief.category || "미지정"}</span>
-              </div>
-              <div className="detail-row">
-                <span>형식</span>
-                <span>{formatCopy[brief.format] ?? brief.format}</span>
-              </div>
-              <div className="detail-row">
-                <span>언어</span>
-                <span>{languageCopy[brief.language] ?? brief.language}</span>
-              </div>
-              <div className="detail-row">
-                <span>길이</span>
-                <span>{brief.target_duration_seconds ?? 0}s</span>
-              </div>
-              <RunDeleteButton runId={run.id} topic={brief.topic} />
-            </div>
-          </div>
-        </section>
+        {showGeneration ? <GenerationConsolePanel generationState={generationState} run={run} /> : null}
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">검수 차단 항목</h3>
-            <AlertTriangle size={16} />
-          </div>
-          <div className="panel-body">
-            <ul className="blocker-list">
-              {run.package.qa.blockers.map((blocker) => (
-                <li key={blocker}>
-                  <AlertTriangle size={15} color="#b7791f" />
-                  <span>{blocker}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+        {showAssembly ? (
+          <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
+        ) : null}
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">영상 조립</h3>
-            <Mic2 size={16} />
-          </div>
-          <div className="panel-body">
-            <div className="detail-stack">
-              <div className="detail-row">
-                <span>음성</span>
-                <span>대기</span>
-              </div>
-              <div className="detail-row">
-                <span>자막</span>
-                <span>대기</span>
-              </div>
-              <div className="detail-row">
-                <span>BGM</span>
-                <span>대기</span>
-              </div>
-              <div className="detail-row">
-                <span>렌더</span>
-                <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>최종 파일</span>
-                <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>렌더 작업</span>
-                <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>자산 매니페스트</span>
-                <span>
-                  {run.package.asset_manifest
-                    ? `${run.package.asset_manifest.items}개`
-                    : "대기"}
-                </span>
-              </div>
-              <div className="detail-row">
-                <span>생성 대기열</span>
-                <span>{run.package.asset_manifest?.ready_for_generation ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>대기열 차단</span>
-                <span>{run.package.asset_manifest?.blocked ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>렌더 차단</span>
-                <span>{run.package.render_manifest?.blockers ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>배포 핸드오프</span>
-                <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>업로드 작업</span>
-                <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
-              </div>
-              <WorkerStatusPanel runId={run.id} status={workerStatus} />
-              <YouTubeUploadWorkerPanel
-                runId={run.id}
-                storageMode={storageMode}
-                uploadJobStatus={run.package.publishing_handoff?.upload_job_status}
-              />
-            </div>
-          </div>
-        </section>
+        {showFeedback ? <FeedbackPanel run={run} /> : null}
 
-        <section className="panel">
-          <div className="panel-header">
-            <h3 className="panel-title">피드백 루프</h3>
-            <BarChart3 size={16} />
+        <details className="inspector-more">
+          <summary>기타 운영 패널</summary>
+          <div className="detail-stack">
+            <NewRunPanel />
+            <BriefPanel run={run} />
+            {!showApprovals ? (
+              <RunApprovalsPanel key={`${run.id}-more`} initialApprovals={approvals} runId={run.id} />
+            ) : null}
+            {!showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
+            {!showGeneration ? <GenerationConsolePanel generationState={generationState} run={run} /> : null}
+            {!showAssembly ? (
+              <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
+            ) : null}
+            {!showFeedback ? <FeedbackPanel run={run} /> : null}
           </div>
-          <div className="panel-body">
-            <div className="detail-stack">
-              <div className="detail-row">
-                <span>영상 ID</span>
-                <span>{run.package.feedback_loop?.video_id ?? "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>조회수</span>
-                <span>{run.package.feedback_loop?.view_count ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>좋아요</span>
-                <span>{run.package.feedback_loop?.like_count ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>댓글</span>
-                <span>{run.package.feedback_loop?.comment_count ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>수집 시각</span>
-                <span>{run.package.feedback_loop?.fetched_at ?? "대기"}</span>
-              </div>
-              <div className="detail-row">
-                <span>누적 스냅샷</span>
-                <span>{run.package.feedback_loop?.snapshot_count ?? 0}</span>
-              </div>
-              <PerformanceSnapshotButton
-                runId={run.id}
-                videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
-              />
-              <FeedbackLoopFlowButton
-                runId={run.id}
-                videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
-              />
-              <FeedbackInsightsButton runId={run.id} />
-              <AbLearningLogButton runId={run.id} />
-              <ChannelMemoryButton runId={run.id} />
-              <div className="detail-row">
-                <span>인사이트</span>
-                <span>
-                  {run.package.feedback_insights?.status
-                    ? feedbackStatusCopy[run.package.feedback_insights.status] ??
-                      run.package.feedback_insights.status
-                    : "대기"}
-                </span>
-              </div>
-              <div className="detail-row">
-                <span>추천 항목</span>
-                <span>{run.package.feedback_insights?.recommendations ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>A/B 로그</span>
-                <span>
-                  {run.package.learning_log?.status
-                    ? learningStatusCopy[run.package.learning_log.status] ??
-                      run.package.learning_log.status
-                    : "대기"}
-                </span>
-              </div>
-              <div className="detail-row">
-                <span>변형 카드</span>
-                <span>{run.package.learning_log?.variants ?? 0}</span>
-              </div>
-              <div className="detail-row">
-                <span>채널 메모리</span>
-                <span>
-                  {run.package.channel_memory_update?.status
-                    ? memoryStatusCopy[run.package.channel_memory_update.status] ??
-                      run.package.channel_memory_update.status
-                    : "대기"}
-                </span>
-              </div>
-              <div className="detail-row">
-                <span>메모리 항목</span>
-                <span>{run.package.channel_memory_update?.items ?? 0}</span>
-              </div>
-            </div>
-          </div>
-        </section>
+        </details>
       </div>
     </aside>
   );
@@ -979,6 +1110,7 @@ export default async function Home({
         <Inspector
           approvals={approvals!}
           generationState={generationState!}
+          nextActionPlan={nextActionPlan!}
           providerSettings={providerSettings}
           run={activeRun}
           storageMode={storageMode}
