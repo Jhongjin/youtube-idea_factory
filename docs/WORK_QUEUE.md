@@ -31,6 +31,8 @@ This queue keeps the build loop explicit:
 | new-run-channel-clarity | Phase 7 | done | codex | no | The new-run form now confirms the selected brand channel and upload token state before creation. |
 | upload-worker-channel-token-readiness | Phase 7 | done | codex | no | Deployment health now treats channel-specific upload refresh tokens as valid YouTube upload worker readiness. |
 | upload-active-channel-gate | Phase 7 | done | codex | no | YouTube upload job creation and workers now require the selected brand channel to be active. |
+| command-deck-theme-redesign | Phase 7 | done | codex | no | Homepage and login/signup now use a stronger production command deck theme with product cockpit visuals and aligned access panels. |
+| command-deck-surface-propagation | Phase 7 | done | codex | no | Dashboard, admin, channel, and settings surfaces now inherit the command deck palette, panels, buttons, status chips, and form fields. |
 | channel-token-readiness-insight | Phase 7 | done | codex | no | Deployment health and settings now show active, setup, and paused channel upload token inventory. |
 | dashboard-channel-context-bar | Phase 7 | done | codex | no | Dashboard operating channel bar now includes upload token state and a 3-step operator flow lane. |
 | dashboard-sidebar-channel-disclosure | Phase 7 | done | codex | no | Sidebar channel filters are collapsed behind a compact disclosure because channel choice is now primary in the top bar. |

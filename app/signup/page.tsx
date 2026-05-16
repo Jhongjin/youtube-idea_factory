@@ -8,17 +8,19 @@ export const dynamic = "force-dynamic";
 export default function SignupPage() {
   return (
     <main className="auth-page" id="main-content">
-      <Link className="text-button auth-back" href="/">
-        <ArrowLeft size={15} />
-        홈으로
-      </Link>
+      <div className="auth-topbar">
+        <Link className="text-button auth-back" href="/">
+          <ArrowLeft size={15} />
+          홈으로
+        </Link>
+      </div>
       <section className="auth-card signup-card">
         <div className="auth-copy">
           <p className="hero-kicker">Member request</p>
           <h1>제작 운영 계정 요청</h1>
           <p>
-            가입 요청은 바로 운영 권한을 주지 않고 승인 대기 상태로 저장됩니다. 관리자가 회원관리에서
-            활성화하면 로그인할 수 있습니다.
+            가입 요청은 승인 대기열에 저장됩니다. 관리자가 회원관리에서 활성화하면 제작 run과 채널
+            운영 화면에 접근할 수 있습니다.
           </p>
           <SignupForm />
           <p className="auth-footnote">

@@ -4,18 +4,30 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
   const isSignup = mode === "signup";
   return (
     <div className={`auth-product-panel ${isSignup ? "signup-aside" : "auth-art"}`}>
-      <div className="auth-product-shell">
+      <div className="auth-console-shell">
         <div className="auth-window-bar" aria-hidden="true">
           <span />
           <span />
           <span />
-          <strong>{isSignup ? "member request" : "operator gate"}</strong>
+          <strong>{isSignup ? "member queue" : "operator gate"}</strong>
         </div>
-        <div className="auth-product-heading">
-          {isSignup ? <UserCheck size={24} /> : <ShieldCheck size={24} />}
-          <span>{isSignup ? "승인 대기열" : "세션 보호"}</span>
-          <h2>{isSignup ? "계정은 승인 후 활성화됩니다" : "권한이 확인되면 작업장이 열립니다"}</h2>
+        <div className="auth-console-heading">
+          <div>
+            {isSignup ? <UserCheck size={24} /> : <ShieldCheck size={24} />}
+            <span>{isSignup ? "승인 대기열" : "세션 보호"}</span>
+          </div>
+          <h2>{isSignup ? "요청은 관리자 승인 후 작업장으로 연결됩니다" : "권한이 맞으면 제작 관제실이 열립니다"}</h2>
         </div>
+
+        <div className="auth-console-map" aria-hidden="true">
+          <span className="map-lane lane-one" />
+          <span className="map-lane lane-two" />
+          <span className="map-lane lane-three" />
+          <i className="map-node node-one" />
+          <i className="map-node node-two" />
+          <i className="map-node node-three" />
+        </div>
+
         <div className="auth-stage-stack" aria-label="권한 처리 흐름">
           <div className="auth-stage-row current">
             <strong>01</strong>
