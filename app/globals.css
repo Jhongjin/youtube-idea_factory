@@ -3501,19 +3501,6 @@ button:disabled,
   padding: 10px;
 }
 
-.sidebar-disclosure-note {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 750;
-  line-height: 1.45;
-}
-
-.sidebar-section-list .nav-item {
-  min-height: 34px;
-  background: #f8fafc;
-}
-
 .sidebar-disclosure .channel-memory-index,
 .sidebar-disclosure .work-queue-index {
   border-top: 0;
