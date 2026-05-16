@@ -383,6 +383,48 @@ a {
   background: #f8fafc;
 }
 
+.operating-channel-nudge {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #f1dba8;
+  border-radius: 10px;
+  background: #fff8e9;
+  padding: 10px 12px;
+  color: #8a650f;
+}
+
+.operating-channel-nudge.missing {
+  border-color: #f4b4b4;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.operating-channel-nudge div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.operating-channel-nudge strong {
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.operating-channel-nudge span {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.4;
+}
+
+.operating-channel-nudge .text-button {
+  background: #ffffff;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -3534,6 +3576,7 @@ button:disabled,
   .workspace-grid,
   .operating-channel-bar,
   .operating-flow-lane,
+  .operating-channel-nudge,
   .guided-step-intro,
   .guided-primary-cta,
   .next-action-main,
