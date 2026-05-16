@@ -1,5 +1,6 @@
-import { ArrowLeft, LockKeyhole } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { AuthContextPanel } from "@/app/components/auth-context-panel";
 import { LoginForm } from "@/app/components/auth-forms";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -21,15 +22,7 @@ export default async function LoginPage({
         홈으로
       </Link>
       <section className="auth-card">
-        <div className="auth-art">
-          <div className="auth-art-grid">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-          <LockKeyhole size={28} />
-        </div>
+        <AuthContextPanel mode="login" />
         <div className="auth-copy">
           <p className="hero-kicker">Operator access</p>
           <h1>아이디와 비밀번호로 로그인</h1>
