@@ -70,14 +70,14 @@ export function NewRunForm({
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "새 실행 생성에 실패했습니다.");
+      setError(body?.error ?? "새 제작 생성에 실패했습니다.");
       setState("error");
       return;
     }
 
     const body = (await response.json()) as { run?: { id?: string } };
     if (body.run?.id) {
-      window.location.href = `/dashboard?run=${encodeURIComponent(body.run.id)}`;
+      window.location.href = `/dashboard?run=${encodeURIComponent(body.run.id)}&step=research`;
       return;
     }
 
@@ -86,18 +86,18 @@ export function NewRunForm({
 
   return (
     <form className="new-run-form" onSubmit={onSubmit}>
-      <div className="run-builder-steps" aria-label="새 실행 생성 순서">
-        <span className="active">1 브리프</span>
+      <div className="run-builder-steps" aria-label="새 제작 생성 순서">
+        <span className="active">1 운영 채널</span>
         <span>2 소스</span>
-        <span>3 생성</span>
+        <span>3 제작 시작</span>
       </div>
 
       <section className="new-run-section primary">
         <div className="new-run-section-heading">
           <span>01</span>
           <div>
-            <strong>주제와 출력 기준</strong>
-            <p>필수값만 먼저 입력하면 실행 패키지가 생성됩니다.</p>
+            <strong>새 제작 시작</strong>
+            <p>운영 채널과 필수값만 정하면 제작 패키지가 생성됩니다.</p>
           </div>
         </div>
         <label>
@@ -106,7 +106,7 @@ export function NewRunForm({
         </label>
         {channels.length > 0 ? (
           <label>
-            <span>브랜드 채널</span>
+            <span>운영 채널</span>
             <select
               name="channelId"
               onChange={(event) => selectChannel(event.target.value)}
@@ -129,7 +129,7 @@ export function NewRunForm({
             </select>
           </label>
         ) : (
-          <p className="muted">등록된 브랜드 채널이 없으면 채널 미지정 실행으로 시작합니다.</p>
+          <p className="muted">등록된 운영 채널이 없으면 채널 미지정 실행으로 시작합니다.</p>
         )}
         <div className="format-presets" aria-label="형식 빠른 선택">
           {[
@@ -216,7 +216,7 @@ export function NewRunForm({
       {error ? <p className="form-error">{error}</p> : null}
       <button className="text-button primary form-submit" disabled={state === "submitting"} type="submit">
         {state === "submitting" ? <Loader2 className="spin" size={16} /> : <Plus size={16} />}
-        새 실행 만들기
+        새 제작 시작
       </button>
     </form>
   );

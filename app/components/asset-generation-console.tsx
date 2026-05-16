@@ -77,7 +77,7 @@ export function AssetGenerationConsole({
       setLoadingId("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   async function generateImage(assetId: string) {
@@ -103,7 +103,7 @@ export function AssetGenerationConsole({
       setLoadingId("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   async function generateVideo(assetId: string) {
@@ -129,7 +129,7 @@ export function AssetGenerationConsole({
       setLoadingId("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   async function registerAsset() {
@@ -151,7 +151,7 @@ export function AssetGenerationConsole({
       setLoadingId("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   async function generateVoice(assetId: string) {
@@ -184,7 +184,7 @@ export function AssetGenerationConsole({
       setLoadingId("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   const imageItems = state.items.filter((item) => item.kind === "image" || item.kind === "thumbnail");

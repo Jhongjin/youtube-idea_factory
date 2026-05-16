@@ -43,7 +43,7 @@ export function FeedbackLoopFlowButton({ runId, videoId }: { runId: string; vide
       }
     }
 
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   return (

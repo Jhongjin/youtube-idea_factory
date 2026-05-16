@@ -44,7 +44,7 @@ export function WorkerJobActions({
       setLoading("");
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   if (!canCancel && !canRetry) {

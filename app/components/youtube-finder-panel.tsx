@@ -88,7 +88,7 @@ export function YouTubeFinderPanel({
       return;
     }
 
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=research#sources-panel`;
   }
 
   return (
