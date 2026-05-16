@@ -885,21 +885,6 @@ function Sidebar({
         </div>
       </div>
 
-      <section className="nav-section">
-        <h2>작업공간</h2>
-        <ul className="nav-list">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.label} className={`nav-item ${item.active ? "active" : ""}`}>
-                <Icon size={16} />
-                {item.label}
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-
       {channels.length > 0 ? (
         <details className="sidebar-disclosure channel-filter-disclosure">
           <summary>
@@ -958,6 +943,27 @@ function Sidebar({
           {runs.length === 0 ? <p className="muted">이 채널의 실행 기록이 없습니다</p> : null}
         </div>
       </section>
+
+      <details className="sidebar-disclosure sidebar-section-disclosure">
+        <summary>
+          <span>작업 섹션</span>
+          <strong>{navItems.length}개</strong>
+        </summary>
+        <div className="sidebar-disclosure-body">
+          <ul className="nav-list sidebar-section-list">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <li key={item.label} className={`nav-item ${item.active ? "active" : ""}`}>
+                  <Icon size={16} />
+                  {item.label}
+                </li>
+              );
+            })}
+          </ul>
+          <p className="sidebar-disclosure-note">기본 진행은 중앙의 단계 카드와 다음 작업 버튼을 따라가세요.</p>
+        </div>
+      </details>
 
       <details className="sidebar-disclosure">
         <summary>
