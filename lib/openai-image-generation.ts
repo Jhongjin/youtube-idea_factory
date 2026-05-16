@@ -2,12 +2,14 @@ import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { writeAssetBytes } from "@/lib/asset-storage";
 import { createGenerationQueue } from "@/lib/generation-queue";
 import { getProviderSettings } from "@/lib/provider-settings";
+import type { ProviderRoleSetting } from "@/lib/provider-settings-shared";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
 
 export type GenerateImageRequest = {
   assetId: string;
   confirmSpend: string;
+  providerProfileId?: string;
   quality?: "low" | "medium" | "high" | "auto";
   size?: string;
 };
@@ -91,6 +93,7 @@ async function appendGenerationLog(runId: string, entry: unknown) {
 export async function generateOpenAIImage(
   runId: string,
   request: GenerateImageRequest,
+  providerOverride?: ProviderRoleSetting,
 ): Promise<GenerateImageResult> {
   assertSafeRunId(runId);
   if (request.confirmSpend !== confirmToken) {
@@ -104,7 +107,7 @@ export async function generateOpenAIImage(
     readRunJson<AssetManifest>(runId, "asset-manifest.json"),
     getProviderSettings(),
   ]);
-  const imageProvider = providerSettings.roles.image;
+  const imageProvider = providerOverride ?? providerSettings.roles.image;
   if (imageProvider.provider !== "OpenAI") {
     throw new Error("Only the OpenAI image provider is implemented for direct generation.");
   }

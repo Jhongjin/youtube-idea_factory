@@ -11,6 +11,14 @@ import {
   Video,
 } from "lucide-react";
 import type { AssetGenerationState, AssetGenerationStateItem } from "@/lib/asset-generation-state";
+import { getProviderCapability } from "@/lib/provider-capabilities";
+import {
+  providerRoles,
+  type ProviderRoleId,
+  type SafeProviderProfile,
+  type SafeProviderRoleSetting,
+  type SafeProviderSettings,
+} from "@/lib/provider-settings-shared";
 
 const imageConfirmToken = "GENERATE_IMAGE";
 const ttsConfirmToken = "GENERATE_TTS";
@@ -24,6 +32,64 @@ const assetKindCopy: Record<string, string> = {
   video: "영상",
   bgm: "BGM",
 };
+
+const generationProviderRoles: ProviderRoleId[] = [
+  "llm",
+  "image",
+  "video",
+  "tts",
+  "subtitles",
+  "bgm",
+  "editing",
+];
+
+type ProviderOption = {
+  capability: ReturnType<typeof getProviderCapability>;
+  hasApiKey: boolean;
+  id: string;
+  label: string;
+  profileId?: string;
+  provider: string;
+};
+
+function roleLabel(role: ProviderRoleId) {
+  return providerRoles.find((item) => item.id === role)?.label ?? role;
+}
+
+function settingLabel(setting: SafeProviderRoleSetting) {
+  const suffix = setting.model.trim() ? ` / ${setting.model}` : "";
+  return `기본 ${setting.provider}${suffix}`;
+}
+
+function profileLabel(profile: SafeProviderProfile) {
+  const suffix = profile.model.trim() ? ` / ${profile.model}` : "";
+  return `${profile.provider}${suffix}`;
+}
+
+function providerOptionsForRole(settings: SafeProviderSettings, role: ProviderRoleId): ProviderOption[] {
+  const base = settings.roles[role];
+  const options: ProviderOption[] = [];
+  if (base.enabled) {
+    options.push({
+      capability: getProviderCapability(role, base.provider),
+      hasApiKey: base.hasApiKey,
+      id: "default",
+      label: settingLabel(base),
+      provider: base.provider,
+    });
+  }
+  for (const profile of settings.profiles.filter((item) => item.role === role && item.enabled)) {
+    options.push({
+      capability: getProviderCapability(role, profile.provider),
+      hasApiKey: profile.hasApiKey,
+      id: profile.id,
+      label: profileLabel(profile),
+      profileId: profile.id,
+      provider: profile.provider,
+    });
+  }
+  return options;
+}
 
 function compactPath(value: string) {
   return value.replace(/^supabase:\/\/[^/]+\//, "").replace(/^artifacts\//, "");
@@ -49,15 +115,18 @@ function AssetStatus({ item }: { item: AssetGenerationStateItem }) {
 
 export function AssetGenerationConsole({
   defaultNarration,
+  providerSettings,
   runId,
   state,
 }: {
   defaultNarration: string;
+  providerSettings: SafeProviderSettings;
   runId: string;
   state: AssetGenerationState;
 }) {
   const [quality, setQuality] = useState<"low" | "medium" | "high" | "auto">("low");
   const [voice, setVoice] = useState("alloy");
+  const [selectedProviders, setSelectedProviders] = useState<Record<string, string>>({});
   const [instructions, setInstructions] = useState("");
   const [narration, setNarration] = useState(defaultNarration);
   const [registerAssetId, setRegisterAssetId] = useState(state.items[0]?.id ?? "");
@@ -95,7 +164,12 @@ export function AssetGenerationConsole({
     const response = await fetch(`/api/runs/${runId}/assets/generate-image`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetId, confirmSpend: imageConfirmToken, quality }),
+      body: JSON.stringify({
+        assetId,
+        confirmSpend: imageConfirmToken,
+        providerProfileId: selectedProviderProfile("image"),
+        quality,
+      }),
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -121,7 +195,11 @@ export function AssetGenerationConsole({
     const response = await fetch(`/api/runs/${runId}/assets/generate-video`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assetId, confirmSpend: videoConfirmToken }),
+      body: JSON.stringify({
+        assetId,
+        confirmSpend: videoConfirmToken,
+        providerProfileId: selectedProviderProfile("video"),
+      }),
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -173,6 +251,7 @@ export function AssetGenerationConsole({
         assetId,
         confirmSpend: ttsConfirmToken,
         instructions,
+        providerProfileId: selectedProviderProfile("tts"),
         responseFormat: "wav",
         text: narration,
         voice,
@@ -190,6 +269,14 @@ export function AssetGenerationConsole({
   const imageItems = state.items.filter((item) => item.kind === "image" || item.kind === "thumbnail");
   const videoItems = state.items.filter((item) => item.kind === "video");
   const voiceItem = state.items.find((item) => item.kind === "voice");
+  const providerRows = generationProviderRoles.map((role) => ({
+    options: providerOptionsForRole(providerSettings, role),
+    role,
+  }));
+  const selectedProviderProfile = (role: ProviderRoleId) => {
+    const value = selectedProviders[role];
+    return value && value !== "default" ? value : undefined;
+  };
 
   return (
     <div className="asset-console">
@@ -206,6 +293,48 @@ export function AssetGenerationConsole({
           {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
           수동 핸드오프
         </button>
+      </div>
+
+      <div className="generation-provider-selector">
+        <div className="generation-provider-selector-head">
+          <div>
+            <strong>생성 provider 선택</strong>
+            <span>API 설정에 등록한 기본값과 추가 슬롯을 이 제작 단계에서 고릅니다.</span>
+          </div>
+          <a className="text-button" href="/settings">
+            API 등록
+          </a>
+        </div>
+        <div className="generation-provider-grid">
+          {providerRows.map(({ options, role }) => {
+            const selectedId = selectedProviders[role] ?? options[0]?.id ?? "";
+            const selectedOption = options.find((option) => option.id === selectedId);
+            return (
+              <label key={role}>
+                <span>{roleLabel(role)}</span>
+                <select
+                  disabled={options.length === 0}
+                  onChange={(event) =>
+                    setSelectedProviders((current) => ({ ...current, [role]: event.target.value }))
+                  }
+                  value={selectedId}
+                >
+                  {options.length === 0 ? <option value="">등록된 옵션 없음</option> : null}
+                  {options.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label} · {option.capability.shortLabel}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  {selectedOption
+                    ? `${selectedOption.hasApiKey ? "키 등록" : "키 없음"} · ${selectedOption.capability.label}`
+                    : "설정 페이지에서 provider를 등록하세요."}
+                </small>
+              </label>
+            );
+          })}
+        </div>
       </div>
 
       <div className="asset-control-grid">

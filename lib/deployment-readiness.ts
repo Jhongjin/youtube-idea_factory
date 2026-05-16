@@ -114,6 +114,7 @@ function roleReadiness(
   const implementedAdapter = hasDirectAdapter(role, provider);
   const manualWorkflow = hasManualWorkflow(provider);
   const capability = getProviderCapability(role, provider);
+  const needsApiKey = !(role === "editing" && provider === "FFmpeg Worker");
   const base = {
     enabled: setting.enabled,
     provider,
@@ -132,7 +133,7 @@ function roleReadiness(
   if (!implementedAdapter) {
     return { ...base, ready: false, status: "adapter-pending", message: capability.label };
   }
-  if (!hasApiKey) {
+  if (needsApiKey && !hasApiKey) {
     return { ...base, ready: false, status: "missing-key", message: "API 키 필요" };
   }
   if (requiresProviderModel(role, provider) && !model) {

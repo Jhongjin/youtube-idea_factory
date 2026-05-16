@@ -2,6 +2,7 @@ import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { writeAssetBytes } from "@/lib/asset-storage";
 import { createGenerationQueue } from "@/lib/generation-queue";
 import { getProviderSettings } from "@/lib/provider-settings";
+import type { ProviderRoleSetting } from "@/lib/provider-settings-shared";
 import { createRenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
@@ -58,6 +59,7 @@ async function appendGenerationLog(runId: string, entry: unknown) {
 export async function generateInworldTts(
   runId: string,
   request: GenerateVoiceRequest,
+  providerOverride?: ProviderRoleSetting,
 ): Promise<GenerateVoiceResult> {
   assertSafeRunId(runId);
   if (request.confirmSpend !== confirmToken) {
@@ -82,7 +84,7 @@ export async function generateInworldTts(
     readRunJson<AssetManifest>(runId, "asset-manifest.json"),
     getProviderSettings(),
   ]);
-  const ttsProvider = providerSettings.roles.tts;
+  const ttsProvider = providerOverride ?? providerSettings.roles.tts;
   if (ttsProvider.provider !== "Inworld") {
     throw new Error("Inworld TTS adapter requires TTS provider Inworld.");
   }

@@ -4,7 +4,7 @@ import {
   type GenerateVoiceRequest,
   type GenerateVoiceResult,
 } from "@/lib/openai-tts-generation";
-import { getProviderSettings } from "@/lib/provider-settings";
+import { getProviderSettings, resolveProviderSetting } from "@/lib/provider-settings";
 
 export type { GenerateVoiceRequest, GenerateVoiceResult };
 
@@ -12,12 +12,13 @@ export async function generateVoiceAsset(
   runId: string,
   request: GenerateVoiceRequest,
 ): Promise<GenerateVoiceResult> {
-  const provider = (await getProviderSettings()).roles.tts.provider;
-  if (provider === "OpenAI") {
-    return generateOpenAITts(runId, request);
+  const settings = await getProviderSettings();
+  const ttsProvider = resolveProviderSetting(settings, "tts", request.providerProfileId);
+  if (ttsProvider.provider === "OpenAI") {
+    return generateOpenAITts(runId, request, ttsProvider);
   }
-  if (provider === "Inworld") {
-    return generateInworldTts(runId, request);
+  if (ttsProvider.provider === "Inworld") {
+    return generateInworldTts(runId, request, ttsProvider);
   }
-  throw new Error(`Direct TTS generation is not implemented for provider: ${provider}`);
+  throw new Error(`Direct TTS generation is not implemented for provider: ${ttsProvider.provider}`);
 }

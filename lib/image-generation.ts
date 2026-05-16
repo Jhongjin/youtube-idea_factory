@@ -4,7 +4,7 @@ import {
   type GenerateImageRequest,
   type GenerateImageResult,
 } from "@/lib/openai-image-generation";
-import { getProviderSettings } from "@/lib/provider-settings";
+import { getProviderSettings, resolveProviderSetting } from "@/lib/provider-settings";
 
 export type { GenerateImageRequest, GenerateImageResult };
 
@@ -12,12 +12,13 @@ export async function generateImageAsset(
   runId: string,
   request: GenerateImageRequest,
 ): Promise<GenerateImageResult | GenerateFalMediaResult> {
-  const provider = (await getProviderSettings()).roles.image.provider;
-  if (provider === "OpenAI") {
-    return generateOpenAIImage(runId, request);
+  const settings = await getProviderSettings();
+  const imageProvider = resolveProviderSetting(settings, "image", request.providerProfileId);
+  if (imageProvider.provider === "OpenAI") {
+    return generateOpenAIImage(runId, request, imageProvider);
   }
-  if (provider === "fal.ai") {
-    return generateFalImage(runId, request);
+  if (imageProvider.provider === "fal.ai") {
+    return generateFalImage(runId, request, imageProvider);
   }
-  throw new Error(`Direct image generation is not implemented for provider: ${provider}`);
+  throw new Error(`Direct image generation is not implemented for provider: ${imageProvider.provider}`);
 }

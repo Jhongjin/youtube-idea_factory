@@ -1,15 +1,26 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { CheckCircle2, KeyRound, Loader2, Save } from "lucide-react";
+import { CheckCircle2, KeyRound, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { getProviderCapability } from "@/lib/provider-capabilities";
 import {
   providerRoles,
   type ProviderRoleId,
+  type SafeProviderProfile,
   type SafeProviderSettings,
 } from "@/lib/provider-settings-shared";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+function providerProfileLabel(profile: SafeProviderProfile) {
+  if (profile.model.trim()) {
+    return `${profile.provider} / ${profile.model}`;
+  }
+  if (profile.baseUrl.trim()) {
+    return `${profile.provider} / custom endpoint`;
+  }
+  return profile.provider || "등록 슬롯";
+}
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
   const [settings, setSettings] = useState(initialSettings);
@@ -20,13 +31,21 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     () => providerRoles.map((role) => ({ ...role, setting: settings.roles[role.id] })),
     [settings],
   );
-  const enabledCount = roleList.filter((role) => role.setting.enabled).length;
-  const keyCount = roleList.filter((role) => role.setting.hasApiKey).length;
+  const enabledCount =
+    roleList.filter((role) => role.setting.enabled).length +
+    settings.profiles.filter((profile) => profile.enabled).length;
+  const keyCount =
+    roleList.filter((role) => role.setting.hasApiKey).length +
+    settings.profiles.filter((profile) => profile.hasApiKey).length;
   const directCount = roleList.filter(
     (role) => role.setting.enabled && getProviderCapability(role.id, role.setting.provider).status === "direct",
+  ).length + settings.profiles.filter(
+    (profile) => profile.enabled && getProviderCapability(profile.role, profile.provider).status === "direct",
   ).length;
   const manualCount = roleList.filter(
     (role) => role.setting.enabled && getProviderCapability(role.id, role.setting.provider).status === "manual",
+  ).length + settings.profiles.filter(
+    (profile) => profile.enabled && getProviderCapability(profile.role, profile.provider).status === "manual",
   ).length;
 
   function updateRole(role: ProviderRoleId, patch: Partial<SafeProviderSettings["roles"][ProviderRoleId]>) {
@@ -39,6 +58,52 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
           ...patch,
         },
       },
+    }));
+  }
+
+  function addProfile(role: ProviderRoleId) {
+    const metadata = providerRoles.find((item) => item.id === role);
+    const id = `${role}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+    setSettings((current) => ({
+      ...current,
+      profiles: [
+        ...current.profiles,
+        {
+          id,
+          role,
+          enabled: true,
+          provider: metadata?.providers[0] ?? "Custom",
+          model: "",
+          baseUrl: "",
+          notes: "",
+          hasApiKey: false,
+          apiKeyPreview: "",
+        },
+      ],
+    }));
+  }
+
+  function updateProfile(
+    profileId: string,
+    patch: Partial<Omit<SafeProviderProfile, "id" | "role" | "hasApiKey" | "apiKeyPreview">>,
+  ) {
+    setSettings((current) => ({
+      ...current,
+      profiles: current.profiles.map((profile) =>
+        profile.id === profileId
+          ? {
+              ...profile,
+              ...patch,
+            }
+          : profile,
+      ),
+    }));
+  }
+
+  function removeProfile(profileId: string) {
+    setSettings((current) => ({
+      ...current,
+      profiles: current.profiles.filter((profile) => profile.id !== profileId),
     }));
   }
 
@@ -57,11 +122,21 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       baseUrl: String(formData.get(`${role.id}.baseUrl`) ?? ""),
       notes: String(formData.get(`${role.id}.notes`) ?? ""),
     }));
+    const profiles = settings.profiles.map((profile) => ({
+      id: profile.id,
+      role: profile.role,
+      enabled: profile.enabled,
+      provider: profile.provider,
+      model: profile.model,
+      apiKey: String(formData.get(`profile.${profile.id}.apiKey`) ?? ""),
+      baseUrl: profile.baseUrl,
+      notes: profile.notes,
+    }));
 
     const response = await fetch("/api/settings/providers", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ roles }),
+      body: JSON.stringify({ profiles, roles }),
     });
 
     if (!response.ok) {
@@ -124,6 +199,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       <div className="provider-grid">
         {roleList.map(({ id, label, description, providers, setting }) => {
           const selectedCapability = getProviderCapability(id, setting.provider);
+          const roleProfiles = settings.profiles.filter((profile) => profile.role === id);
           return (
             <section className={`provider-card ${setting.enabled ? "enabled" : "disabled"}`} key={id}>
               <div className="provider-card-header">
@@ -211,6 +287,114 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       value={setting.notes}
                     />
                   </label>
+                </div>
+              </details>
+
+              <details className="provider-profile-details" open={roleProfiles.length > 0}>
+                <summary>
+                  <span>추가 등록 슬롯</span>
+                  <strong>{roleProfiles.length}개</strong>
+                </summary>
+                <div className="provider-profile-stack">
+                  <div className="provider-profile-intro">
+                    <div>
+                      <strong>{label} 다중 등록</strong>
+                      <span>
+                        같은 역할에 여러 API 키와 모델을 등록해두면 제작 단계에서 선택지로 노출됩니다.
+                      </span>
+                    </div>
+                    <button className="text-button" onClick={() => addProfile(id)} type="button">
+                      <Plus size={14} />
+                      슬롯 추가
+                    </button>
+                  </div>
+                  {roleProfiles.length === 0 ? (
+                    <p className="provider-profile-empty">아직 추가 등록 슬롯이 없습니다.</p>
+                  ) : null}
+                  {roleProfiles.map((profile) => {
+                    const capability = getProviderCapability(profile.role, profile.provider);
+                    return (
+                      <div className="provider-profile-row" key={profile.id}>
+                        <div className="provider-profile-row-head">
+                          <label className="provider-toggle">
+                            <input
+                              checked={profile.enabled}
+                              onChange={(event) => updateProfile(profile.id, { enabled: event.target.checked })}
+                              type="checkbox"
+                            />
+                            사용
+                          </label>
+                          <strong>{providerProfileLabel(profile)}</strong>
+                          <span className={`provider-capability ${capability.status}`}>
+                            {capability.shortLabel}
+                          </span>
+                          <button
+                            className="icon-button danger"
+                            onClick={() => removeProfile(profile.id)}
+                            title="등록 슬롯 삭제"
+                            type="button"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                        <div className="provider-profile-fields">
+                          <label>
+                            <span>제공자</span>
+                            <select
+                              name={`profile.${profile.id}.provider`}
+                              onChange={(event) => updateProfile(profile.id, { provider: event.target.value })}
+                              value={profile.provider}
+                            >
+                              {providers.map((provider) => {
+                                const itemCapability = getProviderCapability(id, provider);
+                                return (
+                                  <option key={provider} value={provider}>
+                                    {provider} · {itemCapability.shortLabel}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </label>
+                          <label>
+                            <span>모델 / 워크플로</span>
+                            <input
+                              name={`profile.${profile.id}.model`}
+                              onChange={(event) => updateProfile(profile.id, { model: event.target.value })}
+                              placeholder="예: gpt-5.2, kling-2.1, render preset"
+                              value={profile.model}
+                            />
+                          </label>
+                          <label>
+                            <span>API 키</span>
+                            <input
+                              autoComplete="off"
+                              name={`profile.${profile.id}.apiKey`}
+                              placeholder={profile.hasApiKey ? profile.apiKeyPreview : "새 API 키"}
+                              type="password"
+                            />
+                          </label>
+                          <label>
+                            <span>기본 URL</span>
+                            <input
+                              name={`profile.${profile.id}.baseUrl`}
+                              onChange={(event) => updateProfile(profile.id, { baseUrl: event.target.value })}
+                              placeholder="선택 사항"
+                              value={profile.baseUrl}
+                            />
+                          </label>
+                          <label className="provider-profile-notes">
+                            <span>메모</span>
+                            <input
+                              name={`profile.${profile.id}.notes`}
+                              onChange={(event) => updateProfile(profile.id, { notes: event.target.value })}
+                              placeholder="비용, 용도, 채널 제한"
+                              value={profile.notes}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </details>
             </section>

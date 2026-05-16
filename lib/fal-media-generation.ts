@@ -2,6 +2,7 @@ import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { writeAssetBytes } from "@/lib/asset-storage";
 import { createGenerationQueue } from "@/lib/generation-queue";
 import { getProviderSettings } from "@/lib/provider-settings";
+import type { ProviderRoleSetting } from "@/lib/provider-settings-shared";
 import { createRenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
@@ -9,12 +10,14 @@ import { readRunJson, writeRunJson } from "@/lib/run-store";
 export type GenerateFalImageRequest = {
   assetId: string;
   confirmSpend: string;
+  providerProfileId?: string;
   timeoutSeconds?: number;
 };
 
 export type GenerateFalVideoRequest = {
   assetId: string;
   confirmSpend: string;
+  providerProfileId?: string;
   timeoutSeconds?: number;
 };
 
@@ -304,6 +307,7 @@ async function persistGeneratedAsset({
 export async function generateFalImage(
   runId: string,
   request: GenerateFalImageRequest,
+  providerOverride?: ProviderRoleSetting,
 ): Promise<GenerateFalMediaResult> {
   assertSafeRunId(runId);
   if (request.confirmSpend !== imageConfirmToken) {
@@ -316,7 +320,7 @@ export async function generateFalImage(
     readRunJson<AssetManifest>(runId, "asset-manifest.json"),
     getProviderSettings(),
   ]);
-  const imageProvider = providerSettings.roles.image;
+  const imageProvider = providerOverride ?? providerSettings.roles.image;
   if (imageProvider.provider !== "fal.ai") {
     throw new Error("fal.ai image adapter requires Image provider fal.ai.");
   }
@@ -374,6 +378,7 @@ export async function generateFalImage(
 export async function generateFalVideo(
   runId: string,
   request: GenerateFalVideoRequest,
+  providerOverride?: ProviderRoleSetting,
 ): Promise<GenerateFalMediaResult> {
   assertSafeRunId(runId);
   if (request.confirmSpend !== videoConfirmToken) {
@@ -386,7 +391,7 @@ export async function generateFalVideo(
     readRunJson<AssetManifest>(runId, "asset-manifest.json"),
     getProviderSettings(),
   ]);
-  const videoProvider = providerSettings.roles.video;
+  const videoProvider = providerOverride ?? providerSettings.roles.video;
   if (videoProvider.provider !== "fal.ai") {
     throw new Error("fal.ai video adapter requires Video provider fal.ai.");
   }

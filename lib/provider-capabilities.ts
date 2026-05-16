@@ -10,6 +10,7 @@ export type ProviderCapability = {
 
 export const directAdapterProviders: Record<ProviderRoleId, string[]> = {
   bgm: [],
+  editing: ["FFmpeg Worker"],
   image: ["OpenAI", "fal.ai"],
   llm: ["OpenAI", "OpenRouter", "Custom"],
   subtitles: ["OpenAI"],
@@ -21,21 +22,27 @@ export const directAdapterProviders: Record<ProviderRoleId, string[]> = {
 const manualWorkflowProviders = new Set([
   "AIVIS (Avis)",
   "Adobe Firefly",
+  "Adobe Premiere Pro Manual",
   "Artlist",
   "Canva Dream Lab",
   "CapCut",
+  "DaVinci Resolve Manual",
   "Epidemic Sound",
   "Ideogram",
   "InVideo AI",
+  "Kdenlive Manual",
   "Leonardo AI",
   "Local",
   "Manual Export",
   "Manual Library",
   "Midjourney Manual",
   "Naver Clova Dubbing",
+  "OpenCut",
   "Reelbox",
+  "Remotion",
   "Sora",
   "Soundraw",
+  "Shotcut Manual",
   "Suno",
   "Typecast",
   "Udio",
@@ -53,7 +60,7 @@ export function hasManualWorkflow(provider: string) {
 }
 
 export function requiresProviderModel(role: ProviderRoleId, provider: string) {
-  if (role === "youtube" || role === "bgm") {
+  if (role === "youtube" || role === "bgm" || role === "editing") {
     return false;
   }
   return hasDirectAdapter(role, provider);

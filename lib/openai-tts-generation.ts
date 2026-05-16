@@ -2,12 +2,14 @@ import type { AssetManifest, AssetManifestItem } from "@/lib/asset-manifest";
 import { writeAssetBytes } from "@/lib/asset-storage";
 import { createGenerationQueue } from "@/lib/generation-queue";
 import { getProviderSettings } from "@/lib/provider-settings";
+import type { ProviderRoleSetting } from "@/lib/provider-settings-shared";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
 
 export type GenerateVoiceRequest = {
   assetId: string;
   confirmSpend: string;
+  providerProfileId?: string;
   text: string;
   voice: string;
   instructions?: string;
@@ -70,6 +72,7 @@ async function appendGenerationLog(runId: string, entry: unknown) {
 export async function generateOpenAITts(
   runId: string,
   request: GenerateVoiceRequest,
+  providerOverride?: ProviderRoleSetting,
 ): Promise<GenerateVoiceResult> {
   assertSafeRunId(runId);
   if (request.confirmSpend !== confirmToken) {
@@ -92,7 +95,7 @@ export async function generateOpenAITts(
     readRunJson<AssetManifest>(runId, "asset-manifest.json"),
     getProviderSettings(),
   ]);
-  const ttsProvider = providerSettings.roles.tts;
+  const ttsProvider = providerOverride ?? providerSettings.roles.tts;
   if (ttsProvider.provider !== "OpenAI") {
     throw new Error("Only the OpenAI TTS provider is implemented for direct generation.");
   }

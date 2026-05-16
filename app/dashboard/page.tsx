@@ -1345,10 +1345,12 @@ function ProviderReadinessPanel({
 }: {
   providerSettings: SafeProviderSettings;
 }) {
-  const readyProviderCount = providerRoles.filter((role) => {
-    const setting = providerSettings.roles[role.id];
-    return setting.enabled && setting.hasApiKey;
-  }).length;
+  const readyProviderCount =
+    providerRoles.filter((role) => {
+      const setting = providerSettings.roles[role.id];
+      return setting.enabled && setting.hasApiKey;
+    }).length + providerSettings.profiles.filter((profile) => profile.enabled && profile.hasApiKey).length;
+  const totalProviderSlots = providerRoles.length + providerSettings.profiles.length;
   return (
     <section className="panel">
       <div className="panel-header">
@@ -1360,7 +1362,7 @@ function ProviderReadinessPanel({
           <div className="detail-row">
             <span>준비됨</span>
             <span>
-              {readyProviderCount}/{providerRoles.length}
+              {readyProviderCount}/{totalProviderSlots}
             </span>
           </div>
           {providerRoles.map((role) => {
@@ -1466,9 +1468,11 @@ function BlockersPanel({ blockers }: { blockers: string[] }) {
 
 function GenerationConsolePanel({
   generationState,
+  providerSettings,
   run,
 }: {
   generationState: AssetGenerationState;
+  providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
   return (
@@ -1480,6 +1484,7 @@ function GenerationConsolePanel({
       <div className="panel-body">
         <AssetGenerationConsole
           defaultNarration={narrationFromStoryboard(run.package.storyboard)}
+          providerSettings={providerSettings}
           runId={run.id}
           state={generationState}
         />
@@ -1807,7 +1812,13 @@ function Inspector({
 
         {showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
 
-        {showGeneration ? <GenerationConsolePanel generationState={generationState} run={run} /> : null}
+        {showGeneration ? (
+          <GenerationConsolePanel
+            generationState={generationState}
+            providerSettings={providerSettings}
+            run={run}
+          />
+        ) : null}
 
         {showAssembly ? (
           <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
@@ -1838,7 +1849,13 @@ function Inspector({
               <RunApprovalsPanel key={`${run.id}-more`} initialApprovals={approvals} runId={run.id} />
             ) : null}
             {!showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
-            {!showGeneration ? <GenerationConsolePanel generationState={generationState} run={run} /> : null}
+            {!showGeneration ? (
+              <GenerationConsolePanel
+                generationState={generationState}
+                providerSettings={providerSettings}
+                run={run}
+              />
+            ) : null}
             {!showAssembly ? (
               <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
             ) : null}
