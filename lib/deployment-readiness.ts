@@ -61,15 +61,19 @@ export type DeploymentReadiness = {
     };
     youtubeUpload: {
       command: string;
+      activeChannelUploadTokenCount: number;
       channelUploadTokenAvailable: boolean;
+      channelCount: number;
       externalRequired: boolean;
       oauthClientId: boolean;
       oauthClientSecret: boolean;
       oauthRefreshToken: boolean;
+      pausedChannelUploadTokenCount: number;
       queueTable: boolean;
       refreshTokenReady: boolean;
       ready: boolean;
       requirements: string[];
+      setupChannelUploadTokenCount: number;
     };
   };
   security: {
@@ -283,15 +287,28 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
         .join(", ")}.`,
     );
   }
-  const channelUploadTokenAvailable = await listYouTubeChannels()
-    .then((channels) =>
-      channels.some((channel) => channel.status === "active" && channel.has_upload_refresh_token),
-    )
-    .catch(() => false);
+  const youtubeChannels = await listYouTubeChannels().catch(() => []);
+  const activeChannelUploadTokenCount = youtubeChannels.filter(
+    (channel) => channel.status === "active" && channel.has_upload_refresh_token,
+  ).length;
+  const setupChannelUploadTokenCount = youtubeChannels.filter(
+    (channel) => channel.status === "setup" && channel.has_upload_refresh_token,
+  ).length;
+  const pausedChannelUploadTokenCount = youtubeChannels.filter(
+    (channel) => channel.status === "paused" && channel.has_upload_refresh_token,
+  ).length;
+  const inactiveChannelUploadTokenCount =
+    setupChannelUploadTokenCount + pausedChannelUploadTokenCount;
+  const channelUploadTokenAvailable = activeChannelUploadTokenCount > 0;
   const uploadRefreshTokenReady = hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN") || channelUploadTokenAvailable;
   if (appStorageMode === "supabase" && !uploadRefreshTokenReady) {
     warnings.push(
       "YouTube upload worker needs either YOUTUBE_OAUTH_REFRESH_TOKEN or a selected channel upload refresh token.",
+    );
+  }
+  if (appStorageMode === "supabase" && inactiveChannelUploadTokenCount > 0 && !channelUploadTokenAvailable) {
+    warnings.push(
+      "Channel upload tokens exist, but no active channel has an upload token. Set the target channel status to active before upload.",
     );
   }
 
@@ -325,11 +342,14 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       youtubeUpload: {
         command:
           "npm run youtube:upload-worker -- --poll --confirm RUN_YOUTUBE_UPLOAD --storage supabase --interval-seconds 15",
+        activeChannelUploadTokenCount,
         channelUploadTokenAvailable,
+        channelCount: youtubeChannels.length,
         externalRequired: appStorageMode === "supabase",
         oauthClientId: hasEnv("YOUTUBE_OAUTH_CLIENT_ID"),
         oauthClientSecret: hasEnv("YOUTUBE_OAUTH_CLIENT_SECRET"),
         oauthRefreshToken: hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN"),
+        pausedChannelUploadTokenCount,
         queueTable: schema.workerJobs,
         refreshTokenReady: uploadRefreshTokenReady,
         ready:
@@ -349,6 +369,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
           "YOUTUBE_OAUTH_CLIENT_SECRET",
           "YOUTUBE_OAUTH_REFRESH_TOKEN or youtube_channels.upload_refresh_token for the selected run channel",
         ],
+        setupChannelUploadTokenCount,
       },
     },
     security: {

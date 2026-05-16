@@ -188,6 +188,13 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
               </div>
               <code>{readiness.workers.youtubeUpload.command}</code>
               <p>{readiness.workers.youtubeUpload.requirements.join(" · ")}</p>
+              <div className="worker-token-inventory" aria-label="YouTube upload token inventory">
+                <span>전역 {readiness.workers.youtubeUpload.oauthRefreshToken ? "있음" : "없음"}</span>
+                <span>채널 {readiness.workers.youtubeUpload.channelCount}</span>
+                <span>활성 토큰 {readiness.workers.youtubeUpload.activeChannelUploadTokenCount}</span>
+                <span>설정 중 토큰 {readiness.workers.youtubeUpload.setupChannelUploadTokenCount}</span>
+                <span>일시중지 토큰 {readiness.workers.youtubeUpload.pausedChannelUploadTokenCount}</span>
+              </div>
             </div>
           </div>
         </div>
