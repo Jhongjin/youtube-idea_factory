@@ -291,11 +291,13 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           </label>
           <label>
             <span>업로드 refresh token</span>
-            <input name="upload_refresh_token" placeholder="youtube.upload scope" type="password" />
+            <input name="upload_refresh_token" placeholder="1//... upload refresh token" type="password" />
+            <small>스코프 문자열이 아니라 `youtube.upload` 권한으로 발급된 refresh token 값입니다.</small>
           </label>
           <label>
             <span>Analytics refresh token</span>
-            <input name="analytics_refresh_token" placeholder="yt-analytics.readonly scope" type="password" />
+            <input name="analytics_refresh_token" placeholder="1//... analytics refresh token" type="password" />
+            <small>스코프 문자열이 아니라 `yt-analytics.readonly` 권한으로 발급된 refresh token 값입니다.</small>
           </label>
           <label>
             <span>상태</span>
@@ -437,11 +439,13 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
               </label>
               <label>
                 <span>업로드 토큰 교체</span>
-                <input name="upload_refresh_token" placeholder="비워두면 유지" type="password" />
+                <input name="upload_refresh_token" placeholder="새 refresh token / 비워두면 유지" type="password" />
+                <small>`youtube.upload` 스코프명 자체를 넣지 마세요.</small>
               </label>
               <label>
                 <span>분석 토큰 교체</span>
-                <input name="analytics_refresh_token" placeholder="비워두면 유지" type="password" />
+                <input name="analytics_refresh_token" placeholder="새 refresh token / 비워두면 유지" type="password" />
+                <small>`yt-analytics.readonly` 스코프명 자체를 넣지 마세요.</small>
               </label>
               <label>
                 <span>메모</span>
