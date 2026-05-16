@@ -49,6 +49,7 @@ This queue keeps the build loop explicit:
 | dashboard-sidebar-runs-first | Phase 7 | done | codex | no | Sidebar now prioritizes channel and run selection; the static section list is folded behind a disclosure. |
 | dashboard-research-step-focus | Phase 7 | done | codex | no | Research now shows source review first when sources exist, keeps Finder behind a reinforcement disclosure, and preserves channel context after imports. |
 | artifact-review-first | Phase 7 | done | codex | no | Artifact panels now show a readable preview first and keep raw markdown editing behind an explicit disclosure. |
+| dashboard-advanced-tools-soften | Phase 7 | done | codex | no | Topbar advanced tools are now an icon-only overflow control so the guided next-step CTA remains visually dominant. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |

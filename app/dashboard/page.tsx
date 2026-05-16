@@ -10,6 +10,7 @@ import {
   KeyRound,
   ListChecks,
   Mic2,
+  MoreHorizontal,
   PlayCircle,
   RefreshCw,
   Rocket,
@@ -1211,7 +1212,9 @@ function WorkflowActionButton({
 function AdvancedActionMenu({ run }: { run: RunSummary }) {
   return (
     <details className="advanced-action-menu">
-      <summary className="text-button">고급 도구</summary>
+      <summary aria-label="고급 도구" className="icon-button advanced-action-trigger" title="고급 도구">
+        <MoreHorizontal size={16} />
+      </summary>
       <div className="advanced-action-grid">
         <div>
           <strong>초안</strong>
