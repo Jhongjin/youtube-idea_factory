@@ -4,6 +4,7 @@ import {
   hasManualWorkflow,
   requiresProviderModel,
 } from "@/lib/provider-capabilities";
+import { listYouTubeChannels } from "@/lib/channels";
 import { getProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type ProviderRoleId } from "@/lib/provider-settings-shared";
 import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
@@ -60,11 +61,13 @@ export type DeploymentReadiness = {
     };
     youtubeUpload: {
       command: string;
+      channelUploadTokenAvailable: boolean;
       externalRequired: boolean;
       oauthClientId: boolean;
       oauthClientSecret: boolean;
       oauthRefreshToken: boolean;
       queueTable: boolean;
+      refreshTokenReady: boolean;
       ready: boolean;
       requirements: string[];
     };
@@ -280,6 +283,17 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
         .join(", ")}.`,
     );
   }
+  const channelUploadTokenAvailable = await listYouTubeChannels()
+    .then((channels) =>
+      channels.some((channel) => channel.status !== "paused" && channel.has_upload_refresh_token),
+    )
+    .catch(() => false);
+  const uploadRefreshTokenReady = hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN") || channelUploadTokenAvailable;
+  if (appStorageMode === "supabase" && !uploadRefreshTokenReady) {
+    warnings.push(
+      "YouTube upload worker needs either YOUTUBE_OAUTH_REFRESH_TOKEN or a selected channel upload refresh token.",
+    );
+  }
 
   return {
     runtime: {
@@ -311,18 +325,20 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       youtubeUpload: {
         command:
           "npm run youtube:upload-worker -- --poll --confirm RUN_YOUTUBE_UPLOAD --storage supabase --interval-seconds 15",
+        channelUploadTokenAvailable,
         externalRequired: appStorageMode === "supabase",
         oauthClientId: hasEnv("YOUTUBE_OAUTH_CLIENT_ID"),
         oauthClientSecret: hasEnv("YOUTUBE_OAUTH_CLIENT_SECRET"),
         oauthRefreshToken: hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN"),
         queueTable: schema.workerJobs,
+        refreshTokenReady: uploadRefreshTokenReady,
         ready:
           appStorageMode === "supabase"
             ? supabase.readyForServerAdapters &&
               schema.workerJobs &&
               hasEnv("YOUTUBE_OAUTH_CLIENT_ID") &&
               hasEnv("YOUTUBE_OAUTH_CLIENT_SECRET") &&
-              hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN")
+              uploadRefreshTokenReady
             : true,
         requirements: [
           "APP_STORAGE_MODE=supabase",
@@ -331,7 +347,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
           "SUPABASE_ASSETS_BUCKET",
           "YOUTUBE_OAUTH_CLIENT_ID",
           "YOUTUBE_OAUTH_CLIENT_SECRET",
-          "YOUTUBE_OAUTH_REFRESH_TOKEN",
+          "YOUTUBE_OAUTH_REFRESH_TOKEN or youtube_channels.upload_refresh_token for the selected run channel",
         ],
       },
     },
