@@ -715,7 +715,15 @@ function GuidedStepNav({
   );
 }
 
-function GuidedActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+function GuidedActionPanel({
+  plan,
+  providerSettings,
+  run,
+}: {
+  plan: RunNextActionPlan;
+  providerSettings: SafeProviderSettings;
+  run: RunSummary;
+}) {
   const secondaryActions = plan.secondaryActionIds ?? [];
   return (
     <section className="panel guided-action-panel" id="next-action">
@@ -740,7 +748,11 @@ function GuidedActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSum
           </div>
           {plan.primaryActionId ? (
             <div className="guide-action-primary">
-              <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+              <WorkflowActionButton
+                actionId={plan.primaryActionId}
+                providerSettings={providerSettings}
+                run={run}
+              />
             </div>
           ) : (
             <p className="next-action-note">승인 게이트 확인 필요</p>
@@ -751,7 +763,12 @@ function GuidedActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSum
             <summary>보조 작업</summary>
             <div>
               {secondaryActions.map((actionId) => (
-                <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+                <WorkflowActionButton
+                  actionId={actionId}
+                  key={actionId}
+                  providerSettings={providerSettings}
+                  run={run}
+                />
               ))}
             </div>
           </details>
@@ -781,12 +798,14 @@ function GuidedRunWorkspace({
   artifacts,
   channelId,
   nextActionPlan,
+  providerSettings,
   run,
 }: {
   activeStep: GuidedStepKey;
   artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
   channelId: string;
   nextActionPlan: RunNextActionPlan;
+  providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
   const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
@@ -803,7 +822,7 @@ function GuidedRunWorkspace({
           현재 단계로 이동
         </Link>
       </section>
-      <GuidedActionPanel plan={nextActionPlan} run={run} />
+      <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
 
       {activeStep === "setup" ? (
         <>
@@ -1139,9 +1158,11 @@ function SummaryGrid({ run }: { run: RunSummary }) {
 
 function WorkflowActionButton({
   actionId,
+  providerSettings,
   run,
 }: {
   actionId: RunPrimaryActionId;
+  providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
   const runId = run.id;
@@ -1153,11 +1174,11 @@ function WorkflowActionButton({
     case "analysis-draft":
       return <AnalysisDraftButton runId={runId} />;
     case "analysis-refine":
-      return <AnalysisRefineButton runId={runId} />;
+      return <AnalysisRefineButton providerSettings={providerSettings} runId={runId} />;
     case "script-draft":
       return <ScriptDraftButton runId={runId} />;
     case "script-refine":
-      return <ScriptRefineButton runId={runId} />;
+      return <ScriptRefineButton providerSettings={providerSettings} runId={runId} />;
     case "storyboard-draft":
       return <StoryboardDraftButton runId={runId} />;
     case "media-draft":
@@ -1212,7 +1233,15 @@ function WorkflowActionButton({
   }
 }
 
-function AdvancedActionMenu({ activeStep, run }: { activeStep: GuidedStepKey; run: RunSummary }) {
+function AdvancedActionMenu({
+  activeStep,
+  providerSettings,
+  run,
+}: {
+  activeStep: GuidedStepKey;
+  providerSettings: SafeProviderSettings;
+  run: RunSummary;
+}) {
   const groups = advancedActionGroupsByStep[activeStep];
   return (
     <details className="advanced-action-menu">
@@ -1224,7 +1253,12 @@ function AdvancedActionMenu({ activeStep, run }: { activeStep: GuidedStepKey; ru
           <div key={group.label}>
             <strong>{group.label}</strong>
             {group.actionIds.map((actionId) => (
-              <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+              <WorkflowActionButton
+                actionId={actionId}
+                key={actionId}
+                providerSettings={providerSettings}
+                run={run}
+              />
             ))}
           </div>
         ))}
@@ -1993,7 +2027,11 @@ export default async function Home({
               <Link className="icon-button" href="/settings" title="제공자 설정">
                 <Settings size={16} />
               </Link>
-              <AdvancedActionMenu activeStep={activeStep} run={activeRun} />
+              <AdvancedActionMenu
+                activeStep={activeStep}
+                providerSettings={providerSettings}
+                run={activeRun}
+              />
             </div>
           </div>
 
@@ -2003,6 +2041,7 @@ export default async function Home({
               artifacts={artifacts}
               channelId={selectedChannelId}
               nextActionPlan={nextActionPlan}
+              providerSettings={providerSettings}
               run={activeRun}
             />
           ) : null}

@@ -1,10 +1,15 @@
 import type { ProviderRoleSetting } from "@/lib/provider-settings-shared";
-import { getProviderSettings } from "@/lib/provider-settings";
+import {
+  getProviderSettings,
+  resolvePreferredProviderSetting,
+  resolveProviderSetting,
+} from "@/lib/provider-settings";
 
 export type LlmTextRequest = {
   task: string;
   instructions: string;
   input: string;
+  providerProfileId?: string;
 };
 
 export type LlmTextResult = {
@@ -154,7 +159,9 @@ async function callOpenAiCompatibleChat(
 
 export async function generateLlmText(request: LlmTextRequest): Promise<LlmTextResult> {
   const settings = await getProviderSettings();
-  const llm = settings.roles.llm;
+  const llm = request.providerProfileId
+    ? resolveProviderSetting(settings, "llm", request.providerProfileId)
+    : resolvePreferredProviderSetting(settings, "llm");
   requireConfiguredLlm(llm);
 
   const provider = normalizeProvider(llm.provider);

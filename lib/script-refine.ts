@@ -9,6 +9,10 @@ export type ScriptRefineResult = {
   file: string;
 };
 
+export type LlmRefineOptions = {
+  providerProfileId?: string;
+};
+
 function assertSafeRunId(runId: string) {
   if (!/^[A-Za-z0-9._-]+$/.test(runId)) {
     throw new Error("Invalid run id.");
@@ -91,7 +95,10 @@ Create an improved 04-script-plan.md with these sections:
 `;
 }
 
-export async function refineScriptWithLlm(runId: string): Promise<ScriptRefineResult> {
+export async function refineScriptWithLlm(
+  runId: string,
+  options: LlmRefineOptions = {},
+): Promise<ScriptRefineResult> {
   assertSafeRunId(runId);
   const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [analysis, claimLedger, currentScript] = await Promise.all([
@@ -104,6 +111,7 @@ export async function refineScriptWithLlm(runId: string): Promise<ScriptRefineRe
     task: "youtube-script-refine",
     instructions: buildInstructions(pkg),
     input: buildInput({ pkg, analysis, claimLedger, currentScript }),
+    providerProfileId: options.providerProfileId,
   });
   const generatedAt = new Date().toISOString();
   const markdown = `${result.text.trim()}

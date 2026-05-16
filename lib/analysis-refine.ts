@@ -10,6 +10,10 @@ export type AnalysisRefineResult = {
   files: string[];
 };
 
+export type LlmRefineOptions = {
+  providerProfileId?: string;
+};
+
 type ClaimRecord = {
   claim: string;
   status: "supported" | "needs_evidence" | "opinion" | "high_risk" | "do_not_use";
@@ -164,7 +168,10 @@ The 03 claim ledger must use this table:
 `;
 }
 
-export async function refineAnalysisWithLlm(runId: string): Promise<AnalysisRefineResult> {
+export async function refineAnalysisWithLlm(
+  runId: string,
+  options: LlmRefineOptions = {},
+): Promise<AnalysisRefineResult> {
   assertSafeRunId(runId);
   const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const [analysis, claimLedger, transcripts] = await Promise.all([
@@ -182,6 +189,7 @@ export async function refineAnalysisWithLlm(runId: string): Promise<AnalysisRefi
     task: "youtube-analysis-claim-refine",
     instructions: buildInstructions(pkg),
     input: buildInput({ pkg, transcripts, analysis, claimLedger }),
+    providerProfileId: options.providerProfileId,
   });
   const refinedAnalysis = extractFile(result.text, "02-video-analysis.md");
   const refinedClaimLedger = extractFile(result.text, "03-claim-ledger.md");

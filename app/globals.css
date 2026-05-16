@@ -7585,6 +7585,35 @@ body {
   min-height: 40px;
 }
 
+.llm-profile-picker {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 5px;
+  color: rgba(244, 239, 227, 0.78);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.llm-profile-picker span {
+  color: #f0c174;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.llm-profile-picker select {
+  width: 100%;
+  min-height: 40px;
+}
+
+.llm-profile-picker.muted {
+  border: 1px solid rgba(244, 239, 227, 0.14);
+  border-radius: 8px;
+  background: rgba(244, 239, 227, 0.06);
+  padding: 10px;
+}
+
 .focus-inspector-panel.blocked .inspector-decision,
 .focus-inspector-panel.review .inspector-decision,
 .focus-inspector-panel.done .inspector-decision,
