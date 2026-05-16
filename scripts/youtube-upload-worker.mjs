@@ -504,7 +504,7 @@ async function readSupabaseUploadChannel(channelId) {
   const query = new URLSearchParams({
     id: `eq.${channelId}`,
     limit: "1",
-    select: "id,brand_name,channel_name,status,upload_refresh_token",
+    select: "id,brand_name,channel_name,channel_id,youtube_handle,status,upload_refresh_token",
   });
   const response = await supabaseRequest(`rest/v1/youtube_channels?${query}`);
   const rows = await response.json();
@@ -532,6 +532,19 @@ async function uploadRefreshTokenForJob({ job, pkg, storageMode } = {}) {
   const refreshToken = String(channel.upload_refresh_token ?? "").trim();
   if (!refreshToken) {
     throw new Error(`Selected YouTube channel is missing upload_refresh_token: ${channel.channel_name ?? channelId}`);
+  }
+  if (job && !job.channel) {
+    job.channel = {
+      brand_name: channel.brand_name || "",
+      channel_name: channel.channel_name || "",
+      id: channel.id || channelId,
+      upload_token_source: "youtube_channels",
+      youtube_channel_id: channel.channel_id || null,
+      youtube_handle: channel.youtube_handle || null,
+    };
+  } else if (job?.channel) {
+    job.channel.youtube_channel_id ||= channel.channel_id || null;
+    job.channel.youtube_handle ||= channel.youtube_handle || null;
   }
   return refreshToken;
 }
