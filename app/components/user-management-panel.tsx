@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, UserPlus } from "lucide-react";
+import { CheckCircle2, Save, UserPlus } from "lucide-react";
 import type { AppUser, AppUserStatus } from "@/lib/users";
 import type { SessionRole } from "@/lib/session";
 
@@ -21,6 +21,8 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [approvingUserId, setApprovingUserId] = useState("");
+  const pendingUserCount = users.filter((user) => user.status === "pending").length;
 
   async function createUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,6 +72,25 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
       return;
     }
     setMessage("사용자 정보를 저장했습니다.");
+    router.refresh();
+  }
+
+  async function approveUser(userId: string) {
+    setError("");
+    setMessage("");
+    setApprovingUserId(userId);
+    const response = await fetch(`/api/admin/users/${encodeURIComponent(userId)}`, {
+      body: JSON.stringify({ status: "active" }),
+      headers: { "Content-Type": "application/json" },
+      method: "PATCH",
+    });
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    setApprovingUserId("");
+    if (!response.ok) {
+      setError(body?.error ?? "사용자를 승인하지 못했습니다.");
+      return;
+    }
+    setMessage("가입 요청을 승인했습니다.");
     router.refresh();
   }
 
@@ -127,8 +148,17 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
             <h2>회원 목록</h2>
             <p>관리자, 멤버, 승인 대기 계정을 한 화면에서 정리합니다.</p>
           </div>
-          <span className="admin-count">{users.length}</span>
+          <span className="admin-count">{pendingUserCount ? `대기 ${pendingUserCount}` : users.length}</span>
         </div>
+        {pendingUserCount ? (
+          <div className="admin-approval-guide">
+            <CheckCircle2 size={17} />
+            <div>
+              <strong>가입 요청 승인</strong>
+              <span>승인 대기 행의 오른쪽 승인 버튼을 누르면 상태가 활성으로 바뀌고 사용자가 로그인할 수 있습니다.</span>
+            </div>
+          </div>
+        ) : null}
         <div className="user-list">
           {users.map((user) => (
             <form className="user-row" key={user.id} onSubmit={(event) => updateUser(event, user.id)}>
@@ -165,10 +195,23 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
                 <span>새 비밀번호</span>
                 <input disabled={user.id === "env-admin"} name="password" placeholder="변경 시 입력" type="password" />
               </label>
-              <button className="text-button" disabled={user.id === "env-admin"} type="submit">
-                <Save size={15} />
-                저장
-              </button>
+              <div className="user-row-actions">
+                {user.status === "pending" ? (
+                  <button
+                    className="text-button approve"
+                    disabled={approvingUserId === user.id}
+                    onClick={() => approveUser(user.id)}
+                    type="button"
+                  >
+                    <CheckCircle2 size={15} />
+                    {approvingUserId === user.id ? "승인 중" : "승인"}
+                  </button>
+                ) : null}
+                <button className="text-button" disabled={user.id === "env-admin"} type="submit">
+                  <Save size={15} />
+                  저장
+                </button>
+              </div>
             </form>
           ))}
         </div>

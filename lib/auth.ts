@@ -15,7 +15,7 @@ export async function requireUser(options: { role?: SessionRole; redirectTo?: st
     redirect(options.redirectTo ?? "/login");
   }
   if (options.role && user.role !== options.role) {
-    redirect("/dashboard");
+    redirect("/dashboard?notice=admin-required");
   }
   return user;
 }

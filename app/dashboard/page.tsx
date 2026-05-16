@@ -1005,15 +1005,18 @@ function EmptyState({
   allRuns,
   channelName,
   channels,
+  notice,
   selectedChannelId,
 }: {
   allRuns: RunSummary[];
   channelName?: string;
   channels: SafeYouTubeChannel[];
+  notice?: string;
   selectedChannelId: string;
 }) {
   return (
     <main className="main">
+      <DashboardNotice notice={notice} />
       <OperatingChannelBar
         activeStep="setup"
         allRuns={allRuns}
@@ -1040,6 +1043,24 @@ function EmptyState({
       </div>
       <NewRunPanel channels={channels} initialChannelId={selectedChannelId} />
     </main>
+  );
+}
+
+function DashboardNotice({ notice }: { notice?: string }) {
+  if (notice !== "admin-required") {
+    return null;
+  }
+  return (
+    <section className="dashboard-notice" aria-label="권한 안내">
+      <ShieldCheck size={18} />
+      <div>
+        <strong>관리자 권한이 필요한 화면입니다.</strong>
+        <span>회원 승인, 채널 OAuth, API 설정은 관리자 계정으로 로그인해야 열 수 있습니다.</span>
+      </div>
+      <Link className="text-button" href="/login?next=/admin">
+        관리자 로그인
+      </Link>
+    </section>
   );
 }
 
@@ -1936,7 +1957,7 @@ function Inspector({
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ channel?: string; run?: string; step?: string }>;
+  searchParams?: Promise<{ channel?: string; notice?: string; run?: string; step?: string }>;
 }) {
   await requireUser({ redirectTo: "/login?next=/dashboard" });
   const runs = await getRuns();
@@ -1996,6 +2017,7 @@ export default async function Home({
       />
       {activeRun ? (
         <main className="main" id="main-content">
+          <DashboardNotice notice={params.notice} />
           <OperatingChannelBar
             activeStep={activeStep}
             activeRun={activeRun}
@@ -2049,6 +2071,7 @@ export default async function Home({
           allRuns={runs}
           channelName={activeChannel?.channel_name}
           channels={channels}
+          notice={params.notice}
           selectedChannelId={selectedChannelId}
         />
       )}

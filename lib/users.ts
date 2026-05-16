@@ -171,6 +171,24 @@ export async function authenticateAppUser(identifier: string, password: string) 
   return sanitizeUser(user);
 }
 
+export async function getInactiveAppUserStatus(identifier: string, password: string): Promise<AppUserStatus | null> {
+  const login = normalizeEmail(identifier);
+  const admin = envAdminUser();
+  if (admin) {
+    const adminUsername = process.env.DASHBOARD_ADMIN_USERNAME?.trim() || "admin";
+    const matchesAdmin = login === normalizeEmail(admin.email) || login === normalizeEmail(adminUsername);
+    if (matchesAdmin) {
+      return null;
+    }
+  }
+
+  const user = await getStoredUserByEmail(login);
+  if (!user || user.status === "active" || !verifyPassword(password, user.password_hash)) {
+    return null;
+  }
+  return user.status;
+}
+
 export async function createAppUser(input: {
   email: string;
   name: string;
