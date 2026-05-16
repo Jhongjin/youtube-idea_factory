@@ -1752,6 +1752,37 @@ button:disabled,
   padding: 12px 0;
 }
 
+.stage-focus-actions.read-only {
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  padding: 10px;
+}
+
+.stage-focus-guidance {
+  display: grid;
+  gap: 5px;
+}
+
+.stage-focus-guidance strong {
+  color: #182235;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.stage-focus-guidance p,
+.stage-focus-guidance span {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.45;
+}
+
+.stage-focus-guidance span {
+  color: #2f6f4e;
+}
+
 .stage-focus-primary-action,
 .stage-focus-secondary-actions {
   display: flex;
