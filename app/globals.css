@@ -301,9 +301,86 @@ a {
   font-weight: 850;
 }
 
+.operating-channel-meta span.ready {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.operating-channel-meta span.needs-setup {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
 .operating-channel-meta strong {
   color: #172019;
   font-size: 13px;
+}
+
+.operating-flow-lane {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px solid #dfe5df;
+  padding-top: 12px;
+}
+
+.operating-flow-step {
+  display: grid;
+  gap: 5px;
+  min-height: 78px;
+  border: 1px solid #d9e0e8;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 10px 12px;
+  text-decoration: none;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.operating-flow-step:hover {
+  border-color: #9fb7a8;
+  background: #f6faf7;
+  transform: translateY(-1px);
+}
+
+.operating-flow-step span {
+  color: #2f6f4e;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.operating-flow-step strong {
+  color: #172019;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.operating-flow-step small {
+  overflow: hidden;
+  color: #667386;
+  font-size: 11px;
+  font-weight: 760;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.operating-flow-step.current {
+  border-color: #2f6f4e;
+  background: #eef8f1;
+}
+
+.operating-flow-step.done {
+  border-color: #cfe3d4;
+  background: #f8fbf8;
+}
+
+.operating-flow-step.pending {
+  background: #f8fafc;
 }
 
 .toolbar {
@@ -3456,6 +3533,7 @@ button:disabled,
   .summary-grid,
   .workspace-grid,
   .operating-channel-bar,
+  .operating-flow-lane,
   .guided-step-intro,
   .guided-primary-cta,
   .next-action-main,

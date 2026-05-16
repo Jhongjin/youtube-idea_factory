@@ -501,19 +501,36 @@ function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
 
 function OperatingChannelBar({
   activeStep,
+  activeRun,
   allRuns,
   channels,
+  nextActionPlan,
   selectedChannelId,
 }: {
   activeStep: GuidedStepKey;
+  activeRun?: RunSummary;
   allRuns: RunSummary[];
   channels: SafeYouTubeChannel[];
+  nextActionPlan?: RunNextActionPlan | null;
   selectedChannelId: string;
 }) {
   const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
   const selectedRunCount = selectedChannel
     ? allRuns.filter((run) => runChannelId(run) === selectedChannel.id).length
     : allRuns.length;
+  const channelStatus =
+    selectedChannel?.status === "active"
+      ? "운영 중"
+      : selectedChannel?.status === "paused"
+        ? "일시중지"
+        : selectedChannel
+          ? "설정 중"
+          : "전체 보기";
+  const uploadTokenStatus = selectedChannel
+    ? selectedChannel.has_upload_refresh_token
+      ? "업로드 OAuth 준비"
+      : "업로드 OAuth 필요"
+    : "채널 선택 권장";
   return (
     <section className="operating-channel-bar" aria-label="운영 채널 선택">
       <div className="operating-channel-copy">
@@ -556,12 +573,50 @@ function OperatingChannelBar({
         })}
       </div>
       <div className="operating-channel-meta">
-        <span>{selectedChannel?.status === "active" ? "운영 중" : selectedChannel ? "설정 중" : "전체 보기"}</span>
+        <span>{channelStatus}</span>
+        <span className={selectedChannel?.has_upload_refresh_token ? "ready" : "needs-setup"}>
+          {uploadTokenStatus}
+        </span>
         <strong>{selectedRunCount}개 실행</strong>
         <Link className="text-button" href="/admin/channels">
           <Settings size={15} />
           채널 관리
         </Link>
+      </div>
+      <div className="operating-flow-lane" aria-label="대시보드 진행 순서">
+        <Link
+          className={`operating-flow-step ${selectedChannel ? "done" : "current"}`}
+          href={
+            selectedChannel
+              ? dashboardHref({ channelId: selectedChannel.id, step: activeStep })
+              : "/admin/channels"
+          }
+        >
+          <span>01</span>
+          <strong>{selectedChannel ? selectedChannel.brand_name : "운영 채널 선택"}</strong>
+          <small>
+            {selectedChannel
+              ? "이 채널 기준으로 제작 이력을 봅니다."
+              : "채널을 등록하거나 전체 실행으로 시작합니다."}
+          </small>
+        </Link>
+        <a
+          className={`operating-flow-step ${activeRun ? "done" : "current"}`}
+          href={activeRun ? "#next-action" : "#new-run-panel"}
+        >
+          <span>02</span>
+          <strong>{activeRun ? "현재 실행 계속" : "새 제작 시작"}</strong>
+          <small>
+            {activeRun
+              ? activeRun.package.brief.topic
+              : "주제와 형식을 넣어 첫 패키지를 만듭니다."}
+          </small>
+        </a>
+        <a className={`operating-flow-step ${activeRun ? "current" : "pending"}`} href="#next-action">
+          <span>03</span>
+          <strong>{nextActionPlan?.headline ?? "다음 작업 실행"}</strong>
+          <small>{nextActionPlan?.detail ?? "실행이 만들어지면 가장 먼저 누를 버튼을 보여줍니다."}</small>
+        </a>
       </div>
     </section>
   );
@@ -919,6 +974,7 @@ function EmptyState({
         activeStep="setup"
         allRuns={allRuns}
         channels={channels}
+        nextActionPlan={null}
         selectedChannelId={selectedChannelId}
       />
       <div className="topbar">
@@ -1305,7 +1361,7 @@ function NewRunPanel({
   initialChannelId?: string;
 }) {
   return (
-    <section className="panel">
+    <section className="panel" id="new-run-panel">
       <div className="panel-header">
         <h3 className="panel-title">새 제작 시작</h3>
         <Rocket size={16} />
@@ -1890,8 +1946,10 @@ export default async function Home({
         <main className="main" id="main-content">
           <OperatingChannelBar
             activeStep={activeStep}
+            activeRun={activeRun}
             allRuns={runs}
             channels={channels}
+            nextActionPlan={nextActionPlan}
             selectedChannelId={selectedChannelId}
           />
           <div className="topbar">
@@ -1949,7 +2007,7 @@ export default async function Home({
         />
       ) : (
         <aside className="inspector">
-          <section className="panel">
+          <section className="panel" id="new-run-panel">
             <div className="panel-header">
               <h3 className="panel-title">새 제작 시작</h3>
               <Rocket size={16} />
