@@ -34,6 +34,7 @@ This queue keeps the build loop explicit:
 | channel-token-readiness-insight | Phase 7 | done | codex | no | Deployment health and settings now show active, setup, and paused channel upload token inventory. |
 | dashboard-channel-context-bar | Phase 7 | done | codex | no | Dashboard operating channel bar now includes upload token state and a 3-step operator flow lane. |
 | dashboard-sidebar-channel-disclosure | Phase 7 | done | codex | no | Sidebar channel filters are collapsed behind a compact disclosure because channel choice is now primary in the top bar. |
+| dashboard-single-channel-default | Phase 7 | done | codex | no | Dashboard defaults to the only registered channel while preserving an explicit all-channel view. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
