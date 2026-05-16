@@ -1411,15 +1411,79 @@ button:disabled,
 }
 
 .focus-inspector-panel {
-  border-color: #c8d6f7;
-  background: #fbfdff;
+  border-color: #d8dfd9;
+  background: #fbfbf8;
+}
+
+.focus-inspector-panel.blocked {
+  border-color: #f0b9b4;
+}
+
+.focus-inspector-panel.review {
+  border-color: #ecd58c;
+}
+
+.focus-inspector-panel.done,
+.focus-inspector-panel.pending {
+  border-color: #b9cdbf;
+}
+
+.inspector-decision {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #d8dfd9;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.focus-inspector-panel.blocked .inspector-decision {
+  border-color: #f0b9b4;
+  background: #fff5f4;
+}
+
+.focus-inspector-panel.review .inspector-decision {
+  border-color: #ecd58c;
+  background: #fffaf0;
+}
+
+.focus-inspector-panel.done .inspector-decision,
+.focus-inspector-panel.pending .inspector-decision {
+  border-color: #b9cdbf;
+  background: #f5faf6;
+}
+
+.inspector-decision span,
+.stage-focus-summary > span,
+.approval-gate-summary > span,
+.stage-focus-inputs-header span {
+  color: #536174;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+}
+
+.inspector-decision strong {
+  color: #172019;
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.inspector-decision p,
+.stage-focus-summary p,
+.approval-gate-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .stage-focus-summary {
   display: grid;
   gap: 6px;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 12px;
+  padding: 12px 0;
 }
 
 .stage-focus-summary strong {
@@ -1428,10 +1492,17 @@ button:disabled,
   line-height: 1.3;
 }
 
-.stage-focus-summary span {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.45;
+.approval-gate-summary {
+  display: grid;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 12px;
+}
+
+.approval-gate-summary strong {
+  color: #8a650f;
+  font-size: 14px;
+  line-height: 1.25;
 }
 
 .stage-focus-actions {
@@ -1452,8 +1523,8 @@ button:disabled,
 .stage-focus-primary-action .text-button {
   width: 100%;
   min-height: 42px;
-  border-color: var(--blue);
-  background: var(--blue);
+  border-color: #2f6f4e;
+  background: #2f6f4e;
   color: #ffffff;
 }
 
@@ -1482,7 +1553,14 @@ button:disabled,
   padding: 12px 0;
 }
 
-.stage-focus-inputs > p {
+.stage-focus-inputs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stage-focus-inputs-header p {
   margin: 0;
   color: #455366;
   font-size: 12px;
@@ -1528,6 +1606,13 @@ button:disabled,
     "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
   line-height: 1.45;
+}
+
+.stage-focus-hidden-count {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1.4;
 }
 
 .stage-focus-checks {

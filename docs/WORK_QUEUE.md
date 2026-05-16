@@ -23,6 +23,7 @@ This queue keeps the build loop explicit:
 | channel-analytics-snapshot | Phase 7 | done | codex | no | Performance snapshots attach YouTube Analytics API metrics when the selected channel has an analytics refresh token. |
 | dashboard-guided-flow | Phase 7 | done | codex | no | Dashboard now starts with an operating channel selector and a guided five-step production workspace. |
 | dashboard-focused-artifacts | Phase 7 | done | codex | no | Guided dashboard steps now show only the most relevant artifact tabs first, with full context behind disclosure. |
+| dashboard-inspector-guide | Phase 7 | done | codex | no | The right inspector now leads with a compact progress decision, active approval gate summary, and shorter check list. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |

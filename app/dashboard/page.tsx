@@ -55,7 +55,7 @@ import { YouTubeUploadJobButton } from "@/app/components/youtube-upload-job-butt
 import { YouTubeUploadWorkerPanel } from "@/app/components/youtube-upload-worker-panel";
 import { WorkerStatusPanel } from "@/app/components/worker-status-panel";
 import { requireUser } from "@/lib/auth";
-import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
+import { getRunApprovals, type ApprovalGate, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
@@ -130,6 +130,12 @@ const feedbackStatusCopy: Record<string, string> = {
   needs_more_data: "데이터 필요",
   strong_signal: "강한 신호",
   watch: "주의 관찰",
+};
+
+const approvalGateLabels: Record<ApprovalGate, string> = {
+  generation: "생성 승인",
+  render: "렌더 승인",
+  publish: "게시 승인",
 };
 
 const workflowStageLabels = [
@@ -348,6 +354,67 @@ function runChannelLabel(run?: RunSummary) {
 
 function runChannelId(run?: RunSummary) {
   return run?.package.brief.channel?.id ?? "";
+}
+
+function approvalReady(approval: RunApprovals[ApprovalGate]) {
+  return approval.approved === true && approval.approved_by.trim() !== "" && approval.approved_at.trim() !== "";
+}
+
+function activeApprovalGate(plan: RunNextActionPlan): ApprovalGate | null {
+  if (plan.headline.includes("생성 승인")) {
+    return "generation";
+  }
+  if (plan.headline.includes("렌더 승인")) {
+    return "render";
+  }
+  if (plan.headline.includes("게시 승인")) {
+    return "publish";
+  }
+  return null;
+}
+
+function inspectorDecision({
+  plan,
+  run,
+  validation,
+}: {
+  plan: RunNextActionPlan;
+  run: RunSummary;
+  validation: PackageValidationResult;
+}) {
+  if (validation.status === "fail") {
+    return {
+      detail: "패키지 구조가 통과해야 다음 자동화가 안전하게 이어집니다.",
+      label: "구조 보정 필요",
+      tone: "blocked",
+    };
+  }
+  if (run.package.qa.blockers.length > 0 || plan.status === "blocked") {
+    return {
+      detail: "차단 항목을 줄인 뒤 다시 검수하거나 다음 단계로 이동하세요.",
+      label: "차단됨",
+      tone: "blocked",
+    };
+  }
+  if (plan.status === "review") {
+    return {
+      detail: "외부 비용, 렌더, 업로드 전에 사람 확인이 필요한 상태입니다.",
+      label: "검토 필요",
+      tone: "review",
+    };
+  }
+  if (plan.status === "done") {
+    return {
+      detail: "업로드 이후 성과 수집과 다음 기획 반영 단계입니다.",
+      label: "완료",
+      tone: "done",
+    };
+  }
+  return {
+    detail: "현재 단계의 기본 작업을 실행하면 다음 제작 단계로 넘어갑니다.",
+    label: "진행 가능",
+    tone: "pending",
+  };
 }
 
 function dashboardHref(params: { channelId?: string; runId?: string; step?: string }) {
@@ -1528,14 +1595,31 @@ function FeedbackPanel({ run }: { run: RunSummary }) {
   );
 }
 
-function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+function StageFocusPanel({
+  approvals,
+  plan,
+  run,
+  validation,
+}: {
+  approvals: RunApprovals;
+  plan: RunNextActionPlan;
+  run: RunSummary;
+  validation: PackageValidationResult;
+}) {
   const sourceCount = run.package.sources.length;
   const missingTranscripts = run.package.sources.filter(
     (source) => source.transcript_status !== "manual_transcript" && source.transcript_status !== "available",
   ).length;
   const secondaryActions = plan.secondaryActionIds ?? [];
+  const decision = inspectorDecision({ plan, run, validation });
+  const gate = activeApprovalGate(plan);
+  const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
+    (approvalGate) => !approvalReady(approvals[approvalGate]),
+  ).length;
+  const visibleItems = plan.items.slice(0, 2);
+  const hiddenItemCount = Math.max(0, plan.items.length - visibleItems.length);
   return (
-    <section className="panel focus-inspector-panel">
+    <section className={`panel focus-inspector-panel ${decision.tone}`}>
       <div className="panel-header">
         <div>
           <h3 className="panel-title">현재 단계</h3>
@@ -1546,10 +1630,23 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
         <StatusPill status={plan.status} />
       </div>
       <div className="panel-body">
-        <div className="stage-focus-summary">
-          <strong>{plan.headline}</strong>
-          <span>{plan.detail}</span>
+        <div className="inspector-decision">
+          <span>진행 판단</span>
+          <strong>{decision.label}</strong>
+          <p>{decision.detail}</p>
         </div>
+        <div className="stage-focus-summary">
+          <span>다음 작업</span>
+          <strong>{plan.headline}</strong>
+          <p>{plan.detail}</p>
+        </div>
+        {gate ? (
+          <div className="approval-gate-summary">
+            <span>{approvalGateLabels[gate]}</span>
+            <strong>{approvalReady(approvals[gate]) ? "승인됨" : "승인 대기"}</strong>
+            <p>{openApprovalCount}개 게이트가 아직 열려 있습니다.</p>
+          </div>
+        ) : null}
         <div className="stage-focus-actions">
           {plan.primaryActionId ? (
             <div className="stage-focus-primary-action">
@@ -1567,8 +1664,11 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
           ) : null}
         </div>
         <div className="stage-focus-inputs">
-          <p>필요한 확인</p>
-          {plan.items.map((item) => (
+          <div className="stage-focus-inputs-header">
+            <p>필요한 확인</p>
+            <span>{plan.items.length}개</span>
+          </div>
+          {visibleItems.map((item) => (
             <div className="stage-focus-input" key={`${item.title}-${item.detail}`}>
               <div>
                 <strong>{item.title}</strong>
@@ -1578,6 +1678,9 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
               <StatusPill status={item.status} />
             </div>
           ))}
+          {hiddenItemCount > 0 ? (
+            <span className="stage-focus-hidden-count">추가 확인 {hiddenItemCount}개는 중앙 다음 작업 카드에서 확인하세요.</span>
+          ) : null}
         </div>
         <div className="stage-focus-checks">
           <div>
@@ -1639,7 +1742,7 @@ function Inspector({
   return (
     <aside className="inspector">
       <div className="detail-stack">
-        <StageFocusPanel plan={nextActionPlan} run={run} />
+        <StageFocusPanel approvals={approvals} plan={nextActionPlan} run={run} validation={validation} />
 
         {showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
 
