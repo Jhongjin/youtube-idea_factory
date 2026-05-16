@@ -51,6 +51,7 @@ This queue keeps the build loop explicit:
 | artifact-review-first | Phase 7 | done | codex | no | Artifact panels now show a readable preview first and keep raw markdown editing behind an explicit disclosure. |
 | dashboard-advanced-tools-soften | Phase 7 | done | codex | no | Topbar advanced tools are now an icon-only overflow control so the guided next-step CTA remains visually dominant. |
 | remove-legacy-dashboard-panels | Phase 7 | done | codex | no | Removed unused legacy next-action and first-run dashboard panels so the guided workflow remains the only maintained path. |
+| channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |

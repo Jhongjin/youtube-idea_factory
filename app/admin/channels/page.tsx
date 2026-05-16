@@ -16,6 +16,12 @@ export default async function ChannelsPage() {
   ]);
   const uploadReady = channels.filter((channel) => channel.has_upload_refresh_token).length;
   const analyticsReady = channels.filter((channel) => channel.has_analytics_refresh_token).length;
+  const activeUploadReady = channels.filter(
+    (channel) => channel.status === "active" && channel.has_upload_refresh_token,
+  ).length;
+  const activationNeeded = channels.filter(
+    (channel) => channel.status !== "active" && channel.has_upload_refresh_token,
+  ).length;
 
   return (
     <main className="admin-page channel-page" id="main-content">
@@ -50,7 +56,7 @@ export default async function ChannelsPage() {
           </span>
           <span>
             <ShieldCheck size={16} />
-            업로드 {uploadReady}
+            업로드 {activeUploadReady}/{uploadReady}
           </span>
           <span>
             <ShieldCheck size={16} />
@@ -60,6 +66,19 @@ export default async function ChannelsPage() {
       </section>
 
       <SupabaseSetupNotice readiness={readiness} scope="channels" />
+
+      {activationNeeded ? (
+        <section className="channel-activation-banner">
+          <ShieldCheck size={18} />
+          <div>
+            <strong>업로드 토큰이 있는 채널 {activationNeeded}개가 아직 운영 중이 아닙니다.</strong>
+            <span>채널별 업로드 작업은 상태가 운영 중인 채널만 사용할 수 있습니다.</span>
+          </div>
+          <Link className="text-button" href="#channel-list">
+            전환할 채널 보기
+          </Link>
+        </section>
+      ) : null}
 
       <ChannelManagementPanel channels={channels} />
     </main>
