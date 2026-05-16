@@ -417,12 +417,19 @@ function inspectorDecision({
   };
 }
 
-function dashboardHref(params: { channelId?: string; runId?: string; step?: string }) {
+function dashboardHref(params: {
+  allChannels?: boolean;
+  channelId?: string;
+  runId?: string;
+  step?: string;
+}) {
   const search = new URLSearchParams();
   if (params.runId) {
     search.set("run", params.runId);
   }
-  if (params.channelId) {
+  if (params.allChannels) {
+    search.set("channel", "all");
+  } else if (params.channelId) {
     search.set("channel", params.channelId);
   }
   if (params.step) {
@@ -546,7 +553,7 @@ function OperatingChannelBar({
         <Link
           aria-current={selectedChannel ? undefined : "page"}
           className={`operating-channel-option ${selectedChannel ? "" : "active"}`}
-          href={dashboardHref({ step: activeStep })}
+          href={dashboardHref({ allChannels: true, step: activeStep })}
           role="listitem"
         >
           <strong>전체 실행</strong>
@@ -872,7 +879,10 @@ function Sidebar({
           </summary>
           <div className="sidebar-disclosure-body">
             <div className="channel-filter-list">
-              <Link className={`channel-filter ${activeChannelId ? "" : "active"}`} href="/dashboard">
+              <Link
+                className={`channel-filter ${activeChannelId ? "" : "active"}`}
+                href={dashboardHref({ allChannels: true })}
+              >
                 <strong>전체 실행</strong>
                 <span>{totalRuns}개</span>
               </Link>
@@ -1905,7 +1915,14 @@ export default async function Home({
   const workQueueSummary = getWorkQueueSummary();
   const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
-  const activeChannelId = channels.some((channel) => channel.id === params.channel) ? (params.channel ?? "") : "";
+  const channelParam = params.channel?.trim() ?? "";
+  const requestedAllChannels = channelParam === "all";
+  const requestedChannelId = channels.some((channel) => channel.id === channelParam)
+    ? channelParam
+    : "";
+  const defaultChannelId =
+    !requestedAllChannels && !requestedChannelId && channels.length === 1 ? channels[0].id : "";
+  const activeChannelId = requestedChannelId || defaultChannelId;
   const visibleRuns = activeChannelId
     ? runs.filter((run) => runChannelId(run) === activeChannelId)
     : runs;
