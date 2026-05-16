@@ -254,6 +254,14 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
               <span>처음 저장은 설정 중으로 두고, 실제 토큰이 확인된 채널만 운영 중으로 바꿉니다.</span>
             </div>
           </div>
+          <a
+            className="channel-oauth-guide-link"
+            href="https://github.com/Jhongjin/youtube-idea_factory/blob/main/docs/YOUTUBE_OAUTH_SETUP.md"
+            rel="noreferrer"
+            target="_blank"
+          >
+            상세 OAuth 가이드 열기
+          </a>
         </details>
         <form className="channel-form-grid" onSubmit={createChannel}>
           <label>

@@ -24,6 +24,7 @@ Build a YouTube automation dashboard that can turn a category or topic into a re
 - Dashboard UX direction: `docs/DASHBOARD_UX.md`
 - Provider catalog and adapter status: `docs/PROVIDER_CATALOG.md`
 - YouTube upload worker: `docs/YOUTUBE_UPLOAD_WORKER.md`
+- YouTube OAuth setup: `docs/YOUTUBE_OAUTH_SETUP.md`
 - Worker queue operations: `docs/WORKER_QUEUE.md`
 - MVP sequence: `docs/MVP_ROADMAP.md`
 - Work queue and deferred tasks: `docs/WORK_QUEUE.md`

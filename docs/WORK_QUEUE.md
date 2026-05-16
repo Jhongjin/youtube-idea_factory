@@ -57,6 +57,7 @@ This queue keeps the build loop explicit:
 | remove-sidebar-section-map | Phase 7 | done | codex | no | Removed the non-clickable sidebar section map so channel/run selection and the central guided steps remain the primary navigation. |
 | contextual-advanced-tools | Phase 7 | done | codex | no | Advanced tools now show only actions relevant to the active guided step instead of the full production action grid. |
 | homepage-hero-overlap-fix | Phase 7 | done | codex | no | Homepage hero now uses a real two-column grid so the product title no longer collides with the gallery preview at desktop widths. |
+| youtube-oauth-setup-guide | Phase 7 | done | codex | no | Added a Google/YouTube OAuth setup guide and linked it from the channel registration guide. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
