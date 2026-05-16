@@ -47,6 +47,11 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
   const [editingChannelId, setEditingChannelId] = useState("");
   const [saving, setSaving] = useState<"new" | string | null>(null);
   const [deleting, setDeleting] = useState("");
+  const orderedChannels = [...channels].sort((a, b) => {
+    const aNeedsActivation = a.has_upload_refresh_token && a.status !== "active";
+    const bNeedsActivation = b.has_upload_refresh_token && b.status !== "active";
+    return Number(bNeedsActivation) - Number(aNeedsActivation);
+  });
 
   function channelIdError(formData: FormData) {
     const channelId = String(formData.get("channel_id") ?? "").trim();
@@ -284,7 +289,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         </form>
       </section>
 
-      <section className="channel-grid">
+      <section className="channel-grid" id="channel-list">
         {channels.length === 0 ? (
           <div className="admin-empty">
             <KeyRound size={28} />
@@ -292,7 +297,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <p>브랜드 채널 10개를 운영한다면 채널마다 업로드/분석 권한 상태를 따로 관리하세요.</p>
           </div>
         ) : null}
-        {channels.map((channel) => {
+        {orderedChannels.map((channel) => {
           const uploadReadiness = channelUploadReadiness(channel);
           return (
             <article className="channel-card" key={channel.id}>
