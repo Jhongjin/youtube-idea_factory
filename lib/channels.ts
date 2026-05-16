@@ -69,6 +69,45 @@ function normalizeYouTubeHandle(value?: string | null) {
   return handle.startsWith("@") ? handle : `@${handle}`;
 }
 
+function sameText(left?: string | null, right?: string | null) {
+  return (left ?? "").trim().toLowerCase() === (right ?? "").trim().toLowerCase();
+}
+
+function findDuplicateChannel(
+  channels: YouTubeChannel[],
+  input: {
+    brand_name?: string;
+    channel_id?: string;
+    channel_name?: string;
+    youtube_handle?: string | null;
+  },
+  ignoreChannelId?: string,
+) {
+  const brandName = input.brand_name?.trim();
+  const channelName = input.channel_name?.trim();
+  const youtubeHandle = normalizeYouTubeHandle(input.youtube_handle);
+  const channelId =
+    input.channel_id === undefined ? undefined : normalizeChannelId(input.channel_id);
+
+  return channels.find((channel) => {
+    if (channel.id === ignoreChannelId) {
+      return false;
+    }
+    if (youtubeHandle && sameText(channel.youtube_handle, youtubeHandle)) {
+      return true;
+    }
+    if (channelId && sameText(channel.channel_id, channelId)) {
+      return true;
+    }
+    return Boolean(
+      brandName &&
+        channelName &&
+        sameText(channel.brand_name, brandName) &&
+        sameText(channel.channel_name, channelName),
+    );
+  });
+}
+
 async function readLocalChannels(): Promise<YouTubeChannel[]> {
   const raw = await fs.readFile(localChannelStorePath, "utf-8").catch((error: NodeJS.ErrnoException) => {
     if (error.code === "ENOENT") {
@@ -88,9 +127,9 @@ async function writeLocalChannels(channels: YouTubeChannel[]) {
   await fs.writeFile(localChannelStorePath, `${JSON.stringify({ channels }, null, 2)}\n`, "utf-8");
 }
 
-export async function listYouTubeChannels(): Promise<SafeYouTubeChannel[]> {
+async function listStoredChannels(): Promise<YouTubeChannel[]> {
   if (getAppStorageMode() === "supabase") {
-    const rows = await supabaseRest<YouTubeChannel[]>(channelsTable, {
+    return supabaseRest<YouTubeChannel[]>(channelsTable, {
       query: { order: "updated_at.desc", select: "*" },
     }).catch((error) => {
       if (isSupabaseMissingTableError(error)) {
@@ -98,10 +137,13 @@ export async function listYouTubeChannels(): Promise<SafeYouTubeChannel[]> {
       }
       throw error;
     });
-    return rows.map(safeChannel);
   }
 
-  return (await readLocalChannels()).map(safeChannel);
+  return readLocalChannels();
+}
+
+export async function listYouTubeChannels(): Promise<SafeYouTubeChannel[]> {
+  return (await listStoredChannels()).map(safeChannel);
 }
 
 export async function getYouTubeChannel(channelId: string): Promise<SafeYouTubeChannel | null> {
@@ -143,10 +185,18 @@ export async function createYouTubeChannel(input: {
   }
 
   const timestamp = nowIso();
+  const normalizedChannelId = normalizeChannelId(input.channel_id);
+  const normalizedHandle = normalizeYouTubeHandle(input.youtube_handle);
+  const existingChannels = await listStoredChannels();
+  const duplicate = findDuplicateChannel(existingChannels, input);
+  if (duplicate) {
+    throw new Error("이미 같은 브랜드/채널 또는 핸들의 채널이 등록되어 있습니다. 기존 카드를 편집하거나 삭제하세요.");
+  }
+
   const channel: YouTubeChannel = {
     analytics_refresh_token: input.analytics_refresh_token?.trim() || null,
     brand_name: input.brand_name.trim(),
-    channel_id: normalizeChannelId(input.channel_id),
+    channel_id: normalizedChannelId,
     channel_name: input.channel_name.trim(),
     created_at: timestamp,
     default_language: input.default_language?.trim() || "ko",
@@ -156,7 +206,7 @@ export async function createYouTubeChannel(input: {
     status: input.status ?? "setup",
     updated_at: timestamp,
     upload_refresh_token: input.upload_refresh_token?.trim() || null,
-    youtube_handle: normalizeYouTubeHandle(input.youtube_handle),
+    youtube_handle: normalizedHandle,
   };
 
   if (getAppStorageMode() === "supabase") {
@@ -193,9 +243,21 @@ export async function updateYouTubeChannel(
     youtube_handle: string;
   }>,
 ) {
+  if (input.brand_name !== undefined && !input.brand_name.trim()) {
+    throw new Error("브랜드명은 비워둘 수 없습니다.");
+  }
+  if (input.channel_name !== undefined && !input.channel_name.trim()) {
+    throw new Error("채널명은 비워둘 수 없습니다.");
+  }
+
+  const duplicate = findDuplicateChannel(await listStoredChannels(), input, channelId);
+  if (duplicate) {
+    throw new Error("이미 같은 브랜드/채널, 채널 ID 또는 핸들의 채널이 있습니다. 기존 카드를 편집하거나 삭제하세요.");
+  }
+
   const updates: Partial<YouTubeChannel> = { updated_at: nowIso() };
   if (input.analytics_refresh_token !== undefined) {
-    updates.analytics_refresh_token = input.analytics_refresh_token.trim();
+    updates.analytics_refresh_token = input.analytics_refresh_token.trim() || null;
   }
   if (input.brand_name !== undefined) {
     updates.brand_name = input.brand_name.trim();
@@ -207,19 +269,19 @@ export async function updateYouTubeChannel(
     updates.channel_name = input.channel_name.trim();
   }
   if (input.default_language !== undefined) {
-    updates.default_language = input.default_language.trim();
+    updates.default_language = input.default_language.trim() || "ko";
   }
   if (input.notes !== undefined) {
-    updates.notes = input.notes.trim();
+    updates.notes = input.notes.trim() || null;
   }
   if (input.owner_email !== undefined) {
-    updates.owner_email = input.owner_email.trim();
+    updates.owner_email = input.owner_email.trim().toLowerCase() || null;
   }
   if (input.status !== undefined) {
     updates.status = input.status;
   }
   if (input.upload_refresh_token !== undefined) {
-    updates.upload_refresh_token = input.upload_refresh_token.trim();
+    updates.upload_refresh_token = input.upload_refresh_token.trim() || null;
   }
   if (input.youtube_handle !== undefined) {
     updates.youtube_handle = normalizeYouTubeHandle(input.youtube_handle);
@@ -247,4 +309,26 @@ export async function updateYouTubeChannel(
   }
   await writeLocalChannels(nextChannels);
   return safeChannel(nextChannels.find((channel) => channel.id === channelId)!);
+}
+
+export async function deleteYouTubeChannel(channelId: string) {
+  const id = channelId.trim();
+  if (!id) {
+    throw new Error("채널 ID가 필요합니다.");
+  }
+
+  if (getAppStorageMode() === "supabase") {
+    await supabaseRest(channelsTable, {
+      method: "DELETE",
+      prefer: "return=minimal",
+      query: { id: supabaseEq(id) },
+    });
+    return;
+  }
+
+  const channels = await readLocalChannels();
+  if (!channels.some((channel) => channel.id === id)) {
+    throw new Error("채널을 찾을 수 없습니다.");
+  }
+  await writeLocalChannels(channels.filter((channel) => channel.id !== id));
 }
