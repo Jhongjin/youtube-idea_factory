@@ -4855,6 +4855,85 @@ button:disabled,
   background: #ffffff;
 }
 
+.channel-oauth-guide {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #f8fafc;
+  margin: 14px 0;
+  overflow: clip;
+}
+
+.channel-oauth-guide summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 14px;
+}
+
+.channel-oauth-guide summary::-webkit-details-marker {
+  display: none;
+}
+
+.channel-oauth-guide summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.channel-oauth-guide summary strong {
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.channel-oauth-guide[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.channel-oauth-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.channel-oauth-guide-grid div {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  border: 1px solid #e0e7ef;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 11px;
+}
+
+.channel-oauth-guide-grid strong {
+  color: #172019;
+  font-size: 12px;
+}
+
+.channel-oauth-guide-grid span {
+  color: #536174;
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.45;
+}
+
+.channel-oauth-guide-grid code {
+  border-radius: 6px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 2px 5px;
+  font-size: 11px;
+}
+
 .channel-hero-card {
   overflow: hidden;
 }
@@ -5061,6 +5140,7 @@ button:disabled,
   .feature-masonry,
   .admin-form-grid,
   .channel-form-grid,
+  .channel-oauth-guide-grid,
   .user-row,
   .channel-update-grid {
     grid-template-columns: 1fr;
