@@ -60,9 +60,9 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
             <div>
               <strong>관리자 게이트</strong>
               <span>
-                {readiness.security.mutationGate === "token-protected"
-                  ? "로그인 보호"
-                  : readiness.security.mutationGate === "locked-missing-token"
+                {readiness.security.mutationGate === "session-protected"
+                  ? "세션 보호"
+                  : readiness.security.mutationGate === "locked-missing-session-secret"
                     ? "세션 비밀키 필요"
                     : "로컬 제한 없음"}
               </span>

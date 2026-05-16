@@ -71,7 +71,9 @@ export type DeploymentReadiness = {
   };
   security: {
     adminToken: boolean;
-    mutationGate: "unrestricted-local" | "token-protected" | "locked-missing-token";
+    envAdminCredential: boolean;
+    mutationGate: "unrestricted-local" | "session-protected" | "locked-missing-session-secret";
+    sessionSigningSecret: boolean;
   };
   blockers: string[];
   warnings: string[];
@@ -167,19 +169,19 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     schema,
   };
   const vercel = Boolean(process.env.VERCEL);
-  const adminToken =
+  const envAdminCredential =
     hasEnv("DASHBOARD_ADMIN_PASSWORD") ||
     hasEnv("DASHBOARD_ADMIN_TOKEN") ||
-    hasEnv("DASHBOARD_SESSION_SECRET") ||
     hasEnv("YIF_ADMIN_TOKEN") ||
     hasEnv("ADMIN_ACCESS_TOKEN");
+  const sessionSigningSecret = hasEnv("DASHBOARD_SESSION_SECRET") || envAdminCredential;
   const blockers: string[] = [];
   const warnings: string[] = [];
 
-  if (adminToken) {
+  if (sessionSigningSecret) {
     // Mutating API routes are protected by login sessions when credentials are configured.
   } else if (vercel) {
-    blockers.push("DASHBOARD_ADMIN_PASSWORD or DASHBOARD_ADMIN_TOKEN is missing; production login is locked.");
+    blockers.push("DASHBOARD_SESSION_SECRET or DASHBOARD_ADMIN_PASSWORD is missing; production login is locked.");
   } else {
     warnings.push("DASHBOARD_ADMIN_PASSWORD is missing; local login falls back to development-only session settings.");
   }
@@ -228,6 +230,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       }
       if (!appUsers || !youtubeChannels) {
         warnings.push("Supabase auth/channel tables are missing. Run docs/templates/supabase-auth-schema.sql for persistent login and channel management.");
+      }
+      if (vercel && !envAdminCredential && appUsers) {
+        warnings.push("Production login relies on persistent app_users records; keep at least one active admin user.");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -331,12 +336,14 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       },
     },
     security: {
-      adminToken,
-      mutationGate: adminToken
-        ? "token-protected"
+      adminToken: sessionSigningSecret,
+      envAdminCredential,
+      mutationGate: sessionSigningSecret
+        ? "session-protected"
         : vercel
-          ? "locked-missing-token"
+          ? "locked-missing-session-secret"
           : "unrestricted-local",
+      sessionSigningSecret,
     },
     blockers,
     warnings,

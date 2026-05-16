@@ -27,6 +27,7 @@ This queue keeps the build loop explicit:
 | homepage-editorial-redesign | Phase 7 | done | codex | no | Public homepage now uses a lighter editorial production-board design with responsive hero previews. |
 | dashboard-sidebar-simplify | Phase 7 | done | codex | no | Dashboard sidebar now keeps channel memory, work queue, and automation tools behind compact disclosures. |
 | dashboard-primary-cta | Phase 7 | done | codex | no | Dashboard guided steps now mark the active step and lift the next executable action into a larger primary CTA. |
+| health-security-copy | Phase 7 | done | codex | no | Deployment health now reports session-protected mutation gates instead of legacy token-only wording. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
