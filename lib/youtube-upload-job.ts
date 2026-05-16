@@ -112,8 +112,8 @@ export async function createYouTubeUploadJob(
   if (packageChannel?.id && !uploadChannel) {
     throw new Error("선택된 브랜드 채널을 찾을 수 없습니다. /admin/channels에서 채널 상태를 확인하세요.");
   }
-  if (uploadChannel?.status === "paused") {
-    throw new Error("선택된 브랜드 채널이 일시중지 상태입니다.");
+  if (uploadChannel && uploadChannel.status !== "active") {
+    throw new Error("선택된 브랜드 채널이 운영 중 상태가 아닙니다. /admin/channels에서 상태를 운영 중으로 변경하세요.");
   }
   if (uploadChannel && !uploadChannel.has_upload_refresh_token) {
     throw new Error("선택된 브랜드 채널에 업로드 OAuth refresh token이 없습니다.");

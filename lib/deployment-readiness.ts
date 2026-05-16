@@ -285,7 +285,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   }
   const channelUploadTokenAvailable = await listYouTubeChannels()
     .then((channels) =>
-      channels.some((channel) => channel.status !== "paused" && channel.has_upload_refresh_token),
+      channels.some((channel) => channel.status === "active" && channel.has_upload_refresh_token),
     )
     .catch(() => false);
   const uploadRefreshTokenReady = hasEnv("YOUTUBE_OAUTH_REFRESH_TOKEN") || channelUploadTokenAvailable;

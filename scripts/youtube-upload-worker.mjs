@@ -524,8 +524,10 @@ async function uploadRefreshTokenForJob({ job, pkg, storageMode } = {}) {
   if (!channel) {
     throw new Error(`Selected YouTube channel not found: ${channelId}`);
   }
-  if (channel.status === "paused") {
-    throw new Error(`Selected YouTube channel is paused: ${channel.channel_name ?? channelId}`);
+  if (channel.status !== "active") {
+    throw new Error(
+      `Selected YouTube channel must be active before upload: ${channel.channel_name ?? channelId}`,
+    );
   }
   const refreshToken = String(channel.upload_refresh_token ?? "").trim();
   if (!refreshToken) {

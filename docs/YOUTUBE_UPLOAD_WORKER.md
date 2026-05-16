@@ -35,6 +35,9 @@ For channel-linked runs, `/admin/channels` stores the per-channel upload refresh
 the secret; the external worker reads the token server-side through Supabase service role access
 or `config/youtube-channels.local.json` in local mode.
 
+Channel-linked uploads require the channel status to be `active`. A `setup` or `paused` channel can
+store OAuth inventory, but upload job creation and the external worker will stop before publishing.
+
 ## Dashboard Sequence
 
 1. Finish the production package and final render.
