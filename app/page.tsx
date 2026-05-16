@@ -59,10 +59,22 @@ const proofItems = [
   },
 ];
 
-const artifactColumns = [
-  ["source-ledger.json", "analysis.md", "claim-ledger.md"],
-  ["script-plan.md", "storyboard.json", "media-prompts.json"],
-  ["render-plan.json", "publish-handoff.json", "youtube-upload-job.json"],
+const commandTiles = [
+  {
+    label: "gate",
+    title: "승인 전 비용 차단",
+    detail: "생성, 렌더, 업로드는 사람이 열 때만 큐로 이동합니다.",
+  },
+  {
+    label: "channel",
+    title: "브랜드별 권한 분리",
+    detail: "업로드 토큰과 Analytics 토큰을 채널 단위로 보관합니다.",
+  },
+  {
+    label: "memory",
+    title: "성과가 다음 run으로",
+    detail: "성과 스냅샷과 채널 메모리가 다음 기획의 근거가 됩니다.",
+  },
 ];
 
 export default async function LandingPage({
@@ -101,97 +113,97 @@ export default async function LandingPage({
       </nav>
 
       <section className="marketing-hero" aria-labelledby="home-title">
+        <div className="home-gallery command-deck-scene" aria-label="제작 관제실 미리보기">
+          <div className="deck-shell">
+            <div className="deck-status-bar">
+              <span>live run board</span>
+              <strong>K-경제 뉴스 자동화</strong>
+              <em>review locked</em>
+            </div>
+            <div className="deck-grid">
+              <article className="deck-main-screen">
+                <div className="deck-screen-head">
+                  <span>production package</span>
+                  <strong>source to publish</strong>
+                </div>
+                <div className="deck-meter" aria-hidden="true">
+                  <span className="meter-fill fill-a" />
+                  <span className="meter-fill fill-b" />
+                  <span className="meter-fill fill-c" />
+                </div>
+                <div className="deck-stage-list">
+                  {pipeline.map((stage, index) => (
+                    <div className="deck-stage-row" key={stage.label}>
+                      <span>{String(index + 1).padStart(2, "0")}</span>
+                      <strong>{stage.title}</strong>
+                      <CheckCircle2 size={14} />
+                    </div>
+                  ))}
+                </div>
+              </article>
+
+              <article className="deck-approval-gate">
+                <ShieldCheck size={19} />
+                <span>approval gate</span>
+                <strong>렌더와 업로드는 검토 후 실행</strong>
+              </article>
+
+              <article className="deck-channel-rack">
+                <KeyRound size={18} />
+                <span>channel authority</span>
+                <strong>채널별 refresh token 분리</strong>
+              </article>
+
+              <article className="deck-queue-panel">
+                <div className="queue-signal">
+                  <FileSearch size={16} />
+                  <span>source queue</span>
+                </div>
+                <div className="queue-signal">
+                  <Clapperboard size={16} />
+                  <span>scene draft</span>
+                </div>
+                <div className="queue-signal">
+                  <Gauge size={16} />
+                  <span>cost guard</span>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+
         <div className="hero-copy">
           <p className="hero-kicker">review-gated production cockpit</p>
           <h1 id="home-title">YouTube Idea Factory</h1>
           <p>
-            여러 브랜드 채널의 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포를 한 run으로 묶습니다.
-            비용과 업로드 위험이 있는 단계는 승인 게이트가 열릴 때까지 멈춥니다.
+            여러 브랜드 채널의 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포를 한 run으로
+            묶습니다. 비용과 업로드 위험이 있는 단계는 승인 게이트가 열릴 때까지 멈춥니다.
           </p>
-          <div className="hero-signals" aria-label="운영 상태 예시">
+          <div className="hero-command-strip" aria-label="핵심 운영 기준">
             <span>
-              <strong>01</strong>
-              채널별 OAuth 분리
+              <ShieldCheck size={15} />
+              승인 게이트 우선
             </span>
             <span>
-              <strong>10</strong>
-              제작 단계 추적
+              <KeyRound size={15} />
+              채널 OAuth 분리
             </span>
             <span>
-              <strong>0원</strong>
-              승인 전 비용 차단
+              <Layers3 size={15} />
+              산출물 패키지 보존
             </span>
           </div>
           <div className="hero-actions">
             <Link className="text-button primary" href={primaryHref}>
-              작업장 열기
-              <ArrowRight size={15} />
+              <span>작업장 열기</span>
+              <i aria-hidden="true">
+                <ArrowRight size={15} />
+              </i>
             </Link>
             <Link className="home-text-link" href="/admin/channels">
-              채널 관리 보기
+              채널 권한부터 정리
             </Link>
           </div>
-        </div>
-
-        <div className="home-gallery" aria-label="제작 실행 미리보기">
-          <article className="gallery-card gallery-card-main">
-            <div className="gallery-card-heading">
-              <span>active production run</span>
-              <strong>K-경제 뉴스 자동화</strong>
-            </div>
-            <div className="run-preview-grid">
-              <div>
-                <FileSearch size={18} />
-                <span>sources</span>
-                <strong>12</strong>
-              </div>
-              <div>
-                <ShieldCheck size={18} />
-                <span>claims</span>
-                <strong>18</strong>
-              </div>
-              <div>
-                <Clapperboard size={18} />
-                <span>scenes</span>
-                <strong>07</strong>
-              </div>
-            </div>
-            <div className="workflow-lines">
-              {pipeline.map((stage) => (
-                <span key={stage.label}>
-                  <CheckCircle2 size={14} />
-                  {stage.title}
-                </span>
-              ))}
-            </div>
-          </article>
-
-          <article className="gallery-card gallery-card-media">
-            <div className="media-frame" />
-            <div>
-              <span>asset queue</span>
-              <strong>이미지 8개, 영상 5개 검토 대기</strong>
-            </div>
-          </article>
-
-          <article className="gallery-card gallery-card-dark">
-            <KeyRound size={19} />
-            <span>channel oauth</span>
-            <strong>브랜드별 refresh token 분리</strong>
-          </article>
-
-          <article className="gallery-card gallery-card-list">
-            <span>production package</span>
-            <div className="artifact-columns">
-              {artifactColumns.map((column) => (
-                <div key={column.join("-")}>
-                  {column.map((item) => (
-                    <code key={item}>{item}</code>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </article>
         </div>
       </section>
 
@@ -212,10 +224,10 @@ export default async function LandingPage({
 
       <section className="marketing-section">
         <div className="section-heading">
-          <h2>자동화보다 중요한 것은 멈출 수 있는 구조입니다.</h2>
+          <h2>자동 생성기가 아니라, 승인 가능한 제작 관제실입니다.</h2>
           <p>
-            스킬은 판단을 돕고, 스크립트와 어댑터는 반복 작업을 고정합니다. 결과물은 산출물 편집기와
-            워커 큐에서 추적 가능한 형태로 남습니다.
+            스킬은 판단을 돕고, 스크립트와 어댑터는 반복 작업을 고정합니다. 결과물은 산출물
+            편집기와 워커 큐에서 추적 가능한 형태로 남습니다.
           </p>
         </div>
         <div className="feature-masonry">
@@ -236,16 +248,29 @@ export default async function LandingPage({
             </div>
             <p>
               source ledger, claim ledger, script plan, storyboard, asset manifest, render plan,
-              publish handoff가 한 run에 묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수 있습니다.
+              publish handoff가 한 run에 묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수
+              있습니다.
             </p>
           </article>
         </div>
       </section>
 
+      <section className="command-tile-strip" aria-label="운영 하네스">
+        {commandTiles.map((item) => (
+          <article key={item.title}>
+            <span>{item.label}</span>
+            <strong>{item.title}</strong>
+            <p>{item.detail}</p>
+          </article>
+        ))}
+      </section>
+
       <section className="pipeline-strip" aria-label="콘텐츠 제작 순서">
         {pipeline.map((item, index) => (
           <article className="pipeline-strip-item" key={item.label}>
-            <span>{String(index + 1).padStart(2, "0")} / {item.label}</span>
+            <span>
+              {String(index + 1).padStart(2, "0")} / {item.label}
+            </span>
             <strong>{item.title}</strong>
             <p>{item.detail}</p>
           </article>
@@ -256,12 +281,15 @@ export default async function LandingPage({
         <div>
           <h2>다음 실행부터 브랜드 채널별로 분리하세요.</h2>
           <p>
-            채널 OAuth, 제공자 설정, 승인 게이트를 먼저 정리하면 생성 비용과 업로드 리스크를 통제할 수 있습니다.
+            채널 OAuth, 제공자 설정, 승인 게이트를 먼저 정리하면 생성 비용과 업로드 리스크를
+            통제할 수 있습니다.
           </p>
         </div>
         <Link className="text-button primary" href="/admin/channels">
-          채널 관리 시작
-          <ArrowRight size={15} />
+          <span>채널 관리 시작</span>
+          <i aria-hidden="true">
+            <ArrowRight size={15} />
+          </i>
         </Link>
       </section>
 

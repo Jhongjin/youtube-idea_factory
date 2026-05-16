@@ -17,19 +17,20 @@ export default async function LoginPage({
 
   return (
     <main className="auth-page" id="main-content">
-      <Link className="text-button auth-back" href="/">
-        <ArrowLeft size={15} />
-        홈으로
-      </Link>
+      <div className="auth-topbar">
+        <Link className="text-button auth-back" href="/">
+          <ArrowLeft size={15} />
+          홈으로
+        </Link>
+      </div>
       <section className="auth-card">
         <AuthContextPanel mode="login" />
         <div className="auth-copy">
           <p className="hero-kicker">Operator access</p>
-          <h1>아이디와 비밀번호로 로그인</h1>
+          <h1>운영자 게이트에 로그인</h1>
           <p>
-            기존 관리자 토큰 입력창은 제거했습니다. 기본 관리자 아이디는
-            <code> admin </code>이고, 비밀번호는 현재 배포의 관리자 비밀번호 또는 기존
-            <code> DASHBOARD_ADMIN_TOKEN </code> 값을 사용할 수 있습니다.
+            승인된 계정만 작업장, 채널 권한, API 제공자 설정으로 들어갈 수 있습니다. 기본 관리자
+            아이디는 <code>admin</code>입니다.
           </p>
           {user ? (
             <div className="settings-message saved">
