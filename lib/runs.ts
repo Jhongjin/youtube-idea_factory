@@ -110,6 +110,9 @@ export type ProductionPackage = {
     render_ready: boolean;
     rendered_path?: string;
     rendered_at?: string;
+    editing_handoff_path?: string;
+    editing_provider?: string;
+    editing_provider_status?: string;
     worker_job_path?: string;
     worker_job_status?: "queued" | "running" | "completed" | "failed" | string;
     worker_job_id?: string;

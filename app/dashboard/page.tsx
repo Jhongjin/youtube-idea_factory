@@ -26,6 +26,7 @@ import { AssetGenerationConsole } from "@/app/components/asset-generation-consol
 import { AssetManifestButton } from "@/app/components/asset-manifest-button";
 import { ArtifactWorkspace } from "@/app/components/artifact-workspace";
 import { ChannelMemoryButton } from "@/app/components/channel-memory-button";
+import { EditingHandoffButton } from "@/app/components/editing-handoff-button";
 import { EnrichSourcesButton } from "@/app/components/enrich-sources-button";
 import { FeedbackLoopFlowButton } from "@/app/components/feedback-loop-flow-button";
 import { FeedbackInsightsButton } from "@/app/components/feedback-insights-button";
@@ -1494,14 +1495,19 @@ function GenerationConsolePanel({
 }
 
 function AssemblyPanel({
+  providerSettings,
   run,
   storageMode,
   workerStatus,
 }: {
+  providerSettings: SafeProviderSettings;
   run: RunSummary;
   storageMode: string;
   workerStatus: RunWorkerStatus;
 }) {
+  const editingBase = providerSettings.roles.editing;
+  const editingProfile = providerSettings.profiles.find((profile) => profile.role === "editing" && profile.enabled);
+  const editingProvider = editingBase.enabled ? editingBase : editingProfile ?? editingBase;
   return (
     <section className="panel">
       <div className="panel-header">
@@ -1525,6 +1531,17 @@ function AssemblyPanel({
           <div className="detail-row">
             <span>렌더</span>
             <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>편집/렌더 provider</span>
+            <span>
+              {editingProvider.provider}
+              {editingProvider.model ? ` / ${editingProvider.model}` : ""}
+            </span>
+          </div>
+          <div className="detail-row">
+            <span>편집 핸드오프</span>
+            <span>{run.package.render_manifest?.editing_handoff_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
             <span>최종 파일</span>
@@ -1559,6 +1576,7 @@ function AssemblyPanel({
             <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
           </div>
           <WorkerStatusPanel runId={run.id} status={workerStatus} />
+          <EditingHandoffButton runId={run.id} />
           <YouTubeUploadWorkerPanel
             runId={run.id}
             storageMode={storageMode}
@@ -1821,7 +1839,12 @@ function Inspector({
         ) : null}
 
         {showAssembly ? (
-          <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
+          <AssemblyPanel
+            providerSettings={providerSettings}
+            run={run}
+            storageMode={storageMode}
+            workerStatus={workerStatus}
+          />
         ) : null}
 
         {showFeedback ? <FeedbackPanel run={run} /> : null}
@@ -1857,7 +1880,12 @@ function Inspector({
               />
             ) : null}
             {!showAssembly ? (
-              <AssemblyPanel run={run} storageMode={storageMode} workerStatus={workerStatus} />
+              <AssemblyPanel
+                providerSettings={providerSettings}
+                run={run}
+                storageMode={storageMode}
+                workerStatus={workerStatus}
+              />
             ) : null}
             {!showFeedback ? <FeedbackPanel run={run} /> : null}
           </div>

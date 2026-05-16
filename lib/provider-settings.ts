@@ -304,6 +304,14 @@ export function resolveProviderSetting(
   return profile ?? settings.roles[role];
 }
 
+export function resolvePreferredProviderSetting(settings: StoredProviderSettings, role: ProviderRoleId) {
+  const base = settings.roles[role];
+  if (base.enabled) {
+    return base;
+  }
+  return settings.profiles.find((profile) => profile.role === role && profile.enabled) ?? base;
+}
+
 export async function updateProviderSettings(
   update: ProviderSettingsUpdate,
 ): Promise<StoredProviderSettings> {
