@@ -31,6 +31,24 @@ export function NewRunForm({
   const [durationSeconds, setDurationSeconds] = useState(60);
   const [selectedChannelId, setSelectedChannelId] = useState(initialChannel?.id ?? "");
   const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
+  const selectedChannelReadiness = selectedChannel
+    ? selectedChannel.status !== "active"
+      ? {
+          message: selectedChannel.has_upload_refresh_token
+            ? "대본과 리서치는 진행할 수 있지만 업로드 전 채널 상태를 운영 중으로 바꿔야 합니다."
+            : "업로드 전 운영 중 전환과 업로드 OAuth 토큰 등록이 모두 필요합니다.",
+          tone: "setup",
+        }
+      : !selectedChannel.has_upload_refresh_token
+        ? {
+            message: "이 채널로 업로드하려면 업로드 OAuth 토큰을 먼저 등록해야 합니다.",
+            tone: "missing",
+          }
+        : {
+            message: "업로드 단계에서 이 채널의 OAuth 토큰을 사용할 수 있습니다.",
+            tone: "ready",
+          }
+    : null;
 
   function selectChannel(channelId: string) {
     setSelectedChannelId(channelId);
@@ -177,9 +195,14 @@ export function NewRunForm({
                 ? "채널 선택 시 확인"
                 : selectedChannel.has_upload_refresh_token
                   ? "업로드 토큰 있음"
-                  : "업로드 토큰 필요"}
+                : "업로드 토큰 필요"}
             </span>
           </div>
+          {selectedChannelReadiness ? (
+            <p className={`new-run-channel-readiness ${selectedChannelReadiness.tone}`}>
+              {selectedChannelReadiness.message}
+            </p>
+          ) : null}
         </div>
         <div className="format-presets" aria-label="형식 빠른 선택">
           {[
