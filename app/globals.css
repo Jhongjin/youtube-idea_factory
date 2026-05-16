@@ -3328,8 +3328,20 @@ button:disabled,
 
 .artifact-editor {
   display: grid;
-  grid-template-rows: auto auto minmax(360px, 1fr) auto;
+  align-content: start;
   min-width: 0;
+}
+
+.artifact-read-mode {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 7px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 0 9px;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .artifact-meta {
@@ -3363,10 +3375,92 @@ button:disabled,
   line-height: 1.45;
 }
 
-.artifact-editor textarea {
+.artifact-review-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.artifact-review-card div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.artifact-review-card span {
+  color: #536174;
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+}
+
+.artifact-review-card strong {
+  color: #182235;
+  font-size: 13px;
+}
+
+.artifact-review-card pre {
+  max-height: 520px;
+  overflow: auto;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfbf8;
+  color: #182235;
+  padding: 16px;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.artifact-edit-disclosure {
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.artifact-edit-disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  padding: 12px 16px;
+}
+
+.artifact-edit-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.artifact-edit-disclosure summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.artifact-edit-disclosure summary strong {
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: #536174;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.artifact-edit-disclosure[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.artifact-edit-body {
+  display: grid;
+}
+
+.artifact-edit-body textarea {
   width: 100%;
   min-width: 0;
-  height: 100%;
   min-height: 420px;
   border: 0;
   background: #0f1724;
@@ -3381,7 +3475,9 @@ button:disabled,
 }
 
 .artifact-footer {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   border-top: 1px solid var(--line);
@@ -3782,6 +3878,10 @@ button:disabled,
   }
 
   .artifact-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .artifact-footer {
     grid-template-columns: 1fr;
   }
 
