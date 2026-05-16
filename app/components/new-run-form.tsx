@@ -112,18 +112,16 @@ export function NewRunForm({
 
   return (
     <form className="new-run-form" onSubmit={onSubmit}>
-      <div className="run-builder-steps" aria-label="새 제작 생성 순서">
-        <span className="active">1 운영 채널</span>
-        <span>2 소스</span>
-        <span>3 제작 시작</span>
-      </div>
+      <input name="format" readOnly type="hidden" value={format} />
+      <input name="durationSeconds" readOnly type="hidden" value={durationSeconds} />
+      <input name="language" readOnly type="hidden" value={language} />
 
       <section className="new-run-section primary">
         <div className="new-run-section-heading">
           <span>01</span>
           <div>
-            <strong>새 제작 시작</strong>
-            <p>운영 채널과 필수값만 정하면 제작 패키지가 생성됩니다.</p>
+            <strong>채널과 주제</strong>
+            <p>어느 브랜드 채널에서 만들지 고르고, 이번 영상의 핵심 주제만 입력합니다.</p>
           </div>
         </div>
         <label>
@@ -211,6 +209,30 @@ export function NewRunForm({
             </p>
           ) : null}
         </div>
+      </section>
+
+      <section className="new-run-section">
+        <div className="new-run-section-heading">
+          <span>02</span>
+          <div>
+            <strong>첫 소스 영상</strong>
+            <p>YouTube URL 한 개 이상이 필요합니다. 이후 파인더에서 더 보강할 수 있습니다.</p>
+          </div>
+        </div>
+        <label>
+          <span>시드 URL</span>
+          <textarea name="seedUrls" required rows={3} placeholder="https://www.youtube.com/watch?v=..." />
+        </label>
+      </section>
+
+      <section className="new-run-section">
+        <div className="new-run-section-heading">
+          <span>03</span>
+          <div>
+            <strong>제작 형식</strong>
+            <p>프리셋 하나만 고르면 길이는 자동으로 맞춥니다. 세부 조정은 상세 옵션에 있습니다.</p>
+          </div>
+        </div>
         <div className="format-presets" aria-label="형식 빠른 선택">
           {[
             { label: "쇼츠 60초", format: "shorts", duration: 60 },
@@ -230,45 +252,13 @@ export function NewRunForm({
             </button>
           ))}
         </div>
-        <div className="form-grid">
-          <label>
-            <span>형식</span>
-            <select name="format" onChange={(event) => setFormat(event.target.value)} value={format}>
-              <option value="shorts">쇼츠</option>
-              <option value="longform">롱폼</option>
-              <option value="explainer">설명형</option>
-              <option value="documentary">다큐형</option>
-            </select>
-          </label>
-          <label>
-            <span>길이(초)</span>
-            <input
-              name="durationSeconds"
-              onChange={(event) => setDurationSeconds(Number(event.target.value))}
-              min={1}
-              type="number"
-              value={durationSeconds}
-            />
-          </label>
-        </div>
-      </section>
-
-      <section className="new-run-section">
-        <div className="new-run-section-heading">
-          <span>02</span>
-          <div>
-            <strong>첫 소스 영상</strong>
-            <p>YouTube URL 한 개 이상이 필요합니다. 이후 파인더에서 더 보강할 수 있습니다.</p>
-          </div>
-        </div>
-        <label>
-          <span>시드 URL</span>
-          <textarea name="seedUrls" required rows={3} placeholder="https://www.youtube.com/watch?v=..." />
-        </label>
       </section>
 
       <details className="new-run-advanced">
-        <summary>상세 옵션</summary>
+        <summary>
+          <span>상세 옵션</span>
+          <small>언어, 길이, 타깃, 톤</small>
+        </summary>
         <div className="new-run-advanced-body">
           <div className="form-grid">
             <label>
@@ -277,10 +267,30 @@ export function NewRunForm({
             </label>
             <label>
               <span>언어</span>
-              <select name="language" onChange={(event) => setLanguage(event.target.value)} value={language}>
+              <select onChange={(event) => setLanguage(event.target.value)} value={language}>
                 <option value="ko">한국어</option>
                 <option value="en">영어</option>
               </select>
+            </label>
+          </div>
+          <div className="form-grid">
+            <label>
+              <span>형식</span>
+              <select onChange={(event) => setFormat(event.target.value)} value={format}>
+                <option value="shorts">쇼츠</option>
+                <option value="longform">롱폼</option>
+                <option value="explainer">설명형</option>
+                <option value="documentary">다큐형</option>
+              </select>
+            </label>
+            <label>
+              <span>길이(초)</span>
+              <input
+                onChange={(event) => setDurationSeconds(Number(event.target.value))}
+                min={1}
+                type="number"
+                value={durationSeconds}
+              />
             </label>
           </div>
           <label>

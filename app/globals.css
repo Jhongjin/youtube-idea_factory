@@ -2198,29 +2198,6 @@ button:disabled,
   color: #b42318;
 }
 
-.run-builder-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.run-builder-steps span {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #ffffff;
-  color: var(--muted);
-  padding: 8px 7px;
-  font-size: 11px;
-  font-weight: 850;
-  text-align: center;
-}
-
-.run-builder-steps span.active {
-  border-color: var(--blue);
-  background: var(--blue-soft);
-  color: var(--blue);
-}
-
 .new-run-section {
   display: grid;
   gap: 10px;
@@ -2322,6 +2299,10 @@ button:disabled,
 }
 
 .new-run-advanced summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   min-height: 38px;
   cursor: pointer;
   list-style: none;
@@ -2329,6 +2310,19 @@ button:disabled,
   color: #334155;
   font-size: 12px;
   font-weight: 850;
+}
+
+.new-run-advanced summary span,
+.new-run-advanced summary small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.new-run-advanced summary small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 760;
 }
 
 .new-run-advanced summary::-webkit-details-marker {
@@ -3699,8 +3693,7 @@ button:disabled,
   .upload-job-grid,
   .form-grid,
   .format-presets,
-  .new-run-channel-summary,
-  .run-builder-steps {
+  .new-run-channel-summary {
     grid-template-columns: 1fr;
   }
 
