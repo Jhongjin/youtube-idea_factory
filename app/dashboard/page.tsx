@@ -538,6 +538,23 @@ function OperatingChannelBar({
       ? "업로드 OAuth 준비"
       : "업로드 OAuth 필요"
     : "채널 선택 권장";
+  const channelUploadNudge = selectedChannel
+    ? selectedChannel.status !== "active"
+      ? {
+          detail: selectedChannel.has_upload_refresh_token
+            ? "토큰은 준비됐지만 채널 상태가 설정 중입니다. 업로드 전 운영 중으로 바꿔주세요."
+            : "업로드 전에 채널 상태를 운영 중으로 바꾸고 업로드 OAuth 토큰을 등록해야 합니다.",
+          tone: "setup",
+          title: "업로드 전 채널 활성화 필요",
+        }
+      : !selectedChannel.has_upload_refresh_token
+        ? {
+            detail: "이 채널로 업로드하려면 업로드 OAuth refresh token을 먼저 등록해야 합니다.",
+            tone: "missing",
+            title: "업로드 OAuth 토큰 필요",
+          }
+        : null
+    : null;
   return (
     <section className="operating-channel-bar" aria-label="운영 채널 선택">
       <div className="operating-channel-copy">
@@ -625,6 +642,18 @@ function OperatingChannelBar({
           <small>{nextActionPlan?.detail ?? "실행이 만들어지면 가장 먼저 누를 버튼을 보여줍니다."}</small>
         </a>
       </div>
+      {channelUploadNudge ? (
+        <div className={`operating-channel-nudge ${channelUploadNudge.tone}`}>
+          <AlertTriangle size={17} />
+          <div>
+            <strong>{channelUploadNudge.title}</strong>
+            <span>{channelUploadNudge.detail}</span>
+          </div>
+          <Link className="text-button" href="/admin/channels">
+            채널 관리
+          </Link>
+        </div>
+      ) : null}
     </section>
   );
 }
