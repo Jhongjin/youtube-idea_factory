@@ -62,6 +62,7 @@ This queue keeps the build loop explicit:
 | admin-channel-page-polish | Phase 7 | done | codex | no | Channel admin now leads with operational channel cards, shows a contained ready/warning banner, and folds per-channel edit controls. |
 | settings-provider-progressive-disclosure | Phase 7 | done | codex | no | Provider settings now show role readiness summary first and fold API/model fields behind per-role disclosures. |
 | dashboard-focus-layout-pass | Phase 7 | done | codex | no | Dashboard channel context is compacted into a current-channel header, folded channel switcher, and shorter three-step focus rail. |
+| homepage-product-preview-pass | Phase 7 | done | codex | no | Homepage hero now treats the production preview as a full-bleed product scene and adds compact operational signals beside the primary CTA. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |

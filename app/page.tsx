@@ -108,6 +108,20 @@ export default async function LandingPage({
             여러 브랜드 채널의 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포를 한 run으로 묶습니다.
             비용과 업로드 위험이 있는 단계는 승인 게이트가 열릴 때까지 멈춥니다.
           </p>
+          <div className="hero-signals" aria-label="운영 상태 예시">
+            <span>
+              <strong>01</strong>
+              채널별 OAuth 분리
+            </span>
+            <span>
+              <strong>10</strong>
+              제작 단계 추적
+            </span>
+            <span>
+              <strong>0원</strong>
+              승인 전 비용 차단
+            </span>
+          </div>
           <div className="hero-actions">
             <Link className="text-button primary" href={primaryHref}>
               작업장 열기
