@@ -127,15 +127,7 @@ export function ArtifactWorkspace({
           <h3 className="panel-title">{title}</h3>
           <p className="panel-subtitle">{description}</p>
         </div>
-        <button
-          className="text-button primary"
-          disabled={!isDirty || saveState === "saving"}
-          onClick={saveArtifact}
-          type="button"
-        >
-          {saveState === "saved" ? <Check size={16} /> : <Save size={16} />}
-          {saveState === "saving" ? "저장 중" : saveState === "saved" ? "저장됨" : "저장"}
-        </button>
+        <span className="artifact-read-mode">검토 우선</span>
       </div>
 
       <div className="artifact-layout">
@@ -189,20 +181,44 @@ export function ArtifactWorkspace({
             <span>{activeArtifact.size.toLocaleString()}바이트</span>
           </div>
           <p className="artifact-description">{activeArtifact.description}</p>
-          <textarea
-            aria-label={`${activeArtifact.label} 마크다운 내용`}
-            value={activeContent}
-            onChange={(event) =>
-              setContents((current) => ({
-                ...current,
-                [activeArtifact.id]: event.target.value,
-              }))
-            }
-          />
-          <div className="artifact-footer">
-            <span>{isDirty ? "저장되지 않은 변경 사항" : "로컬 변경 없음"}</span>
-            {error ? <strong>{error}</strong> : null}
-          </div>
+          <article className="artifact-review-card">
+            <div>
+              <span>미리보기</span>
+              <strong>{activeArtifact.label}</strong>
+            </div>
+            <pre>{activeContent.trim() || "아직 저장된 내용이 없습니다."}</pre>
+          </article>
+          <details className="artifact-edit-disclosure">
+            <summary>
+              <span>마크다운 편집</span>
+              <strong>{isDirty ? "변경 있음" : "변경 없음"}</strong>
+            </summary>
+            <div className="artifact-edit-body">
+              <textarea
+                aria-label={`${activeArtifact.label} 마크다운 내용`}
+                value={activeContent}
+                onChange={(event) =>
+                  setContents((current) => ({
+                    ...current,
+                    [activeArtifact.id]: event.target.value,
+                  }))
+                }
+              />
+              <div className="artifact-footer">
+                <span>{isDirty ? "저장되지 않은 변경 사항" : "로컬 변경 없음"}</span>
+                {error ? <strong>{error}</strong> : null}
+                <button
+                  className="text-button primary"
+                  disabled={!isDirty || saveState === "saving"}
+                  onClick={saveArtifact}
+                  type="button"
+                >
+                  {saveState === "saved" ? <Check size={16} /> : <Save size={16} />}
+                  {saveState === "saving" ? "저장 중" : saveState === "saved" ? "저장됨" : "저장"}
+                </button>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
     </section>
