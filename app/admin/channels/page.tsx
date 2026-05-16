@@ -43,10 +43,10 @@ export default async function ChannelsPage() {
       <section className="admin-hero channel-admin-hero">
         <div>
           <p className="hero-kicker">Channel authority map</p>
-          <h1>브랜드 채널별 OAuth를 분리합니다</h1>
+          <h1>채널 권한 관리</h1>
           <p>
-            {user.name} 관리자가 채널별 업로드 토큰과 Analytics 토큰 상태를 추적합니다. 10개 브랜드
-            채널이라면 이 화면에서 10개 레코드를 관리하면 됩니다.
+            {user.name} 관리자가 브랜드별 업로드 토큰, Analytics 토큰, 운영 상태를 한 화면에서 관리합니다.
+            운영 중인 채널만 업로드 작업에 사용할 수 있습니다.
           </p>
         </div>
         <div className="admin-hero-stats">
@@ -68,7 +68,7 @@ export default async function ChannelsPage() {
       <SupabaseSetupNotice readiness={readiness} scope="channels" />
 
       {activationNeeded ? (
-        <section className="channel-activation-banner">
+        <section className="channel-activation-banner warning">
           <ShieldCheck size={18} />
           <div>
             <strong>업로드 토큰이 있는 채널 {activationNeeded}개가 아직 운영 중이 아닙니다.</strong>
@@ -76,6 +76,17 @@ export default async function ChannelsPage() {
           </div>
           <Link className="text-button" href="#channel-list">
             전환할 채널 보기
+          </Link>
+        </section>
+      ) : activeUploadReady > 0 ? (
+        <section className="channel-activation-banner ready">
+          <ShieldCheck size={18} />
+          <div>
+            <strong>업로드 가능한 채널 {activeUploadReady}개가 운영 중입니다.</strong>
+            <span>선택된 제작 실행은 채널별 업로드 refresh token을 사용할 수 있습니다.</span>
+          </div>
+          <Link className="text-button" href="/dashboard">
+            작업장으로 이동
           </Link>
         </section>
       ) : null}

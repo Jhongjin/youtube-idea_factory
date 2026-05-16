@@ -4575,6 +4575,20 @@ button:disabled,
   margin: 0 auto;
 }
 
+.channel-admin-stack.has-channels .channel-grid {
+  order: 1;
+}
+
+.channel-admin-stack.has-channels .channel-hero-card {
+  order: 2;
+}
+
+.channel-feedback-stack {
+  display: grid;
+  order: 0;
+  gap: 8px;
+}
+
 .account-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -4611,6 +4625,21 @@ button:disabled,
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.channel-admin-hero {
+  align-items: center;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(243, 249, 246, 0.82)),
+    radial-gradient(circle at 82% 18%, rgba(47, 111, 78, 0.12), transparent 24rem);
+}
+
+.channel-admin-hero h1 {
+  max-width: 720px;
+}
+
+.channel-admin-hero p:not(.hero-kicker) {
+  max-width: 62ch;
 }
 
 .admin-card,
@@ -4811,11 +4840,19 @@ button:disabled,
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
+  width: min(1120px, 100%);
   border: 1px solid #f1dba8;
   border-radius: 16px;
+  margin: 0 auto 14px;
   background: #fff8e9;
   color: #8a650f;
   padding: 14px 16px;
+}
+
+.channel-activation-banner.ready {
+  border-color: #b9dfcb;
+  background: #f2fbf6;
+  color: #0f766e;
 }
 
 .channel-activation-banner div {
@@ -5059,6 +5096,52 @@ button:disabled,
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   align-items: end;
+}
+
+.channel-card-settings {
+  border: 1px solid #e0e7ef;
+  border-radius: 12px;
+  background: #fbfcfd;
+  margin-top: 14px;
+  overflow: clip;
+}
+
+.channel-card-settings summary {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.channel-card-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.channel-card-settings summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.channel-card-settings summary strong {
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.channel-card-settings[open] summary {
+  border-bottom: 1px solid #e0e7ef;
+}
+
+.channel-card-settings .channel-update-grid {
+  padding: 12px;
 }
 
 .admin-empty {

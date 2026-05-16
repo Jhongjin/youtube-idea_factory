@@ -219,7 +219,13 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
   }
 
   return (
-    <div className="admin-stack">
+    <div className={`admin-stack channel-admin-stack ${channels.length > 0 ? "has-channels" : "empty-channels"}`}>
+      {error || message ? (
+        <div className="channel-feedback-stack">
+          {error ? <p className="settings-message error">{error}</p> : null}
+          {message ? <p className="settings-message saved">{message}</p> : null}
+        </div>
+      ) : null}
       <section className="admin-card channel-hero-card">
         <div className="admin-card-header">
           <div>
@@ -231,8 +237,6 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           </div>
           <Tv size={19} />
         </div>
-        {error ? <p className="settings-message error">{error}</p> : null}
-        {message ? <p className="settings-message saved">{message}</p> : null}
         <details className="channel-oauth-guide">
           <summary>
             <span>OAuth 값 준비 순서</span>
@@ -388,7 +392,15 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 <span>{uploadReadiness.detail}</span>
               </div>
             </div>
-            <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
+            <details
+              className="channel-card-settings"
+              open={editingChannelId === channel.id || channel.status !== "active"}
+            >
+              <summary>
+                <span>운영 설정 변경</span>
+                <strong>{editingChannelId === channel.id ? "편집 중" : "토큰/상태"}</strong>
+              </summary>
+              <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
               {editingChannelId === channel.id ? (
                 <>
                   <label>
@@ -455,7 +467,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
                 {saving === channel.id ? "저장 중" : "업데이트"}
               </button>
-            </form>
+              </form>
+            </details>
           </article>
           );
         })}
