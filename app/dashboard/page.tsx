@@ -2016,9 +2016,17 @@ export default async function Home({
               </p>
             </div>
             <div className="toolbar">
-              <button className="icon-button" title="실행 데이터 새로고침" type="button">
+              <Link
+                className="icon-button"
+                href={dashboardHref({
+                  channelId: selectedChannelId,
+                  runId: activeRun.id,
+                  step: activeStep,
+                })}
+                title="실행 데이터 새로고침"
+              >
                 <RefreshCw size={16} />
-              </button>
+              </Link>
               <Link className="icon-button" href="/settings" title="제공자 설정">
                 <Settings size={16} />
               </Link>
