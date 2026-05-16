@@ -2653,6 +2653,41 @@ button:disabled,
   color: var(--ink);
 }
 
+.provider-setup-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfcfd;
+  padding: 10px;
+}
+
+.provider-setup-strip div {
+  display: grid;
+  min-height: 58px;
+  align-content: center;
+  gap: 4px;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px 12px;
+}
+
+.provider-setup-strip span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.provider-setup-strip strong {
+  color: #172019;
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .settings-message {
   display: flex;
   align-items: center;
@@ -2682,12 +2717,21 @@ button:disabled,
 
 .provider-card {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow);
   padding: 16px;
+}
+
+.provider-card.enabled {
+  border-color: #b9d8c3;
+  background: #fbfffc;
+}
+
+.provider-card.disabled {
+  box-shadow: none;
 }
 
 .provider-card-header {
@@ -2766,6 +2810,51 @@ button:disabled,
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
+}
+
+.provider-config-details {
+  border: 1px solid #e0e7ef;
+  border-radius: 10px;
+  background: #f8fafc;
+  overflow: clip;
+}
+
+.provider-config-details summary {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.provider-config-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.provider-config-details summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.provider-config-details summary strong {
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.provider-config-details[open] summary {
+  border-bottom: 1px solid #e0e7ef;
+}
+
+.provider-config-details .provider-fields {
+  padding: 12px;
 }
 
 .provider-capability {
@@ -3660,6 +3749,7 @@ button:disabled,
   .guided-action-main,
   .next-action-item,
   .advanced-action-grid,
+  .provider-setup-strip,
   .provider-grid,
   .deployment-status-grid,
   .provider-readiness-grid,
