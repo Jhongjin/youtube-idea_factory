@@ -1070,6 +1070,10 @@ button:disabled,
   display: none;
 }
 
+.advanced-action-trigger {
+  padding: 0;
+}
+
 .advanced-action-grid {
   position: absolute;
   top: calc(100% + 8px);
