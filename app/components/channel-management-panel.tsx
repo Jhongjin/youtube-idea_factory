@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, KeyRound, Loader2, Save, Tv } from "lucide-react";
+import { BadgeCheck, KeyRound, Loader2, Pencil, Save, Trash2, Tv } from "lucide-react";
 import type { SafeYouTubeChannel, YouTubeChannelStatus } from "@/lib/channels";
 
 const statusLabels: Record<YouTubeChannelStatus, string> = {
@@ -15,21 +15,47 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [editingChannelId, setEditingChannelId] = useState("");
   const [saving, setSaving] = useState<"new" | string | null>(null);
+  const [deleting, setDeleting] = useState("");
 
   function channelIdError(formData: FormData) {
     const channelId = String(formData.get("channel_id") ?? "").trim();
-    if (channelId && !channelId.startsWith("UC")) {
+    if (channelId && !/^UC[A-Za-z0-9_-]{20,}$/.test(channelId)) {
       return "채널 ID는 @핸들이 아니라 YouTube Studio의 UC... 값입니다. 모르면 비워두고 핸들만 입력해도 됩니다.";
     }
     return "";
   }
 
+  function channelUpdatePayload(formData: FormData) {
+    const payload: Record<string, string> = {};
+    for (const key of [
+      "brand_name",
+      "channel_id",
+      "channel_name",
+      "default_language",
+      "notes",
+      "owner_email",
+      "status",
+      "youtube_handle",
+    ]) {
+      payload[key] = String(formData.get(key) ?? "");
+    }
+    for (const key of ["analytics_refresh_token", "upload_refresh_token"]) {
+      const value = String(formData.get(key) ?? "").trim();
+      if (value) {
+        payload[key] = value;
+      }
+    }
+    return payload;
+  }
+
   async function createChannel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setError("");
     setMessage("");
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     const validationError = channelIdError(data);
     if (validationError) {
       setError(validationError);
@@ -47,7 +73,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         setError(body?.error ?? `채널을 저장하지 못했습니다. 상태 코드: ${response.status}`);
         return;
       }
-      event.currentTarget.reset();
+      form.reset();
       setMessage("채널을 저장했습니다.");
       router.refresh();
     } catch (requestError) {
@@ -71,9 +97,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
       setError(validationError);
       return;
     }
-    const payload = Object.fromEntries(
-      Array.from(data.entries()).filter(([, value]) => String(value).trim() !== ""),
-    );
+    const payload = channelUpdatePayload(data);
     setSaving(channelId);
     try {
       const response = await fetch(`/api/admin/channels/${encodeURIComponent(channelId)}`, {
@@ -86,6 +110,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         setError(body?.error ?? `채널을 수정하지 못했습니다. 상태 코드: ${response.status}`);
         return;
       }
+      setEditingChannelId("");
       setMessage("채널 정보를 저장했습니다.");
       router.refresh();
     } catch (requestError) {
@@ -96,6 +121,38 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
       );
     } finally {
       setSaving(null);
+    }
+  }
+
+  async function deleteChannel(channel: SafeYouTubeChannel) {
+    const confirmed = window.confirm(
+      `${channel.brand_name} / ${channel.channel_name} 채널을 삭제할까요? 이미 생성된 run 기록은 지워지지 않습니다.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    setError("");
+    setMessage("");
+    setDeleting(channel.id);
+    try {
+      const response = await fetch(`/api/admin/channels/${encodeURIComponent(channel.id)}`, {
+        method: "DELETE",
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        setError(body?.error ?? `채널을 삭제하지 못했습니다. 상태 코드: ${response.status}`);
+        return;
+      }
+      setMessage("채널을 삭제했습니다.");
+      router.refresh();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? `채널 삭제 요청이 실패했습니다: ${requestError.message}`
+          : "채널 삭제 요청이 실패했습니다.",
+      );
+    } finally {
+      setDeleting("");
     }
   }
 
@@ -125,7 +182,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           </label>
           <label>
             <span>채널 ID</span>
-            <input name="channel_id" pattern="^$|^UC[A-Za-z0-9_-]{20,}$" placeholder="UC..." />
+            <input name="channel_id" placeholder="UC..." />
             <small>커스텀 URL이나 @핸들이 아니라 YouTube Studio의 UC... 값입니다.</small>
           </label>
           <label>
@@ -185,7 +242,26 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 <h2>{channel.channel_name}</h2>
                 <p>{channel.youtube_handle || channel.channel_id || "채널 식별자 미입력"}</p>
               </div>
-              <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
+              <div className="channel-card-actions">
+                <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
+                <button
+                  className="icon-button"
+                  onClick={() => setEditingChannelId(editingChannelId === channel.id ? "" : channel.id)}
+                  title="채널 정보 편집"
+                  type="button"
+                >
+                  <Pencil size={14} />
+                </button>
+                <button
+                  className="icon-button danger"
+                  disabled={deleting === channel.id}
+                  onClick={() => deleteChannel(channel)}
+                  title="채널 삭제"
+                  type="button"
+                >
+                  {deleting === channel.id ? <Loader2 className="spin" size={14} /> : <Trash2 size={14} />}
+                </button>
+              </div>
             </div>
             <div className="channel-token-grid">
               <span className={channel.has_upload_refresh_token ? "ready" : "missing"}>
@@ -198,6 +274,43 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
               </span>
             </div>
             <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
+              {editingChannelId === channel.id ? (
+                <>
+                  <label>
+                    <span>브랜드명</span>
+                    <input defaultValue={channel.brand_name} name="brand_name" required />
+                  </label>
+                  <label>
+                    <span>채널명</span>
+                    <input defaultValue={channel.channel_name} name="channel_name" required />
+                  </label>
+                  <label>
+                    <span>채널 ID</span>
+                    <input defaultValue={channel.channel_id ?? ""} name="channel_id" placeholder="UC..." />
+                  </label>
+                  <label>
+                    <span>핸들</span>
+                    <input defaultValue={channel.youtube_handle ?? ""} name="youtube_handle" placeholder="@handle" />
+                  </label>
+                  <label>
+                    <span>담당자 이메일</span>
+                    <input defaultValue={channel.owner_email ?? ""} name="owner_email" type="email" />
+                  </label>
+                  <label>
+                    <span>기본 언어</span>
+                    <input defaultValue={channel.default_language} name="default_language" />
+                  </label>
+                </>
+              ) : (
+                <>
+                  <input name="brand_name" type="hidden" value={channel.brand_name} />
+                  <input name="channel_id" type="hidden" value={channel.channel_id ?? ""} />
+                  <input name="channel_name" type="hidden" value={channel.channel_name} />
+                  <input name="default_language" type="hidden" value={channel.default_language} />
+                  <input name="owner_email" type="hidden" value={channel.owner_email ?? ""} />
+                  <input name="youtube_handle" type="hidden" value={channel.youtube_handle ?? ""} />
+                </>
+              )}
               <label>
                 <span>상태</span>
                 <select defaultValue={channel.status} name="status">

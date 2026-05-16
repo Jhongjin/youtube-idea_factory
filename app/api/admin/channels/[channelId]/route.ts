@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
-import { updateYouTubeChannel } from "@/lib/channels";
+import { deleteYouTubeChannel, updateYouTubeChannel } from "@/lib/channels";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +40,24 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "채널을 수정하지 못했습니다." },
+      { status: 400 },
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ channelId: string }> },
+) {
+  await requireUser({ role: "admin" });
+  const { channelId } = await params;
+
+  try {
+    await deleteYouTubeChannel(channelId);
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "채널을 삭제하지 못했습니다." },
       { status: 400 },
     );
   }
