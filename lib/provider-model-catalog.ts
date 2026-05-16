@@ -17,6 +17,14 @@ type GeminiModelList = {
   }>;
 };
 
+type AnthropicModelList = {
+  data?: Array<{
+    display_name?: string;
+    id?: string;
+    type?: string;
+  }>;
+};
+
 type OpenRouterModelList = {
   data?: Array<{
     id?: string;
@@ -85,6 +93,10 @@ function modelUrlFromBase(baseUrl: string, fallback: string) {
       url.pathname = url.pathname.replace(/\/responses$/u, "/models");
       return url.toString();
     }
+    if (url.pathname.endsWith("/messages")) {
+      url.pathname = url.pathname.replace(/\/messages$/u, "/models");
+      return url.toString();
+    }
     if (url.pathname.endsWith("/chat/completions")) {
       url.pathname = url.pathname.replace(/\/chat\/completions$/u, "/models");
       return url.toString();
@@ -151,6 +163,31 @@ async function fetchGeminiModels(role: ProviderRoleId, setting: ProviderRoleSett
     .filter((model) => model.id && isModelForRole(role, model.id));
 }
 
+async function fetchAnthropicModels(role: ProviderRoleId, setting: ProviderRoleSetting) {
+  if (role !== "llm") {
+    return [];
+  }
+  if (!setting.apiKey?.trim()) {
+    throw new Error("Anthropic model refresh requires a saved API key.");
+  }
+  const data = await fetchJson<AnthropicModelList>(
+    modelUrlFromBase(setting.baseUrl, "https://api.anthropic.com/v1/models"),
+    {
+      headers: {
+        "anthropic-version": "2023-06-01",
+        "x-api-key": setting.apiKey,
+      },
+    },
+  );
+  return (data.data ?? [])
+    .filter((model) => !model.type || model.type === "model")
+    .map((model) => {
+      const id = model.id?.trim() ?? "";
+      return { id, label: model.display_name?.trim() || id, source: "live" as const };
+    })
+    .filter((model) => model.id && isModelForRole(role, model.id));
+}
+
 async function fetchOpenRouterModels(role: ProviderRoleId, setting: ProviderRoleSetting) {
   if (role !== "llm") {
     return [];
@@ -187,9 +224,11 @@ export async function getProviderModels(
       ? await fetchOpenAiModels(role, setting)
       : provider === "google"
         ? await fetchGeminiModels(role, setting)
-        : provider === "openrouter"
-          ? await fetchOpenRouterModels(role, setting)
-          : [];
+        : provider === "anthropic"
+          ? await fetchAnthropicModels(role, setting)
+          : provider === "openrouter"
+            ? await fetchOpenRouterModels(role, setting)
+            : [];
 
   return uniqueModels([...liveModels, ...staticModels]).sort((a, b) => a.id.localeCompare(b.id));
 }

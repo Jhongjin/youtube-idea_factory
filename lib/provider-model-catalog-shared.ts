@@ -54,9 +54,22 @@ const staticCatalog: Partial<Record<ModelCatalogKey, ProviderModelOption[]>> = {
     { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash", source: "static" },
   ],
   "llm:anthropic": [
-    { id: "claude-opus-4.5", label: "Claude Opus 4.5", source: "static" },
-    { id: "claude-sonnet-4.5", label: "Claude Sonnet 4.5", source: "static" },
-    { id: "claude-haiku-4.5", label: "Claude Haiku 4.5", source: "static" },
+    { id: "claude-opus-4-7", label: "Claude Opus 4.7", source: "static" },
+    { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", source: "static" },
+    { id: "claude-opus-4-6", label: "Claude Opus 4.6", source: "static" },
+    { id: "claude-haiku-4-5-20251001", label: "Claude Haiku 4.5", source: "static" },
+    { id: "claude-haiku-4-5", label: "Claude Haiku 4.5 alias", source: "static" },
+    { id: "claude-sonnet-4-5-20250929", label: "Claude Sonnet 4.5", source: "static" },
+    { id: "claude-sonnet-4-5", label: "Claude Sonnet 4.5", source: "static" },
+    { id: "claude-opus-4-1-20250805", label: "Claude Opus 4.1", source: "static" },
+    { id: "claude-opus-4-20250514", label: "Claude Opus 4", source: "static" },
+    { id: "claude-sonnet-4-20250514", label: "Claude Sonnet 4", source: "static" },
+    { id: "claude-3-7-sonnet-20250219", label: "Claude Sonnet 3.7", source: "static" },
+    { id: "claude-3-5-sonnet-20241022", label: "Claude Sonnet 3.5", source: "static" },
+    { id: "claude-3-5-haiku-20241022", label: "Claude Haiku 3.5", source: "static" },
+    { id: "claude-3-opus-20240229", label: "Claude Opus 3", source: "static" },
+    { id: "claude-3-sonnet-20240229", label: "Claude Sonnet 3", source: "static" },
+    { id: "claude-3-haiku-20240307", label: "Claude Haiku 3", source: "static" },
   ],
   "llm:mistral": [
     { id: "mistral-large-latest", label: "Mistral Large latest", source: "static" },
@@ -98,7 +111,7 @@ const staticCatalog: Partial<Record<ModelCatalogKey, ProviderModelOption[]>> = {
   ],
 };
 
-const liveCatalogProviders = new Set(["openai", "google", "openrouter"]);
+const liveCatalogProviders = new Set(["openai", "anthropic", "google", "openrouter"]);
 
 function normalizeProvider(provider: string) {
   return provider.trim().toLowerCase();
