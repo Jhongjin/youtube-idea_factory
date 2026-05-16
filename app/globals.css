@@ -3571,6 +3571,13 @@ button:disabled,
   font-weight: 850;
 }
 
+.channel-form-grid small,
+.channel-update-grid small {
+  color: #738194;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .auth-form input,
 .admin-form-grid input,
 .admin-form-grid select,

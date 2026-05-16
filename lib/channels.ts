@@ -53,6 +53,22 @@ function safeChannel(channel: YouTubeChannel): SafeYouTubeChannel {
   };
 }
 
+function normalizeChannelId(value: string) {
+  const channelId = value.trim();
+  if (channelId && !/^UC[A-Za-z0-9_-]{20,}$/.test(channelId)) {
+    throw new Error("채널 ID는 YouTube Studio에서 확인한 UC... 형식이어야 합니다. 모르면 비워두고 핸들만 입력하세요.");
+  }
+  return channelId || null;
+}
+
+function normalizeYouTubeHandle(value?: string | null) {
+  const handle = value?.trim();
+  if (!handle) {
+    return null;
+  }
+  return handle.startsWith("@") ? handle : `@${handle}`;
+}
+
 async function readLocalChannels(): Promise<YouTubeChannel[]> {
   const raw = await fs.readFile(localChannelStorePath, "utf-8").catch((error: NodeJS.ErrnoException) => {
     if (error.code === "ENOENT") {
@@ -130,7 +146,7 @@ export async function createYouTubeChannel(input: {
   const channel: YouTubeChannel = {
     analytics_refresh_token: input.analytics_refresh_token?.trim() || null,
     brand_name: input.brand_name.trim(),
-    channel_id: input.channel_id.trim() || null,
+    channel_id: normalizeChannelId(input.channel_id),
     channel_name: input.channel_name.trim(),
     created_at: timestamp,
     default_language: input.default_language?.trim() || "ko",
@@ -140,7 +156,7 @@ export async function createYouTubeChannel(input: {
     status: input.status ?? "setup",
     updated_at: timestamp,
     upload_refresh_token: input.upload_refresh_token?.trim() || null,
-    youtube_handle: input.youtube_handle?.trim() || null,
+    youtube_handle: normalizeYouTubeHandle(input.youtube_handle),
   };
 
   if (getAppStorageMode() === "supabase") {
@@ -185,7 +201,7 @@ export async function updateYouTubeChannel(
     updates.brand_name = input.brand_name.trim();
   }
   if (input.channel_id !== undefined) {
-    updates.channel_id = input.channel_id.trim() || null;
+    updates.channel_id = normalizeChannelId(input.channel_id);
   }
   if (input.channel_name !== undefined) {
     updates.channel_name = input.channel_name.trim();
@@ -206,7 +222,7 @@ export async function updateYouTubeChannel(
     updates.upload_refresh_token = input.upload_refresh_token.trim();
   }
   if (input.youtube_handle !== undefined) {
-    updates.youtube_handle = input.youtube_handle.trim();
+    updates.youtube_handle = normalizeYouTubeHandle(input.youtube_handle);
   }
 
   if (getAppStorageMode() === "supabase") {

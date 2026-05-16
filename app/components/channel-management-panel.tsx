@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, KeyRound, Save, Tv } from "lucide-react";
+import { BadgeCheck, KeyRound, Loader2, Save, Tv } from "lucide-react";
 import type { SafeYouTubeChannel, YouTubeChannelStatus } from "@/lib/channels";
 
 const statusLabels: Record<YouTubeChannelStatus, string> = {
@@ -15,25 +15,50 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
   const router = useRouter();
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState<"new" | string | null>(null);
+
+  function channelIdError(formData: FormData) {
+    const channelId = String(formData.get("channel_id") ?? "").trim();
+    if (channelId && !channelId.startsWith("UC")) {
+      return "채널 ID는 @핸들이 아니라 YouTube Studio의 UC... 값입니다. 모르면 비워두고 핸들만 입력해도 됩니다.";
+    }
+    return "";
+  }
 
   async function createChannel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setMessage("");
     const data = new FormData(event.currentTarget);
-    const response = await fetch("/api/admin/channels", {
-      body: JSON.stringify(Object.fromEntries(data.entries())),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    if (!response.ok) {
-      setError(body?.error ?? "채널을 저장하지 못했습니다.");
+    const validationError = channelIdError(data);
+    if (validationError) {
+      setError(validationError);
       return;
     }
-    event.currentTarget.reset();
-    setMessage("채널을 저장했습니다.");
-    router.refresh();
+    setSaving("new");
+    try {
+      const response = await fetch("/api/admin/channels", {
+        body: JSON.stringify(Object.fromEntries(data.entries())),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        setError(body?.error ?? `채널을 저장하지 못했습니다. 상태 코드: ${response.status}`);
+        return;
+      }
+      event.currentTarget.reset();
+      setMessage("채널을 저장했습니다.");
+      router.refresh();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? `채널 저장 요청이 실패했습니다: ${requestError.message}`
+          : "채널 저장 요청이 실패했습니다.",
+      );
+    } finally {
+      setSaving(null);
+    }
   }
 
   async function updateChannel(event: FormEvent<HTMLFormElement>, channelId: string) {
@@ -41,21 +66,37 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
     setError("");
     setMessage("");
     const data = new FormData(event.currentTarget);
+    const validationError = channelIdError(data);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     const payload = Object.fromEntries(
       Array.from(data.entries()).filter(([, value]) => String(value).trim() !== ""),
     );
-    const response = await fetch(`/api/admin/channels/${encodeURIComponent(channelId)}`, {
-      body: JSON.stringify(payload),
-      headers: { "Content-Type": "application/json" },
-      method: "PATCH",
-    });
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    if (!response.ok) {
-      setError(body?.error ?? "채널을 수정하지 못했습니다.");
-      return;
+    setSaving(channelId);
+    try {
+      const response = await fetch(`/api/admin/channels/${encodeURIComponent(channelId)}`, {
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        setError(body?.error ?? `채널을 수정하지 못했습니다. 상태 코드: ${response.status}`);
+        return;
+      }
+      setMessage("채널 정보를 저장했습니다.");
+      router.refresh();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? `채널 수정 요청이 실패했습니다: ${requestError.message}`
+          : "채널 수정 요청이 실패했습니다.",
+      );
+    } finally {
+      setSaving(null);
     }
-    setMessage("채널 정보를 저장했습니다.");
-    router.refresh();
   }
 
   return (
@@ -71,6 +112,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           </div>
           <Tv size={19} />
         </div>
+        {error ? <p className="settings-message error">{error}</p> : null}
+        {message ? <p className="settings-message saved">{message}</p> : null}
         <form className="channel-form-grid" onSubmit={createChannel}>
           <label>
             <span>브랜드명</span>
@@ -82,7 +125,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           </label>
           <label>
             <span>채널 ID</span>
-            <input name="channel_id" placeholder="UC..." />
+            <input name="channel_id" pattern="^$|^UC[A-Za-z0-9_-]{20,}$" placeholder="UC..." />
+            <small>커스텀 URL이나 @핸들이 아니라 YouTube Studio의 UC... 값입니다.</small>
           </label>
           <label>
             <span>핸들</span>
@@ -118,15 +162,12 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <span>메모</span>
             <textarea name="notes" placeholder="콘텐츠 포지션, 업로드 주기, 주의할 브랜드 톤" rows={3} />
           </label>
-          <button className="text-button primary" type="submit">
-            <Save size={15} />
-            채널 저장
+          <button className="text-button primary" disabled={saving === "new"} type="submit">
+            {saving === "new" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
+            {saving === "new" ? "저장 중" : "채널 저장"}
           </button>
         </form>
       </section>
-
-      {error ? <p className="settings-message error">{error}</p> : null}
-      {message ? <p className="settings-message saved">{message}</p> : null}
 
       <section className="channel-grid">
         {channels.length === 0 ? (
@@ -179,9 +220,9 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 <span>메모</span>
                 <input defaultValue={channel.notes ?? ""} name="notes" placeholder="운영 메모" />
               </label>
-              <button className="text-button" type="submit">
-                <Save size={15} />
-                업데이트
+              <button className="text-button" disabled={saving === channel.id} type="submit">
+                {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
+                {saving === channel.id ? "저장 중" : "업데이트"}
               </button>
             </form>
           </article>
