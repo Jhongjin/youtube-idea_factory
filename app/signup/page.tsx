@@ -1,5 +1,6 @@
-import { ArrowLeft, UserPlus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { AuthContextPanel } from "@/app/components/auth-context-panel";
 import { SignupForm } from "@/app/components/auth-forms";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,7 @@ export default function SignupPage() {
             이미 계정이 있다면 <Link href="/login">로그인</Link>하세요.
           </p>
         </div>
-        <div className="signup-aside">
-          <UserPlus size={24} />
-          <h2>권한 분리</h2>
-          <p>멤버는 제작 실행을 만들고, 관리자는 API 설정과 채널 OAuth를 관리합니다.</p>
-        </div>
+        <AuthContextPanel mode="signup" />
       </section>
     </main>
   );
