@@ -7525,6 +7525,11 @@ body {
 .provider-profile-fields label {
   display: grid;
   gap: 5px;
+  min-width: 0;
+}
+
+.provider-fields label {
+  min-width: 0;
 }
 
 .provider-profile-fields span {
@@ -7538,9 +7543,11 @@ body {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .provider-model-field input {
+  width: 100%;
   min-width: 0;
 }
 
@@ -7555,10 +7562,14 @@ body {
   font-size: 11px;
   font-weight: 700;
   line-height: 1.35;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .provider-fields .field-error,
 .provider-profile-fields .field-error {
+  display: block;
+  max-width: 100%;
   color: #ef8f84;
 }
 

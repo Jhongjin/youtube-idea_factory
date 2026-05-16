@@ -176,11 +176,19 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     return (
       <>
         <div className="provider-model-field">
+          <input name={name} type="hidden" value={value} />
           <input
+            aria-autocomplete="none"
+            autoCapitalize="none"
+            autoComplete="new-password"
+            autoCorrect="off"
+            data-1p-ignore="true"
+            data-form-type="other"
+            data-lpignore="true"
             list={options.length > 0 ? `models-${key.replace(/[^a-z0-9_-]/giu, "-")}` : undefined}
-            name={name}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
+            spellCheck={false}
             value={value}
           />
           {options.length > 0 ? (

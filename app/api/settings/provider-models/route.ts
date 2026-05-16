@@ -38,8 +38,13 @@ export async function POST(request: Request) {
       role,
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Provider model refresh failed.";
+    const safeMessage =
+      /401|403|api key|unauthorized|forbidden|incorrect/i.test(message)
+        ? "저장된 API 키로 모델 목록을 가져오지 못했습니다. API 키를 다시 저장한 뒤 시도하세요."
+        : message;
     return Response.json(
-      { error: error instanceof Error ? error.message : "Provider model refresh failed." },
+      { error: safeMessage },
       { status: 400 },
     );
   }
