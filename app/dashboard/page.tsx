@@ -1380,12 +1380,18 @@ function ProviderReadinessPanel({
 }: {
   providerSettings: SafeProviderSettings;
 }) {
+  function preferredSetting(roleId: (typeof providerRoles)[number]["id"]) {
+    const base = providerSettings.roles[roleId];
+    return base.enabled
+      ? base
+      : providerSettings.profiles.find((profile) => profile.role === roleId && profile.enabled) ?? base;
+  }
   const readyProviderCount =
     providerRoles.filter((role) => {
-      const setting = providerSettings.roles[role.id];
+      const setting = preferredSetting(role.id);
       return setting.enabled && setting.hasApiKey;
-    }).length + providerSettings.profiles.filter((profile) => profile.enabled && profile.hasApiKey).length;
-  const totalProviderSlots = providerRoles.length + providerSettings.profiles.length;
+    }).length;
+  const totalProviderSlots = providerRoles.length;
   return (
     <section className="panel">
       <div className="panel-header">
@@ -1401,7 +1407,7 @@ function ProviderReadinessPanel({
             </span>
           </div>
           {providerRoles.map((role) => {
-            const setting = providerSettings.roles[role.id];
+            const setting = preferredSetting(role.id);
             const status =
               setting.enabled && setting.hasApiKey
                 ? "준비됨"

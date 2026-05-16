@@ -7312,10 +7312,15 @@ body {
 
 .sidebar .brand h1,
 .sidebar .sidebar-disclosure summary span,
-.sidebar .sidebar-disclosure summary strong,
 .sidebar .channel-memory-index strong,
 .sidebar .work-queue-index strong {
   color: #fff8ea;
+}
+
+.sidebar .sidebar-disclosure summary strong {
+  border: 1px solid rgba(244, 239, 227, 0.35);
+  background: #f4efe3;
+  color: #13201b;
 }
 
 .sidebar .brand p,
@@ -7526,6 +7531,35 @@ body {
   color: #f0c174;
   font-size: 12px;
   font-weight: 850;
+}
+
+.provider-model-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.provider-model-field input {
+  min-width: 0;
+}
+
+.provider-model-field .icon-button {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.provider-fields small,
+.provider-profile-fields small {
+  color: rgba(244, 239, 227, 0.62);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.provider-fields .field-error,
+.provider-profile-fields .field-error {
+  color: #ef8f84;
 }
 
 .provider-profile-notes {

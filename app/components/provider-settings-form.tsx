@@ -1,8 +1,13 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { CheckCircle2, KeyRound, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { CheckCircle2, KeyRound, Loader2, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
 import { getProviderCapability } from "@/lib/provider-capabilities";
+import {
+  getStaticProviderModels,
+  supportsLiveProviderModelRefresh,
+  type ProviderModelOption,
+} from "@/lib/provider-model-catalog-shared";
 import {
   providerRoles,
   type ProviderRoleId,
@@ -11,6 +16,8 @@ import {
 } from "@/lib/provider-settings-shared";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
+
+type ModelCatalogState = Record<string, ProviderModelOption[]>;
 
 function providerProfileLabel(profile: SafeProviderProfile) {
   if (profile.model.trim()) {
@@ -24,6 +31,9 @@ function providerProfileLabel(profile: SafeProviderProfile) {
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
   const [settings, setSettings] = useState(initialSettings);
+  const [modelCatalogs, setModelCatalogs] = useState<ModelCatalogState>({});
+  const [modelCatalogErrors, setModelCatalogErrors] = useState<Record<string, string>>({});
+  const [loadingModelCatalog, setLoadingModelCatalog] = useState("");
   const [state, setState] = useState<SaveState>("idle");
   const [error, setError] = useState("");
 
@@ -105,6 +115,105 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       ...current,
       profiles: current.profiles.filter((profile) => profile.id !== profileId),
     }));
+  }
+
+  function modelCatalogKey(role: ProviderRoleId, provider: string, profileId = "base") {
+    return `${role}:${provider.trim().toLowerCase()}:${profileId}`;
+  }
+
+  function modelOptions(role: ProviderRoleId, provider: string, profileId?: string) {
+    const key = modelCatalogKey(role, provider, profileId);
+    return modelCatalogs[key] ?? getStaticProviderModels(role, provider);
+  }
+
+  async function refreshModelCatalog(role: ProviderRoleId, provider: string, profileId?: string) {
+    const key = modelCatalogKey(role, provider, profileId);
+    setLoadingModelCatalog(key);
+    setModelCatalogErrors((current) => ({ ...current, [key]: "" }));
+
+    const response = await fetch("/api/settings/provider-models", {
+      body: JSON.stringify({ profileId, provider, role }),
+      headers: { "Content-Type": "application/json" },
+      method: "POST",
+    });
+    const body = (await response.json().catch(() => null)) as
+      | { error?: string; models?: ProviderModelOption[] }
+      | null;
+    if (!response.ok || !body?.models) {
+      setModelCatalogErrors((current) => ({
+        ...current,
+        [key]: body?.error ?? "모델 목록을 가져오지 못했습니다. 설정을 저장한 뒤 다시 시도하세요.",
+      }));
+      setLoadingModelCatalog("");
+      return;
+    }
+
+    setModelCatalogs((current) => ({ ...current, [key]: body.models ?? [] }));
+    setLoadingModelCatalog("");
+  }
+
+  function ModelField({
+    name,
+    onChange,
+    placeholder,
+    profileId,
+    provider,
+    role,
+    value,
+  }: {
+    name: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    profileId?: string;
+    provider: string;
+    role: ProviderRoleId;
+    value: string;
+  }) {
+    const key = modelCatalogKey(role, provider, profileId);
+    const options = modelOptions(role, provider, profileId);
+    const supportsLiveRefresh = supportsLiveProviderModelRefresh(provider);
+    const loading = loadingModelCatalog === key;
+    return (
+      <>
+        <div className="provider-model-field">
+          <input
+            list={options.length > 0 ? `models-${key.replace(/[^a-z0-9_-]/giu, "-")}` : undefined}
+            name={name}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            value={value}
+          />
+          {options.length > 0 ? (
+            <datalist id={`models-${key.replace(/[^a-z0-9_-]/giu, "-")}`}>
+              {options.map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.label}
+                </option>
+              ))}
+            </datalist>
+          ) : null}
+          {supportsLiveRefresh ? (
+            <button
+              className="icon-button"
+              disabled={loading}
+              onClick={() => refreshModelCatalog(role, provider, profileId)}
+              title="저장된 API 키로 모델 목록 새로고침"
+              type="button"
+            >
+              {loading ? <Loader2 className="spin" size={14} /> : <RefreshCw size={14} />}
+            </button>
+          ) : null}
+        </div>
+        <small>
+          {supportsLiveRefresh
+            ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
+            : options.length > 0
+              ? "제공자별 권장 모델 목록입니다."
+              : "모델 목록 API가 없으면 직접 입력합니다. 로그인형 도구는 SSO 연결 큐로 남깁니다."}
+        </small>
+        {modelCatalogErrors[key] ? <small className="field-error">{modelCatalogErrors[key]}</small> : null}
+      </>
+    );
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -198,10 +307,13 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
       <div className="provider-grid">
         {roleList.map(({ id, label, description, providers, setting }) => {
-          const selectedCapability = getProviderCapability(id, setting.provider);
           const roleProfiles = settings.profiles.filter((profile) => profile.role === id);
+          const preferredSetting = setting.enabled
+            ? setting
+            : roleProfiles.find((profile) => profile.enabled) ?? setting;
+          const selectedCapability = getProviderCapability(id, preferredSetting.provider);
           return (
-            <section className={`provider-card ${setting.enabled ? "enabled" : "disabled"}`} key={id}>
+            <section className={`provider-card ${preferredSetting.enabled ? "enabled" : "disabled"}`} key={id}>
               <div className="provider-card-header">
                 <div>
                   <h3>{label}</h3>
@@ -220,11 +332,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
               <div className="provider-status">
                 <KeyRound size={14} />
-                <span>{setting.hasApiKey ? `키 ${setting.apiKeyPreview}` : "저장된 키 없음"}</span>
+                <span>
+                  {preferredSetting.hasApiKey
+                    ? `키 ${preferredSetting.apiKeyPreview}`
+                    : "저장된 키 없음"}
+                </span>
                 <span className={`provider-capability ${selectedCapability.status}`}>
                   {selectedCapability.label}
                 </span>
-                <span>{setting.provider || "제공자 미선택"}</span>
+                <span>{preferredSetting.provider || "제공자 미선택"}</span>
               </div>
 
               <details className="provider-config-details" open={setting.enabled}>
@@ -237,7 +353,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                     <span>제공자</span>
                     <select
                       name={`${id}.provider`}
-                      onChange={(event) => updateRole(id, { provider: event.target.value })}
+                      onChange={(event) => updateRole(id, { model: "", provider: event.target.value })}
                       value={setting.provider}
                     >
                       {providers.map((provider) => {
@@ -252,10 +368,12 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                   </label>
                   <label>
                     <span>모델 / 프리셋</span>
-                    <input
+                    <ModelField
                       name={`${id}.model`}
-                      onChange={(event) => updateRole(id, { model: event.target.value })}
+                      onChange={(value) => updateRole(id, { model: value })}
                       placeholder="모델명, 음성, 프리셋, 워크플로 ID"
+                      provider={setting.provider}
+                      role={id}
                       value={setting.model}
                     />
                   </label>
@@ -342,7 +460,9 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                             <span>제공자</span>
                             <select
                               name={`profile.${profile.id}.provider`}
-                              onChange={(event) => updateProfile(profile.id, { provider: event.target.value })}
+                              onChange={(event) =>
+                                updateProfile(profile.id, { model: "", provider: event.target.value })
+                              }
                               value={profile.provider}
                             >
                               {providers.map((provider) => {
@@ -357,10 +477,13 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                           </label>
                           <label>
                             <span>모델 / 워크플로</span>
-                            <input
+                            <ModelField
                               name={`profile.${profile.id}.model`}
-                              onChange={(event) => updateProfile(profile.id, { model: event.target.value })}
+                              onChange={(value) => updateProfile(profile.id, { model: value })}
                               placeholder="예: gpt-5.2, kling-2.1, render preset"
+                              profileId={profile.id}
+                              provider={profile.provider}
+                              role={profile.role}
                               value={profile.model}
                             />
                           </label>

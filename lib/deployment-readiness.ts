@@ -5,7 +5,10 @@ import {
   requiresProviderModel,
 } from "@/lib/provider-capabilities";
 import { listYouTubeChannels } from "@/lib/channels";
-import { getProviderSettings } from "@/lib/provider-settings";
+import {
+  getProviderSettings,
+  resolvePreferredProviderSetting,
+} from "@/lib/provider-settings";
 import { providerRoles, type ProviderRoleId } from "@/lib/provider-settings-shared";
 import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
 
@@ -255,13 +258,14 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     providerRoles.map((role) => [
       role.id,
       providerSettings
-        ? roleReadiness(role.id, providerSettings.roles[role.id])
+        ? roleReadiness(role.id, resolvePreferredProviderSetting(providerSettings, role.id))
         : disabledRoleReadiness(),
     ]),
   ) as Record<ProviderRoleId, ProviderRoleReadiness>;
   const youtubeProviderSettings = Boolean(
-    providerSettings?.roles.youtube.enabled &&
-      providerSettings.roles.youtube.apiKey?.trim(),
+    providerSettings &&
+      resolvePreferredProviderSetting(providerSettings, "youtube").enabled &&
+      resolvePreferredProviderSetting(providerSettings, "youtube").apiKey?.trim(),
   );
   const youtubeApiKey = hasEnv("YOUTUBE_API_KEY") || youtubeProviderSettings;
   if (!youtubeApiKey) {
