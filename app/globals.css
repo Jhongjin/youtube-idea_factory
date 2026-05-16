@@ -2050,6 +2050,85 @@ button:disabled,
   resize: vertical;
 }
 
+.new-run-channel-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid #b9d8c3;
+  border-radius: 10px;
+  background: #eff8f1;
+  padding: 10px;
+}
+
+.new-run-channel-summary.empty {
+  border-color: #d7dde5;
+  background: #f8fafc;
+}
+
+.new-run-channel-summary div:first-child {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.new-run-channel-summary span {
+  color: #2f6f4e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.new-run-channel-summary.empty span {
+  color: #667386;
+}
+
+.new-run-channel-summary strong {
+  color: #172019;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.new-run-channel-summary small {
+  color: #455366;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.4;
+}
+
+.new-run-channel-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.new-run-channel-badges span {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.new-run-channel-badges .ready {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.new-run-channel-badges .setup {
+  background: var(--amber-soft);
+  color: var(--amber);
+}
+
+.new-run-channel-badges .missing {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
 .run-builder-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3389,6 +3468,7 @@ button:disabled,
   .upload-job-grid,
   .form-grid,
   .format-presets,
+  .new-run-channel-summary,
   .run-builder-steps {
     grid-template-columns: 1fr;
   }
