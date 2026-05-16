@@ -4,8 +4,6 @@ import {
   Brain,
   CheckCircle2,
   Clapperboard,
-  FileSearch,
-  FileText,
   Image,
   KeyRound,
   ListChecks,
@@ -18,7 +16,6 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  Upload,
   Wand2,
 } from "lucide-react";
 import Link from "next/link";
@@ -75,16 +72,6 @@ import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from 
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
 
 export const dynamic = "force-dynamic";
-
-const navItems = [
-  { label: "제작 단계", icon: ListChecks, active: true },
-  { label: "소스", icon: FileSearch, active: false },
-  { label: "대본", icon: FileText, active: false },
-  { label: "스토리보드", icon: Clapperboard, active: false },
-  { label: "미디어", icon: Image, active: false },
-  { label: "배포", icon: Upload, active: false },
-  { label: "검수", icon: ShieldCheck, active: false },
-];
 
 const skillItems = [
   "youtube-market-research",
@@ -955,27 +942,6 @@ function Sidebar({
           {runs.length === 0 ? <p className="muted">이 채널의 실행 기록이 없습니다</p> : null}
         </div>
       </section>
-
-      <details className="sidebar-disclosure sidebar-section-disclosure">
-        <summary>
-          <span>작업 섹션</span>
-          <strong>{navItems.length}개</strong>
-        </summary>
-        <div className="sidebar-disclosure-body">
-          <ul className="nav-list sidebar-section-list">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.label} className={`nav-item ${item.active ? "active" : ""}`}>
-                  <Icon size={16} />
-                  {item.label}
-                </li>
-              );
-            })}
-          </ul>
-          <p className="sidebar-disclosure-note">기본 진행은 중앙의 단계 카드와 다음 작업 버튼을 따라가세요.</p>
-        </div>
-      </details>
 
       <details className="sidebar-disclosure">
         <summary>
