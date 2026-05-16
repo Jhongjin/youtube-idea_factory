@@ -41,6 +41,7 @@ This queue keeps the build loop explicit:
 | run-delete-dashboard-redirect | Phase 7 | done | codex | no | Deleting a run now returns operators to `/dashboard` instead of the public homepage. |
 | dashboard-action-step-redirects | Phase 7 | done | codex | no | Production action buttons now return to the matching guided dashboard step and artifact anchor. |
 | dashboard-empty-state-new-run-main | Phase 7 | done | codex | no | Empty dashboard states now show the new-run form in the main guided workspace instead of only the inspector. |
+| admin-channel-activate-action | Phase 7 | done | codex | no | Channel cards now offer a quick action to switch setup or paused channels to active. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
