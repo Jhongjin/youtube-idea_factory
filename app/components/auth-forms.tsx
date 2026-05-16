@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, LogIn, LogOut, UserPlus } from "lucide-react";
 
@@ -9,21 +10,27 @@ export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [action, setAction] = useState<"admin-approval" | "">("");
   const [loading, setLoading] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError("");
+    setAction("");
     const response = await fetch("/api/auth/login", {
       body: JSON.stringify({ identifier, password }),
       headers: { "Content-Type": "application/json" },
       method: "POST",
     });
-    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    const body = (await response.json().catch(() => null)) as {
+      action?: "admin-approval";
+      error?: string;
+    } | null;
     setLoading(false);
     if (!response.ok) {
       setError(body?.error ?? "로그인하지 못했습니다.");
+      setAction(body?.action ?? "");
       return;
     }
     router.push(nextPath || "/dashboard");
@@ -54,6 +61,13 @@ export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
         />
       </label>
       {error ? <p className="form-error">{error}</p> : null}
+      {action === "admin-approval" ? (
+        <div className="auth-inline-guide">
+          <strong>관리자 승인 위치</strong>
+          <span>관리자 계정으로 로그인한 뒤 회원관리에서 해당 계정의 상태를 활성으로 바꾸면 됩니다.</span>
+          <Link href="/login?next=/admin">관리자 로그인 후 회원관리 열기</Link>
+        </div>
+      ) : null}
       <button className="text-button primary auth-submit" disabled={loading} type="submit">
         <LogIn size={16} />
         {loading ? "확인 중" : "로그인"}
@@ -137,6 +151,13 @@ export function SignupForm() {
           <CheckCircle2 size={15} />
           {message}
         </p>
+      ) : null}
+      {message ? (
+        <div className="auth-inline-guide">
+          <strong>관리자가 승인하는 방법</strong>
+          <span>관리자 계정으로 들어가 회원관리에서 방금 만든 계정의 상태를 활성으로 바꾸세요.</span>
+          <Link href="/login?next=/admin">관리자 로그인으로 이동</Link>
+        </div>
       ) : null}
       <button className="text-button primary auth-submit" disabled={!canSubmit || loading} type="submit">
         <UserPlus size={16} />

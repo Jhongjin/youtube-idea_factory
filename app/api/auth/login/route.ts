@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createSessionToken, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "@/lib/session";
-import { authenticateAppUser } from "@/lib/users";
+import { authenticateAppUser, getInactiveAppUserStatus } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,19 @@ export async function POST(request: Request) {
 
   const user = await authenticateAppUser(identifier, password);
   if (!user) {
+    const inactiveStatus = await getInactiveAppUserStatus(identifier, password);
+    if (inactiveStatus === "pending") {
+      return NextResponse.json(
+        {
+          action: "admin-approval",
+          error: "가입 요청이 승인 대기 중입니다. 관리자는 회원관리에서 이 계정을 활성화하세요.",
+        },
+        { status: 403 },
+      );
+    }
+    if (inactiveStatus === "disabled") {
+      return NextResponse.json({ error: "비활성화된 계정입니다. 관리자에게 문의하세요." }, { status: 403 });
+    }
     return NextResponse.json({ error: "아이디 또는 비밀번호가 맞지 않습니다." }, { status: 401 });
   }
 
