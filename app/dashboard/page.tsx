@@ -1033,11 +1033,12 @@ function EmptyState({
           <h3>{channelName ? "이 채널의 제작 실행이 없습니다" : "아직 제작 실행이 없습니다"}</h3>
           <p>
             {channelName
-              ? "오른쪽 새 제작 시작에서 이 운영 채널을 선택해 첫 패키지를 시작하세요."
+              ? "아래 새 제작 시작에서 이 운영 채널의 첫 패키지를 시작하세요."
               : "새 제작을 시작하면 패키지가 단계 흐름에 맞춰 여기에 표시됩니다."}
           </p>
         </div>
       </div>
+      <NewRunPanel channels={channels} initialChannelId={selectedChannelId} />
     </main>
   );
 }
@@ -2058,13 +2059,26 @@ export default async function Home({
         />
       ) : (
         <aside className="inspector">
-          <section className="panel" id="new-run-panel">
+          <section className="panel">
             <div className="panel-header">
-              <h3 className="panel-title">새 제작 시작</h3>
-              <Rocket size={16} />
+              <h3 className="panel-title">시작 순서</h3>
+              <ListChecks size={16} />
             </div>
             <div className="panel-body">
-              <NewRunForm channels={channels} initialChannelId={selectedChannelId} />
+              <div className="detail-stack">
+                <div className="detail-row">
+                  <span>1</span>
+                  <span>상단에서 운영 채널 확인</span>
+                </div>
+                <div className="detail-row">
+                  <span>2</span>
+                  <span>가운데 새 제작 시작 작성</span>
+                </div>
+                <div className="detail-row">
+                  <span>3</span>
+                  <span>생성 후 다음 작업 버튼 진행</span>
+                </div>
+              </div>
             </div>
           </section>
         </aside>
