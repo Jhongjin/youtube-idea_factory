@@ -1,5 +1,9 @@
 import { getProviderCapability } from "@/lib/provider-capabilities";
-import { getProviderSettings, resolvePreferredProviderSetting } from "@/lib/provider-settings";
+import {
+  getProviderSettings,
+  resolvePreferredProviderSetting,
+  resolveProviderSetting,
+} from "@/lib/provider-settings";
 import { createRenderManifest, type RenderManifest } from "@/lib/render-manifest";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
@@ -46,6 +50,10 @@ export type EditingHandoffResult = {
   file: "editing-handoff.json";
   provider: string;
   timelineItems: number;
+};
+
+export type EditingHandoffOptions = {
+  providerProfileId?: string;
 };
 
 function assertSafeRunId(runId: string) {
@@ -111,7 +119,10 @@ function workflowForProvider(provider: string): EditingHandoff["workflow"] {
   };
 }
 
-export async function createEditingHandoff(runId: string): Promise<EditingHandoffResult> {
+export async function createEditingHandoff(
+  runId: string,
+  options: EditingHandoffOptions = {},
+): Promise<EditingHandoffResult> {
   assertSafeRunId(runId);
   await createRenderManifest(runId);
   const [pkg, manifest, providerSettings] = await Promise.all([
@@ -119,7 +130,9 @@ export async function createEditingHandoff(runId: string): Promise<EditingHandof
     readRunJson<RenderManifest>(runId, "render-manifest.json"),
     getProviderSettings(),
   ]);
-  const editingProvider = resolvePreferredProviderSetting(providerSettings, "editing");
+  const editingProvider = options.providerProfileId
+    ? resolveProviderSetting(providerSettings, "editing", options.providerProfileId)
+    : resolvePreferredProviderSetting(providerSettings, "editing");
   const capability = getProviderCapability("editing", editingProvider.provider);
   const now = new Date().toISOString();
   const handoff: EditingHandoff = {

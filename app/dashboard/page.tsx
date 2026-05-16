@@ -1616,7 +1616,7 @@ function AssemblyPanel({
             <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
           </div>
           <WorkerStatusPanel runId={run.id} status={workerStatus} />
-          <EditingHandoffButton runId={run.id} />
+          <EditingHandoffButton providerSettings={providerSettings} runId={run.id} />
           <YouTubeUploadWorkerPanel
             runId={run.id}
             storageMode={storageMode}

@@ -1239,6 +1239,29 @@ button:disabled,
   min-width: fit-content;
 }
 
+.editing-provider-picker {
+  display: grid;
+  min-width: min(260px, 100%);
+  gap: 5px;
+}
+
+.editing-provider-picker span {
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.editing-provider-picker select {
+  width: 100%;
+  min-height: 38px;
+}
+
+.editing-provider-picker small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .upload-job-action {
   position: relative;
 }
