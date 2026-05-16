@@ -12,11 +12,22 @@ export type SourceVideo = {
   video_id?: string;
 };
 
+export type ProductionRunChannel = {
+  brand_name: string;
+  channel_id?: string | null;
+  channel_name: string;
+  default_language?: string;
+  id: string;
+  status?: string;
+  youtube_handle?: string | null;
+};
+
 export type ProductionPackage = {
   run_id: string;
   brief: {
     topic: string;
     category?: string;
+    channel?: ProductionRunChannel;
     format: string;
     target_audience?: string;
     target_duration_seconds?: number;

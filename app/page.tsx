@@ -1,13 +1,16 @@
 import {
   ArrowRight,
   BadgeCheck,
+  Brain,
+  CheckCircle2,
   Clapperboard,
   FileSearch,
-  Fingerprint,
   Gauge,
+  KeyRound,
   Layers3,
+  ListChecks,
   RadioTower,
-  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -16,32 +19,50 @@ import { getCurrentUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 const pipeline = [
-  "카테고리 선택",
-  "상위 영상 리서치",
-  "구조 분석",
-  "팩트체크",
-  "대본 설계",
-  "스토리보드",
-  "미디어 생성",
-  "검수 후 배포",
+  {
+    label: "Research",
+    title: "상위 영상 후보와 소스 수집",
+    detail: "YouTube Finder와 수동 seed를 같은 run 안에 보관합니다.",
+  },
+  {
+    label: "Evidence",
+    title: "클레임 분리와 팩트체크",
+    detail: "supported, needs evidence, opinion, do not use를 분리합니다.",
+  },
+  {
+    label: "Package",
+    title: "대본, 씬, 프롬프트 설계",
+    detail: "영상 분석 결과를 스토리보드와 생성 프롬프트로 이어 붙입니다.",
+  },
+  {
+    label: "Handoff",
+    title: "승인 후 렌더와 업로드 큐",
+    detail: "비용, OAuth, 배포 단계는 사람이 승인한 뒤 진행합니다.",
+  },
 ];
 
-const featureCards = [
+const proofItems = [
   {
-    body: "유튜브 파인더, 영상 분석, 대본 설계 스킬이 같은 제작 패키지를 업데이트합니다.",
-    icon: FileSearch,
-    title: "한 실행 안에 쌓이는 리서치",
+    icon: ShieldCheck,
+    title: "위험한 단계는 멈춤",
+    body: "외부 비용, 렌더, YouTube 업로드는 승인 게이트가 열리기 전까지 큐에 들어가지 않습니다.",
   },
   {
-    body: "팩트, 승인, 렌더, 업로드 게이트를 분리해 비용과 리스크가 있는 작업을 멈춰 세웁니다.",
-    icon: Fingerprint,
-    title: "사람 승인 전에는 돈을 쓰지 않음",
-  },
-  {
-    body: "브랜드 채널별 OAuth, 제공자 API, 워커 큐 상태를 운영 화면에서 확인합니다.",
     icon: RadioTower,
-    title: "10개 채널 운영을 위한 권한 지도",
+    title: "채널별 운영",
+    body: "브랜드 채널마다 OAuth, 기본 언어, 운영 메모리를 분리해 여러 채널을 한 화면에서 다룹니다.",
   },
+  {
+    icon: Brain,
+    title: "성과가 다음 기획으로",
+    body: "조회수, 댓글, A/B 로그, 채널 메모리 업데이트를 다음 실행의 판단 재료로 남깁니다.",
+  },
+];
+
+const artifactColumns = [
+  ["source-ledger.json", "analysis.md", "claim-ledger.md"],
+  ["script-plan.md", "storyboard.json", "media-prompts.json"],
+  ["render-plan.json", "publish-handoff.json", "youtube-upload-job.json"],
 ];
 
 export default async function LandingPage({
@@ -54,20 +75,19 @@ export default async function LandingPage({
     redirect(`/dashboard?run=${encodeURIComponent(params.run)}`);
   }
   const user = await getCurrentUser();
+  const primaryHref = user ? "/dashboard" : "/login";
 
   return (
     <main className="marketing-page" id="main-content">
       <nav className="marketing-nav" aria-label="주요 메뉴">
         <Link className="marketing-brand" href="/">
-          <span className="marketing-brand-mark">
-            <Sparkles size={18} />
-          </span>
+          <span className="marketing-brand-mark">YIF</span>
           <span>YouTube Idea Factory</span>
         </Link>
         <div className="marketing-nav-links">
           <Link href="/dashboard">작업장</Link>
-          <Link href="/admin/channels">채널 관리</Link>
-          <Link href="/settings">API 설정</Link>
+          <Link href="/admin/channels">채널</Link>
+          <Link href="/settings">제공자</Link>
           {user ? (
             <Link className="marketing-nav-cta" href="/me">
               내 계정
@@ -80,83 +100,129 @@ export default async function LandingPage({
         </div>
       </nav>
 
-      <section className="marketing-hero">
+      <section className="marketing-hero" aria-labelledby="home-title">
         <div className="hero-copy">
-          <p className="hero-kicker">Research to render, gated by review</p>
-          <h1>브랜드 채널을 위한 영상 제작 오케스트레이션</h1>
+          <p className="hero-kicker">review-gated production system</p>
+          <h1 id="home-title">기획에서 업로드까지</h1>
           <p>
-            주제 입력부터 상위 영상 분석, 팩트체크, 대본, 스토리보드, 생성 프롬프트, 렌더와
-            유튜브 배포 준비까지 한 실행 안에서 추적합니다.
+            YouTube 콘텐츠 제작을 자동화하되, 팩트 위험과 비용이 있는 단계는 사람이 승인할 때까지
+            멈춰 세웁니다. 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포 기록이 한 패키지로 남습니다.
           </p>
           <div className="hero-actions">
-            <Link className="text-button primary" href={user ? "/dashboard" : "/login"}>
+            <Link className="text-button primary" href={primaryHref}>
               작업장 열기
               <ArrowRight size={15} />
             </Link>
-            <Link className="text-button" href="/admin/channels">
-              채널 관리
+            <Link className="home-text-link" href="/admin/channels">
+              채널 관리 보기
             </Link>
           </div>
         </div>
-        <div className="digital-art-panel" aria-label="제작 자동화 흐름 시각화">
-          <div className="orbital-board">
-            <div className="orbit-ring one" />
-            <div className="orbit-ring two" />
-            <div className="signal-column left">
-              <span />
-              <span />
-              <span />
+
+        <div className="home-gallery" aria-label="제작 실행 미리보기">
+          <article className="gallery-card gallery-card-main">
+            <div className="gallery-card-heading">
+              <span>active run</span>
+              <strong>AI 툴 뉴스 쇼츠</strong>
             </div>
-            <div className="signal-column right">
-              <span />
-              <span />
-              <span />
+            <div className="run-preview-grid">
+              <div>
+                <FileSearch size={18} />
+                <span>sources</span>
+                <strong>12</strong>
+              </div>
+              <div>
+                <ShieldCheck size={18} />
+                <span>claims</span>
+                <strong>18</strong>
+              </div>
+              <div>
+                <Clapperboard size={18} />
+                <span>scenes</span>
+                <strong>07</strong>
+              </div>
             </div>
-            <div className="core-node">
-              <Layers3 size={28} />
-              <strong>Factory Core</strong>
-              <small>review gated</small>
+            <div className="workflow-lines">
+              {pipeline.map((stage) => (
+                <span key={stage.label}>
+                  <CheckCircle2 size={14} />
+                  {stage.title}
+                </span>
+              ))}
             </div>
-            <div className="floating-node node-a">
-              <FileSearch size={16} />
-              리서치
+          </article>
+
+          <article className="gallery-card gallery-card-media">
+            <div className="media-frame" />
+            <div>
+              <span>asset queue</span>
+              <strong>이미지 8개, 영상 5개 대기</strong>
             </div>
-            <div className="floating-node node-b">
-              <Clapperboard size={16} />
-              스토리
+          </article>
+
+          <article className="gallery-card gallery-card-dark">
+            <KeyRound size={19} />
+            <span>channel OAuth</span>
+            <strong>브랜드별 refresh token 분리</strong>
+          </article>
+
+          <article className="gallery-card gallery-card-list">
+            <span>production package</span>
+            <div className="artifact-columns">
+              {artifactColumns.map((column) => (
+                <div key={column.join("-")}>
+                  {column.map((item) => (
+                    <code key={item}>{item}</code>
+                  ))}
+                </div>
+              ))}
             </div>
-            <div className="floating-node node-c">
-              <Gauge size={16} />
-              배포
-            </div>
-          </div>
+          </article>
+        </div>
+      </section>
+
+      <section className="home-proof-strip" aria-label="운영 기준">
+        <div>
+          <BadgeCheck size={17} />
+          <span>source links preserved</span>
+        </div>
+        <div>
+          <Gauge size={17} />
+          <span>cost gates before generation</span>
+        </div>
+        <div>
+          <Layers3 size={17} />
+          <span>artifacts stay inside each run</span>
         </div>
       </section>
 
       <section className="marketing-section">
         <div className="section-heading">
-          <h2>자동화보다 먼저 필요한 운영 질서</h2>
-          <p>결정론적 스크립트와 창의적 AI 스킬을 나누고, 위험 단계는 승인 게이트로 고정합니다.</p>
+          <h2>자동화가 아니라, 검수 가능한 제작 하네스</h2>
+          <p>
+            스킬은 판단을 돕고, 스크립트와 어댑터는 반복 작업을 고정합니다. 결과물은 산출물 편집기와
+            워커 큐에서 추적 가능한 형태로 남습니다.
+          </p>
         </div>
         <div className="feature-masonry">
-          {featureCards.map((card, index) => {
-            const Icon = card.icon;
+          {proofItems.map((item, index) => {
+            const Icon = item.icon;
             return (
-              <article className={`feature-tile tile-${index + 1}`} key={card.title}>
+              <article className={`feature-tile tile-${index + 1}`} key={item.title}>
                 <Icon size={22} />
-                <h3>{card.title}</h3>
-                <p>{card.body}</p>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
               </article>
             );
           })}
           <article className="feature-tile wide">
             <div>
-              <BadgeCheck size={22} />
-              <h3>검수 가능한 산출물</h3>
+              <ListChecks size={22} />
+              <h3>실행마다 남는 제작 패키지</h3>
             </div>
             <p>
-              모든 실행은 소스, 클레임, 대본 구성, 씬, 프롬프트, 배포 패키지와 QA 로그를 남깁니다.
-              채널별 성과 메모리까지 연결해 다음 실행의 판단 재료로 씁니다.
+              source ledger, claim ledger, script plan, storyboard, asset manifest, render plan,
+              publish handoff가 한 run에 묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수 있습니다.
             </p>
           </article>
         </div>
@@ -164,23 +230,35 @@ export default async function LandingPage({
 
       <section className="pipeline-strip" aria-label="콘텐츠 제작 순서">
         {pipeline.map((item, index) => (
-          <div className="pipeline-strip-item" key={item}>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{item}</strong>
-          </div>
+          <article className="pipeline-strip-item" key={item.label}>
+            <span>{String(index + 1).padStart(2, "0")} / {item.label}</span>
+            <strong>{item.title}</strong>
+            <p>{item.detail}</p>
+          </article>
         ))}
       </section>
 
       <section className="marketing-cta">
         <div>
-          <h2>먼저 채널을 등록하고, 다음 실행부터 브랜드별로 분리하세요.</h2>
-          <p>업로드 OAuth와 Analytics OAuth를 채널별로 관리하면 10개 브랜드도 같은 흐름으로 운영할 수 있습니다.</p>
+          <h2>다음 실행부터 브랜드 채널별로 분리하세요.</h2>
+          <p>
+            채널 OAuth, 제공자 설정, 승인 게이트를 먼저 정리하면 생성 비용과 업로드 리스크를 통제할 수 있습니다.
+          </p>
         </div>
         <Link className="text-button primary" href="/admin/channels">
           채널 관리 시작
           <ArrowRight size={15} />
         </Link>
       </section>
+
+      <footer className="marketing-footer">
+        <span>YouTube Idea Factory</span>
+        <div>
+          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/settings">Settings</Link>
+          <Link href="/login">Login</Link>
+        </div>
+      </footer>
     </main>
   );
 }

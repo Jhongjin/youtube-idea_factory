@@ -1,15 +1,18 @@
 import { ArrowLeft, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { ChannelManagementPanel } from "@/app/components/channel-management-panel";
+import { SupabaseSetupNotice } from "@/app/components/supabase-setup-notice";
 import { requireUser } from "@/lib/auth";
 import { listYouTubeChannels } from "@/lib/channels";
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChannelsPage() {
-  const [user, channels] = await Promise.all([
+  const [user, channels, readiness] = await Promise.all([
     requireUser({ redirectTo: "/login?next=/admin/channels", role: "admin" }),
     listYouTubeChannels(),
+    getDeploymentReadiness(),
   ]);
   const uploadReady = channels.filter((channel) => channel.has_upload_refresh_token).length;
   const analyticsReady = channels.filter((channel) => channel.has_analytics_refresh_token).length;
@@ -55,6 +58,8 @@ export default async function ChannelsPage() {
           </span>
         </div>
       </section>
+
+      <SupabaseSetupNotice readiness={readiness} scope="channels" />
 
       <ChannelManagementPanel channels={channels} />
     </main>

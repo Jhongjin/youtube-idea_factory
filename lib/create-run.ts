@@ -1,9 +1,11 @@
+import { getYouTubeChannel } from "@/lib/channels";
 import { createRunWorkspace } from "@/lib/run-store";
-import type { ProductionPackage, SourceVideo } from "@/lib/runs";
+import type { ProductionPackage, ProductionRunChannel, SourceVideo } from "@/lib/runs";
 
 export type CreateRunInput = {
   topic: string;
   category?: string;
+  channelId?: string;
   format?: string;
   language?: string;
   targetAudience?: string;
@@ -77,12 +79,18 @@ function buildSource(seedUrl: string, index: number): SourceVideo {
   };
 }
 
-function buildPackage(input: Required<CreateRunInput>, runId: string, sources: SourceVideo[]) {
+function buildPackage(
+  input: Required<CreateRunInput>,
+  runId: string,
+  sources: SourceVideo[],
+  channel?: ProductionRunChannel,
+) {
   const pkg: ProductionPackage = {
     run_id: runId,
     brief: {
       topic: input.topic,
       category: input.category,
+      ...(channel ? { channel } : {}),
       format: input.format,
       target_audience: input.targetAudience,
       target_duration_seconds: input.durationSeconds,
@@ -136,6 +144,9 @@ function jsonContent(payload: unknown) {
 
 function buildMarkdownFiles(pkg: ProductionPackage): Record<string, string> {
   const brief = pkg.brief;
+  const channelLabel = brief.channel
+    ? `${brief.channel.brand_name} / ${brief.channel.channel_name}`
+    : "";
   const sourceTable = markdownTable(
     ["Rank", "URL", "Video ID", "Working Title", "Reason", "Transcript"],
     pkg.sources.map((source, index) => [
@@ -155,6 +166,7 @@ function buildMarkdownFiles(pkg: ProductionPackage): Record<string, string> {
 
 - Topic: ${brief.topic}
 - Category: ${brief.category ?? ""}
+- Channel: ${channelLabel}
 - Format: ${brief.format}
 - Target audience: ${brief.target_audience ?? ""}
 - Target duration: ${brief.target_duration_seconds ?? ""} seconds
@@ -220,6 +232,7 @@ export async function createRun(input: CreateRunInput) {
   const normalized: Required<CreateRunInput> = {
     topic: input.topic.trim(),
     category: input.category?.trim() ?? "",
+    channelId: input.channelId?.trim() ?? "",
     format: input.format?.trim() || "shorts",
     language: input.language?.trim() || "ko",
     targetAudience: input.targetAudience?.trim() ?? "",
@@ -247,10 +260,29 @@ export async function createRun(input: CreateRunInput) {
   ].join("");
   const runId = `${timestamp}-${slugify(normalized.topic)}`;
   const sources = normalized.seedUrls.map((url, index) => buildSource(url, index + 1));
-  const pkg = buildPackage(normalized, runId, sources);
+  const selectedChannel = normalized.channelId ? await getYouTubeChannel(normalized.channelId) : null;
+  if (normalized.channelId && !selectedChannel) {
+    throw new Error("선택한 브랜드 채널을 찾을 수 없습니다.");
+  }
+  if (selectedChannel?.status === "paused") {
+    throw new Error("일시중지된 브랜드 채널로는 새 실행을 만들 수 없습니다.");
+  }
+  const channel = selectedChannel
+    ? {
+        brand_name: selectedChannel.brand_name,
+        channel_id: selectedChannel.channel_id ?? null,
+        channel_name: selectedChannel.channel_name,
+        default_language: selectedChannel.default_language,
+        id: selectedChannel.id,
+        status: selectedChannel.status,
+        youtube_handle: selectedChannel.youtube_handle,
+      }
+    : undefined;
+  const pkg = buildPackage(normalized, runId, sources, channel);
   const manifest = {
     run_id: runId,
     created_at: now.toISOString(),
+    channel: channel ?? null,
     source_mode: "manual_seed",
     status: "needs_review",
     paths: {

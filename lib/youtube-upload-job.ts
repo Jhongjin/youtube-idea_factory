@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { getYouTubeChannel } from "@/lib/channels";
 import { createPublishingHandoff, type PublishingHandoff } from "@/lib/publishing-handoff";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
@@ -22,6 +23,14 @@ export type YouTubeUploadJob = {
     type: "youtube-upload";
     mode: "external-worker";
     requires: string[];
+  };
+  channel?: {
+    brand_name: string;
+    channel_name: string;
+    id: string;
+    upload_token_source: "youtube_channels";
+    youtube_channel_id?: string | null;
+    youtube_handle?: string | null;
   };
   video: {
     path: string;
@@ -98,6 +107,17 @@ export async function createYouTubeUploadJob(
   const now = new Date().toISOString();
   const scheduledAt = normalizeScheduledAt(request.scheduledAt);
   const effectivePrivacyStatus = scheduledAt ? "private" : privacyStatus(request.privacyStatus);
+  const packageChannel = pkg.brief.channel;
+  const uploadChannel = packageChannel?.id ? await getYouTubeChannel(packageChannel.id) : null;
+  if (packageChannel?.id && !uploadChannel) {
+    throw new Error("선택된 브랜드 채널을 찾을 수 없습니다. /admin/channels에서 채널 상태를 확인하세요.");
+  }
+  if (uploadChannel?.status === "paused") {
+    throw new Error("선택된 브랜드 채널이 일시중지 상태입니다.");
+  }
+  if (uploadChannel && !uploadChannel.has_upload_refresh_token) {
+    throw new Error("선택된 브랜드 채널에 업로드 OAuth refresh token이 없습니다.");
+  }
   const job: YouTubeUploadJob = {
     version: 1,
     job_id: randomUUID(),
@@ -109,12 +129,26 @@ export async function createYouTubeUploadJob(
       type: "youtube-upload",
       mode: "external-worker",
       requires: [
-        "YouTube OAuth credentials with upload scope",
+        uploadChannel
+          ? "Selected youtube_channels row must keep an upload refresh token with upload scope"
+          : "YouTube OAuth credentials with upload scope",
         "Readable final video and thumbnail paths",
         "Human approval gate already recorded in publish-handoff.json",
         "Worker must update youtube-upload-job.json and production-package.json after upload",
       ],
     },
+    ...(uploadChannel
+      ? {
+          channel: {
+            brand_name: uploadChannel.brand_name,
+            channel_name: uploadChannel.channel_name,
+            id: uploadChannel.id,
+            upload_token_source: "youtube_channels" as const,
+            youtube_channel_id: uploadChannel.channel_id,
+            youtube_handle: uploadChannel.youtube_handle,
+          },
+        }
+      : {}),
     video: {
       path: handoff.video.path,
     },
@@ -134,6 +168,7 @@ export async function createYouTubeUploadJob(
   };
 
   pkg.publishing_handoff = {
+    ...pkg.publishing_handoff,
     path: "publish-handoff.json",
     ready: true,
     blockers: 0,
@@ -153,6 +188,10 @@ export async function createYouTubeUploadJob(
       kind: "youtube-upload",
       logArtifactKey: "youtube-upload-log.json",
       payload: {
+        channel_id: job.channel?.id ?? "",
+        channel_name: job.channel?.channel_name ?? "",
+        channel_record_id: job.channel?.id ?? "",
+        youtube_channel_id: job.channel?.youtube_channel_id ?? "",
         made_for_kids: job.metadata.made_for_kids,
         privacy_status: job.metadata.privacy_status,
         scheduled_at: job.metadata.scheduled_at,
