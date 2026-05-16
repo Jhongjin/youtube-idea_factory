@@ -4919,6 +4919,26 @@ button:disabled,
   font-size: 11px;
 }
 
+.channel-oauth-guide-link {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 12px 12px;
+  border: 1px solid #d8e4dc;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2f6f4e;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.channel-oauth-guide-link:hover {
+  border-color: #b9d8c3;
+  background: #f4fbf6;
+}
+
 .channel-hero-card {
   overflow: hidden;
 }
