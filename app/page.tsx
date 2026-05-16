@@ -102,11 +102,11 @@ export default async function LandingPage({
 
       <section className="marketing-hero" aria-labelledby="home-title">
         <div className="hero-copy">
-          <p className="hero-kicker">review-gated production system</p>
-          <h1 id="home-title">기획에서 업로드까지</h1>
+          <p className="hero-kicker">review-gated production cockpit</p>
+          <h1 id="home-title">YouTube Idea Factory</h1>
           <p>
-            YouTube 콘텐츠 제작을 자동화하되, 팩트 위험과 비용이 있는 단계는 사람이 승인할 때까지
-            멈춰 세웁니다. 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포 기록이 한 패키지로 남습니다.
+            여러 브랜드 채널의 리서치, 분석, 대본, 스토리보드, 생성, 렌더, 배포를 한 run으로 묶습니다.
+            비용과 업로드 위험이 있는 단계는 승인 게이트가 열릴 때까지 멈춥니다.
           </p>
           <div className="hero-actions">
             <Link className="text-button primary" href={primaryHref}>
@@ -122,8 +122,8 @@ export default async function LandingPage({
         <div className="home-gallery" aria-label="제작 실행 미리보기">
           <article className="gallery-card gallery-card-main">
             <div className="gallery-card-heading">
-              <span>active run</span>
-              <strong>AI 툴 뉴스 쇼츠</strong>
+              <span>active production run</span>
+              <strong>K-경제 뉴스 자동화</strong>
             </div>
             <div className="run-preview-grid">
               <div>
@@ -156,13 +156,13 @@ export default async function LandingPage({
             <div className="media-frame" />
             <div>
               <span>asset queue</span>
-              <strong>이미지 8개, 영상 5개 대기</strong>
+              <strong>이미지 8개, 영상 5개 검토 대기</strong>
             </div>
           </article>
 
           <article className="gallery-card gallery-card-dark">
             <KeyRound size={19} />
-            <span>channel OAuth</span>
+            <span>channel oauth</span>
             <strong>브랜드별 refresh token 분리</strong>
           </article>
 
@@ -198,7 +198,7 @@ export default async function LandingPage({
 
       <section className="marketing-section">
         <div className="section-heading">
-          <h2>자동화가 아니라, 검수 가능한 제작 하네스</h2>
+          <h2>자동화보다 중요한 것은 멈출 수 있는 구조입니다.</h2>
           <p>
             스킬은 판단을 돕고, 스크립트와 어댑터는 반복 작업을 고정합니다. 결과물은 산출물 편집기와
             워커 큐에서 추적 가능한 형태로 남습니다.
