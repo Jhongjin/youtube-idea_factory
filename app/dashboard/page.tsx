@@ -164,6 +164,50 @@ const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, 
   review: ["publishing", "qa"],
 };
 
+const advancedActionGroupsByStep: Record<
+  GuidedStepKey,
+  { actionIds: RunPrimaryActionId[]; label: string }[]
+> = {
+  setup: [
+    { actionIds: ["open-settings"], label: "준비" },
+    { actionIds: ["source-enrich"], label: "리서치" },
+  ],
+  research: [
+    { actionIds: ["source-enrich", "analysis-draft"], label: "리서치" },
+    { actionIds: ["draft-flow"], label: "초안" },
+  ],
+  draft: [
+    {
+      actionIds: ["draft-flow", "analysis-draft", "analysis-refine", "script-draft", "script-refine"],
+      label: "대본",
+    },
+    { actionIds: ["storyboard-draft", "qa-draft"], label: "스토리보드" },
+  ],
+  production: [
+    { actionIds: ["media-draft", "asset-manifest", "generation-queue"], label: "미디어" },
+    { actionIds: ["subtitle-draft", "render-manifest"], label: "조립 준비" },
+  ],
+  review: [
+    {
+      actionIds: ["qa-draft", "render-manifest", "render-job", "local-render"],
+      label: "검수/렌더",
+    },
+    {
+      actionIds: [
+        "publishing-draft",
+        "publishing-handoff",
+        "youtube-upload-job",
+        "performance-snapshot",
+        "feedback-flow",
+        "feedback-insights",
+        "learning-log",
+        "channel-memory",
+      ],
+      label: "배포/피드백",
+    },
+  ],
+};
+
 const pipelineStageTargets = [
   { href: "#next-action", label: "현재 작업" },
   { href: "#youtube-finder", label: "후보 검색" },
@@ -1162,54 +1206,22 @@ function WorkflowActionButton({
   }
 }
 
-function AdvancedActionMenu({ run }: { run: RunSummary }) {
+function AdvancedActionMenu({ activeStep, run }: { activeStep: GuidedStepKey; run: RunSummary }) {
+  const groups = advancedActionGroupsByStep[activeStep];
   return (
     <details className="advanced-action-menu">
       <summary aria-label="고급 도구" className="icon-button advanced-action-trigger" title="고급 도구">
         <MoreHorizontal size={16} />
       </summary>
-      <div className="advanced-action-grid">
-        <div>
-          <strong>초안</strong>
-          <RunDraftFlowButton runId={run.id} />
-          <AnalysisDraftButton runId={run.id} />
-          <ScriptDraftButton runId={run.id} />
-          <StoryboardDraftButton runId={run.id} />
-          <MediaPromptDraftButton runId={run.id} />
-          <PublishingDraftButton runId={run.id} />
-          <QaDraftButton runId={run.id} />
-        </div>
-        <div>
-          <strong>고도화</strong>
-          <AnalysisRefineButton runId={run.id} />
-          <ScriptRefineButton runId={run.id} />
-          <EnrichSourcesButton runId={run.id} />
-          <AssetManifestButton runId={run.id} />
-          <GenerationQueueButton runId={run.id} />
-          <SubtitleDraftButton runId={run.id} />
-        </div>
-        <div>
-          <strong>렌더/배포</strong>
-          <RenderManifestButton runId={run.id} />
-          <RenderWorkerJobButton runId={run.id} />
-          <LocalRenderButton runId={run.id} />
-          <PublishingHandoffButton runId={run.id} />
-          <YouTubeUploadJobButton runId={run.id} />
-        </div>
-        <div>
-          <strong>피드백</strong>
-          <PerformanceSnapshotButton
-            runId={run.id}
-            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
-          />
-          <FeedbackLoopFlowButton
-            runId={run.id}
-            videoId={run.package.publishing_handoff?.uploaded_video_id ?? run.package.feedback_loop?.video_id}
-          />
-          <FeedbackInsightsButton runId={run.id} />
-          <AbLearningLogButton runId={run.id} />
-          <ChannelMemoryButton runId={run.id} />
-        </div>
+      <div className="advanced-action-grid contextual">
+        {groups.map((group) => (
+          <div key={group.label}>
+            <strong>{group.label}</strong>
+            {group.actionIds.map((actionId) => (
+              <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+            ))}
+          </div>
+        ))}
       </div>
     </details>
   );
@@ -1931,7 +1943,7 @@ export default async function Home({
               <Link className="icon-button" href="/settings" title="제공자 설정">
                 <Settings size={16} />
               </Link>
-              <AdvancedActionMenu run={activeRun} />
+              <AdvancedActionMenu activeStep={activeStep} run={activeRun} />
             </div>
           </div>
 

@@ -55,6 +55,7 @@ This queue keeps the build loop explicit:
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |
 | new-run-form-simplification | Phase 7 | done | codex | no | New production creation now shows only channel, topic, source URL, and format presets first; detailed knobs are collapsed. |
 | remove-sidebar-section-map | Phase 7 | done | codex | no | Removed the non-clickable sidebar section map so channel/run selection and the central guided steps remain the primary navigation. |
+| contextual-advanced-tools | Phase 7 | done | codex | no | Advanced tools now show only actions relevant to the active guided step instead of the full production action grid. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
