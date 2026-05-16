@@ -848,21 +848,44 @@ function Sidebar({
         </div>
       </section>
 
-      <ChannelMemoryIndexPanel index={memoryIndex} />
+      <details className="sidebar-disclosure">
+        <summary>
+          <span>채널 메모리</span>
+          <strong>
+            {memoryIndex.ready_update_count}/{memoryIndex.run_count} 준비
+          </strong>
+        </summary>
+        <div className="sidebar-disclosure-body">
+          <ChannelMemoryIndexPanel index={memoryIndex} />
+        </div>
+      </details>
 
-      <WorkQueuePanel summary={workQueueSummary} />
+      <details className="sidebar-disclosure">
+        <summary>
+          <span>작업 큐</span>
+          <strong>{workQueueSummary.deferred} 보류</strong>
+        </summary>
+        <div className="sidebar-disclosure-body">
+          <WorkQueuePanel summary={workQueueSummary} />
+        </div>
+      </details>
 
-      <section className="nav-section">
-        <h2>자동화 도구</h2>
-        <ul className="nav-list">
-          {skillItems.map((skill) => (
-            <li key={skill} className="nav-item">
-              <Sparkles size={15} />
-              {skillLabels[skill] ?? skill}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <details className="sidebar-disclosure">
+        <summary>
+          <span>자동화 도구</span>
+          <strong>{skillItems.length}개</strong>
+        </summary>
+        <div className="sidebar-disclosure-body">
+          <ul className="nav-list sidebar-automation-list">
+            {skillItems.map((skill) => (
+              <li key={skill} className="nav-item">
+                <Sparkles size={15} />
+                {skillLabels[skill] ?? skill}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>
     </aside>
   );
 }
