@@ -60,6 +60,7 @@ This queue keeps the build loop explicit:
 | youtube-oauth-setup-guide | Phase 7 | done | codex | no | Added a Google/YouTube OAuth setup guide and linked it from the channel registration guide. |
 | channel-token-placeholder-clarity | Phase 7 | done | codex | no | Channel token fields now ask for actual refresh token values instead of placeholder text that looked like OAuth scope strings. |
 | admin-channel-page-polish | Phase 7 | done | codex | no | Channel admin now leads with operational channel cards, shows a contained ready/warning banner, and folds per-channel edit controls. |
+| settings-provider-progressive-disclosure | Phase 7 | done | codex | no | Provider settings now show role readiness summary first and fold API/model fields behind per-role disclosures. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
