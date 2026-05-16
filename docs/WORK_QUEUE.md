@@ -30,6 +30,7 @@ This queue keeps the build loop explicit:
 | health-security-copy | Phase 7 | done | codex | no | Deployment health now reports session-protected mutation gates instead of legacy token-only wording. |
 | new-run-channel-clarity | Phase 7 | done | codex | no | The new-run form now confirms the selected brand channel and upload token state before creation. |
 | upload-worker-channel-token-readiness | Phase 7 | done | codex | no | Deployment health now treats channel-specific upload refresh tokens as valid YouTube upload worker readiness. |
+| upload-active-channel-gate | Phase 7 | done | codex | no | YouTube upload job creation and workers now require the selected brand channel to be active. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
