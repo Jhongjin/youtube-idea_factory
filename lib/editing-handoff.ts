@@ -16,6 +16,12 @@ export type EditingHandoff = {
     capability: ReturnType<typeof getProviderCapability>;
     notes: string;
   };
+  workflow: {
+    recommended_action: string;
+    import_format: string;
+    export_expectation: string;
+    tool_notes: string[];
+  };
   output: RenderManifest["output"];
   timeline: Array<{
     scene_id: string;
@@ -48,6 +54,63 @@ function assertSafeRunId(runId: string) {
   }
 }
 
+function workflowForProvider(provider: string): EditingHandoff["workflow"] {
+  const normalized = provider.toLowerCase();
+  if (normalized.includes("opencut")) {
+    return {
+      recommended_action: "Create an OpenCut project and import the timeline assets manually.",
+      import_format: "Use timeline[].source_path for media, audio.voice_path for narration, and subtitles.path for captions.",
+      export_expectation: "Export MP4 to output.final_path, then register the exported file in the dashboard.",
+      tool_notes: [
+        "OpenCut is best treated as a visual timeline editor in this harness.",
+        "Keep publish approval separate from the editing export.",
+      ],
+    };
+  }
+  if (normalized.includes("hyperframes")) {
+    return {
+      recommended_action: "Generate an HTML/CSS/JS render from the timeline data.",
+      import_format: "Map each timeline item to a scene block with source_path, narration, on_screen_text, and duration_seconds.",
+      export_expectation: "Render MP4 to output.final_path and register the exported artifact.",
+      tool_notes: [
+        "HyperFrames is a good fit for agent-authored motion layouts.",
+        "Use the provider model/workflow field for a house template or render preset id.",
+      ],
+    };
+  }
+  if (normalized.includes("remotion")) {
+    return {
+      recommended_action: "Convert the handoff timeline into a Remotion composition payload.",
+      import_format: "Use timeline durations, output resolution, audio paths, and subtitle path as composition props.",
+      export_expectation: "Render MP4 to output.final_path and write render-log.json after completion.",
+      tool_notes: [
+        "Remotion is the preferred path for repeatable React-based motion templates.",
+        "Keep generated composition code in the repo or a dedicated render worker workspace.",
+      ],
+    };
+  }
+  if (normalized.includes("creatomate") || normalized.includes("shotstack") || normalized.includes("veed")) {
+    return {
+      recommended_action: "Translate this handoff into the provider timeline/template API.",
+      import_format: "Map scenes to clips, narration to audio, captions to subtitle layers, and output.final_path to the export target.",
+      export_expectation: "Poll the provider render job, then register the delivered MP4.",
+      tool_notes: [
+        "This path should stay behind the render approval gate because it can create external spend.",
+        "Store provider job id and cost in render-log.json when the adapter is implemented.",
+      ],
+    };
+  }
+  return {
+    recommended_action: "Use this packet as the external editing timeline source.",
+    import_format: "Timeline, audio, subtitles, and output paths are normalized for handoff.",
+    export_expectation: "Export MP4 to output.final_path and register it before YouTube upload.",
+    tool_notes: [
+      "Do not upload or publish until render and publish approval gates are complete.",
+      "Use manual file registration when the editing provider does not have a direct adapter.",
+    ],
+  };
+}
+
 export async function createEditingHandoff(runId: string): Promise<EditingHandoffResult> {
   assertSafeRunId(runId);
   await createRenderManifest(runId);
@@ -71,6 +134,7 @@ export async function createEditingHandoff(runId: string): Promise<EditingHandof
       capability,
       notes: editingProvider.notes,
     },
+    workflow: workflowForProvider(editingProvider.provider),
     output: manifest.output,
     timeline: manifest.timeline.map((item) => ({
       scene_id: item.scene_id,
@@ -89,7 +153,6 @@ export async function createEditingHandoff(runId: string): Promise<EditingHandof
       path: manifest.subtitles.path,
     },
     operator_notes: [
-      "Use this packet as the external editing timeline source.",
       "Do not upload or publish until render and publish approval gates are complete.",
       "Register the exported MP4 back to the run before YouTube upload.",
     ],
