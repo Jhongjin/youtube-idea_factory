@@ -233,6 +233,28 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         </div>
         {error ? <p className="settings-message error">{error}</p> : null}
         {message ? <p className="settings-message saved">{message}</p> : null}
+        <details className="channel-oauth-guide">
+          <summary>
+            <span>OAuth 값 준비 순서</span>
+            <strong>3단계</strong>
+          </summary>
+          <div className="channel-oauth-guide-grid">
+            <div>
+              <strong>1. Google Cloud OAuth client</strong>
+              <span>YouTube Data API v3와 YouTube Analytics API를 켠 뒤 Web 또는 Desktop OAuth client를 준비합니다.</span>
+            </div>
+            <div>
+              <strong>2. 채널별 refresh token</strong>
+              <span>
+                업로드는 <code>youtube.upload</code>, 분석은 <code>yt-analytics.readonly</code> 권한으로 발급합니다.
+              </span>
+            </div>
+            <div>
+              <strong>3. 저장 후 운영 중 전환</strong>
+              <span>처음 저장은 설정 중으로 두고, 실제 토큰이 확인된 채널만 운영 중으로 바꿉니다.</span>
+            </div>
+          </div>
+        </details>
         <form className="channel-form-grid" onSubmit={createChannel}>
           <label>
             <span>브랜드명</span>
