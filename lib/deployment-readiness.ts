@@ -9,7 +9,11 @@ import {
   getProviderSettings,
   resolvePreferredProviderSetting,
 } from "@/lib/provider-settings";
-import { providerRoles, type ProviderRoleId } from "@/lib/provider-settings-shared";
+import {
+  providerRoles,
+  type ProviderRoleId,
+  type StoredProviderSettings,
+} from "@/lib/provider-settings-shared";
 import { isSupabaseMissingTableError, supabaseRest } from "@/lib/supabase-rest";
 
 export type ProviderRoleReadiness = {
@@ -51,6 +55,15 @@ export type DeploymentReadiness = {
   };
   providers: {
     roles: Record<ProviderRoleId, ProviderRoleReadiness>;
+    summary: {
+      directEnabledCount: number;
+      enabledProfileCount: number;
+      enabledRoleCount: number;
+      manualEnabledCount: number;
+      profileCount: number;
+      roleCount: number;
+      savedKeyCount: number;
+    };
     youtubeApiKey: boolean;
     youtubeProviderSettings: boolean;
   };
@@ -143,6 +156,36 @@ function roleReadiness(
     return { ...base, ready: false, status: "missing-model", message: "모델/프리셋 필요" };
   }
   return { ...base, ready: true, status: "ready", message: "직접 실행 가능" };
+}
+
+function providerInventorySummary(providerSettings: StoredProviderSettings | null) {
+  if (!providerSettings) {
+    return {
+      directEnabledCount: 0,
+      enabledProfileCount: 0,
+      enabledRoleCount: 0,
+      manualEnabledCount: 0,
+      profileCount: 0,
+      roleCount: providerRoles.length,
+      savedKeyCount: 0,
+    };
+  }
+
+  const roleSettings = providerRoles.map((role) => providerSettings.roles[role.id]);
+  const enabledRoleCount = roleSettings.filter((setting) => setting.enabled).length;
+  const enabledProfiles = providerSettings.profiles.filter((profile) => profile.enabled);
+  const enabledSettings = [...roleSettings.filter((setting) => setting.enabled), ...enabledProfiles];
+  return {
+    directEnabledCount: enabledSettings.filter((setting) => hasDirectAdapter(setting.role, setting.provider)).length,
+    enabledProfileCount: enabledProfiles.length,
+    enabledRoleCount,
+    manualEnabledCount: enabledSettings.filter((setting) => hasManualWorkflow(setting.provider)).length,
+    profileCount: providerSettings.profiles.length,
+    roleCount: providerRoles.length,
+    savedKeyCount:
+      roleSettings.filter((setting) => setting.apiKey?.trim()).length +
+      providerSettings.profiles.filter((profile) => profile.apiKey?.trim()).length,
+  };
 }
 
 async function hasSupabaseTable(table: string) {
@@ -327,6 +370,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     supabase,
     providers: {
       roles: providerRoleReadiness,
+      summary: providerInventorySummary(providerSettings),
       youtubeApiKey,
       youtubeProviderSettings,
     },
