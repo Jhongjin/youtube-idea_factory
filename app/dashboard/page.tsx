@@ -177,6 +177,12 @@ type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
 
 const guidedStepKeys = new Set<string>(guidedStepDefinitions.map((step) => step.key));
 
+const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, string[]> = {
+  draft: ["video-analysis", "claim-ledger", "script-plan", "storyboard"],
+  production: ["storyboard", "media-prompts"],
+  review: ["publishing", "qa"],
+};
+
 const pipelineStageTargets = [
   { href: "#next-action", label: "현재 작업" },
   { href: "#youtube-finder", label: "후보 검색" },
@@ -622,7 +628,13 @@ function GuidedRunWorkspace({
 
       {activeStep === "draft" ? (
         <>
-          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+          <ArtifactWorkspace
+            artifacts={artifacts}
+            description="분석, 클레임, 대본, 스토리보드만 먼저 보여줍니다. 전체 산출물은 필요할 때 펼치면 됩니다."
+            focusArtifactIds={guidedArtifactFocus.draft}
+            runId={run.id}
+            title="대본과 스토리보드"
+          />
           <details className="guided-secondary-panel">
             <summary>소스와 제작 단계 같이 보기</summary>
             <div className="workspace-grid">
@@ -635,7 +647,13 @@ function GuidedRunWorkspace({
 
       {activeStep === "production" ? (
         <>
-          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+          <ArtifactWorkspace
+            artifacts={artifacts}
+            description="스토리보드와 미디어 프롬프트를 중심으로 생성 준비를 정리합니다."
+            focusArtifactIds={guidedArtifactFocus.production}
+            runId={run.id}
+            title="제작 산출물"
+          />
           <details className="guided-secondary-panel">
             <summary>제작 준비 상태 보기</summary>
             <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
@@ -645,11 +663,20 @@ function GuidedRunWorkspace({
 
       {activeStep === "review" ? (
         <>
-          <div className="workspace-grid">
-            <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
-            <SourcesPanel run={run} />
-          </div>
-          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+          <ArtifactWorkspace
+            artifacts={artifacts}
+            description="검수와 배포 패키지를 먼저 확인합니다. 근거와 제작 단계 세부는 아래에서 펼칠 수 있습니다."
+            focusArtifactIds={guidedArtifactFocus.review}
+            runId={run.id}
+            title="검수와 배포"
+          />
+          <details className="guided-secondary-panel">
+            <summary>검토 맥락 보기</summary>
+            <div className="workspace-grid">
+              <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
+              <SourcesPanel run={run} />
+            </div>
+          </details>
         </>
       ) : null}
     </div>
