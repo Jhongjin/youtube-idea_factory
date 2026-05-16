@@ -201,25 +201,25 @@ a {
 
 .operating-channel-bar {
   display: grid;
-  grid-template-columns: minmax(180px, 0.6fr) minmax(320px, 1.6fr) minmax(180px, 0.45fr);
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
   border: 1px solid #d7ddd8;
-  border-radius: 14px;
-  margin-bottom: 18px;
+  border-radius: 12px;
+  margin-bottom: 14px;
   background: #fbfbf8;
-  padding: 14px;
-  box-shadow: 0 18px 42px rgba(38, 52, 71, 0.06);
+  padding: 12px;
+  box-shadow: 0 14px 34px rgba(38, 52, 71, 0.05);
 }
 
-.operating-channel-copy {
+.operating-channel-primary {
   display: grid;
-  align-content: center;
+  min-width: 0;
   gap: 4px;
 }
 
-.operating-channel-copy h2,
-.operating-channel-copy span,
+.operating-channel-primary h2,
+.operating-channel-primary span,
 .guided-step-intro h3,
 .guided-step-intro p,
 .guided-action-main h3,
@@ -227,16 +227,60 @@ a {
   margin: 0;
 }
 
-.operating-channel-copy h2 {
-  font-size: 24px;
+.operating-channel-primary h2 {
+  font-size: 22px;
   line-height: 1.12;
 }
 
-.operating-channel-copy span {
+.operating-channel-primary span {
   color: #4f5d6d;
   font-size: 13px;
   font-weight: 750;
   line-height: 1.45;
+}
+
+.operating-channel-switcher {
+  grid-column: 1 / -1;
+  border: 1px solid #dfe6ee;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: clip;
+}
+
+.operating-channel-switcher summary {
+  position: relative;
+  display: flex;
+  min-height: 40px;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+}
+
+.operating-channel-switcher summary::-webkit-details-marker {
+  display: none;
+}
+
+.operating-channel-switcher summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.operating-channel-switcher summary strong {
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.operating-channel-switcher[open] summary {
+  border-bottom: 1px solid #dfe6ee;
+  background: #f8fafc;
 }
 
 .operating-channel-selector {
@@ -245,18 +289,18 @@ a {
   grid-auto-columns: minmax(180px, 1fr);
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding: 10px;
 }
 
 .operating-channel-option {
   display: grid;
   align-content: center;
   gap: 5px;
-  min-height: 72px;
+  min-height: 58px;
   border: 1px solid #d9e0e8;
   border-radius: 10px;
   background: #ffffff;
-  padding: 12px;
+  padding: 10px 12px;
   transition:
     background 180ms ease,
     border-color 180ms ease,
@@ -286,10 +330,11 @@ a {
 }
 
 .operating-channel-meta {
-  display: grid;
-  align-content: center;
-  justify-items: end;
-  gap: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 280px;
 }
 
 .operating-channel-meta span {
@@ -312,23 +357,24 @@ a {
 }
 
 .operating-channel-meta strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
   color: #172019;
   font-size: 13px;
 }
 
-.operating-flow-lane {
+.operating-focus-rail {
   display: grid;
   grid-column: 1 / -1;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  border-top: 1px solid #dfe5df;
-  padding-top: 12px;
 }
 
-.operating-flow-step {
+.operating-focus-step {
   display: grid;
   gap: 5px;
-  min-height: 78px;
+  min-height: 62px;
   border: 1px solid #d9e0e8;
   border-radius: 10px;
   background: #ffffff;
@@ -340,13 +386,13 @@ a {
     transform 180ms ease;
 }
 
-.operating-flow-step:hover {
+.operating-focus-step:hover {
   border-color: #9fb7a8;
   background: #f6faf7;
   transform: translateY(-1px);
 }
 
-.operating-flow-step span {
+.operating-focus-step span {
   color: #2f6f4e;
   font-family:
     "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
@@ -354,13 +400,13 @@ a {
   font-weight: 900;
 }
 
-.operating-flow-step strong {
+.operating-focus-step strong {
   color: #172019;
   font-size: 13px;
   line-height: 1.25;
 }
 
-.operating-flow-step small {
+.operating-focus-step small {
   overflow: hidden;
   color: #667386;
   font-size: 11px;
@@ -369,17 +415,17 @@ a {
   text-overflow: ellipsis;
 }
 
-.operating-flow-step.current {
+.operating-focus-step.current {
   border-color: #2f6f4e;
   background: #eef8f1;
 }
 
-.operating-flow-step.done {
+.operating-focus-step.done {
   border-color: #cfe3d4;
   background: #f8fbf8;
 }
 
-.operating-flow-step.pending {
+.operating-focus-step.pending {
   background: #f8fafc;
 }
 
@@ -3741,7 +3787,7 @@ button:disabled,
   .summary-grid,
   .workspace-grid,
   .operating-channel-bar,
-  .operating-flow-lane,
+  .operating-focus-rail,
   .operating-channel-nudge,
   .dashboard-notice,
   .guided-step-intro,
@@ -3836,7 +3882,8 @@ button:disabled,
   }
 
   .operating-channel-meta {
-    justify-items: start;
+    justify-content: flex-start;
+    max-width: none;
   }
 
   .guided-step-nav {

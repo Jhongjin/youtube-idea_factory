@@ -557,6 +557,9 @@ function OperatingChannelBar({
       ? "업로드 OAuth 준비"
       : "업로드 OAuth 필요"
     : "채널 선택 권장";
+  const selectedChannelLabel = selectedChannel
+    ? `${selectedChannel.channel_name}${selectedChannel.youtube_handle ? ` / ${selectedChannel.youtube_handle}` : ""}`
+    : "전체 채널의 실행 기록을 보고 있습니다.";
   const channelUploadNudge = selectedChannel
     ? selectedChannel.status !== "active"
       ? {
@@ -576,44 +579,10 @@ function OperatingChannelBar({
     : null;
   return (
     <section className="operating-channel-bar" aria-label="운영 채널 선택">
-      <div className="operating-channel-copy">
-        <p className="eyebrow">먼저 선택</p>
-        <h2>운영 채널</h2>
-        <span>
-          {selectedChannel
-            ? `${selectedChannel.brand_name} / ${selectedChannel.channel_name}`
-            : "전체 실행을 보고 있습니다"}
-        </span>
-      </div>
-      <div className="operating-channel-selector" role="list" aria-label="운영 채널">
-        <Link
-          aria-current={selectedChannel ? undefined : "page"}
-          className={`operating-channel-option ${selectedChannel ? "" : "active"}`}
-          href={dashboardHref({ allChannels: true, step: activeStep })}
-          role="listitem"
-        >
-          <strong>전체 실행</strong>
-          <span>{allRuns.length}개</span>
-        </Link>
-        {channels.map((channel) => {
-          const runCount = allRuns.filter((run) => runChannelId(run) === channel.id).length;
-          const active = channel.id === selectedChannel?.id;
-          return (
-            <Link
-              aria-current={active ? "page" : undefined}
-              className={`operating-channel-option ${active ? "active" : ""}`}
-              href={dashboardHref({ channelId: channel.id, step: activeStep })}
-              key={channel.id}
-              role="listitem"
-            >
-              <strong>{channel.brand_name}</strong>
-              <span>
-                {channel.channel_name}
-                {channel.youtube_handle ? ` / ${channel.youtube_handle}` : ""} / {runCount}개
-              </span>
-            </Link>
-          );
-        })}
+      <div className="operating-channel-primary">
+        <p className="eyebrow">작업 기준</p>
+        <h2>{selectedChannel ? selectedChannel.brand_name : "전체 실행"}</h2>
+        <span>{selectedChannelLabel}</span>
       </div>
       <div className="operating-channel-meta">
         <span>{channelStatus}</span>
@@ -626,9 +595,45 @@ function OperatingChannelBar({
           채널 관리
         </Link>
       </div>
-      <div className="operating-flow-lane" aria-label="대시보드 진행 순서">
+      <details className="operating-channel-switcher" open={!selectedChannel}>
+        <summary>
+          <span>{selectedChannel ? "채널 변경" : "채널 선택"}</span>
+          <strong>{channels.length}개 채널</strong>
+        </summary>
+        <div className="operating-channel-selector" role="list" aria-label="운영 채널">
+          <Link
+            aria-current={selectedChannel ? undefined : "page"}
+            className={`operating-channel-option ${selectedChannel ? "" : "active"}`}
+            href={dashboardHref({ allChannels: true, step: activeStep })}
+            role="listitem"
+          >
+            <strong>전체 실행</strong>
+            <span>{allRuns.length}개</span>
+          </Link>
+          {channels.map((channel) => {
+            const runCount = allRuns.filter((run) => runChannelId(run) === channel.id).length;
+            const active = channel.id === selectedChannel?.id;
+            return (
+              <Link
+                aria-current={active ? "page" : undefined}
+                className={`operating-channel-option ${active ? "active" : ""}`}
+                href={dashboardHref({ channelId: channel.id, step: activeStep })}
+                key={channel.id}
+                role="listitem"
+              >
+                <strong>{channel.brand_name}</strong>
+                <span>
+                  {channel.channel_name}
+                  {channel.youtube_handle ? ` / ${channel.youtube_handle}` : ""} / {runCount}개
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </details>
+      <div className="operating-focus-rail" aria-label="대시보드 진행 순서">
         <Link
-          className={`operating-flow-step ${selectedChannel ? "done" : "current"}`}
+          className={`operating-focus-step ${selectedChannel ? "done" : "current"}`}
           href={
             selectedChannel
               ? dashboardHref({ channelId: selectedChannel.id, step: activeStep })
@@ -644,7 +649,7 @@ function OperatingChannelBar({
           </small>
         </Link>
         <a
-          className={`operating-flow-step ${activeRun ? "done" : "current"}`}
+          className={`operating-focus-step ${activeRun ? "done" : "current"}`}
           href={activeRun ? "#next-action" : "#new-run-panel"}
         >
           <span>02</span>
@@ -655,7 +660,7 @@ function OperatingChannelBar({
               : "주제와 형식을 넣어 첫 패키지를 만듭니다."}
           </small>
         </a>
-        <a className={`operating-flow-step ${activeRun ? "current" : "pending"}`} href="#next-action">
+        <a className={`operating-focus-step ${activeRun ? "current" : "pending"}`} href="#next-action">
           <span>03</span>
           <strong>{nextActionPlan?.headline ?? "다음 작업 실행"}</strong>
           <small>{nextActionPlan?.detail ?? "실행이 만들어지면 가장 먼저 누를 버튼을 보여줍니다."}</small>
