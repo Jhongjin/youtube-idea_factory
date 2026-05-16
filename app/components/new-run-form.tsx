@@ -30,6 +30,7 @@ export function NewRunForm({
   const [language, setLanguage] = useState(initialChannel?.default_language || "ko");
   const [durationSeconds, setDurationSeconds] = useState(60);
   const [selectedChannelId, setSelectedChannelId] = useState(initialChannel?.id ?? "");
+  const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
 
   function selectChannel(channelId: string) {
     setSelectedChannelId(channelId);
@@ -131,6 +132,55 @@ export function NewRunForm({
         ) : (
           <p className="muted">등록된 운영 채널이 없으면 채널 미지정 실행으로 시작합니다.</p>
         )}
+        <div className={`new-run-channel-summary ${selectedChannel ? "" : "empty"}`}>
+          <div>
+            <span>선택된 채널</span>
+            <strong>
+              {selectedChannel
+                ? `${selectedChannel.brand_name} / ${selectedChannel.channel_name}`
+                : "채널 미지정"}
+            </strong>
+            <small>
+              {selectedChannel
+                ? `${selectedChannel.youtube_handle ?? "핸들 미입력"} / ${selectedChannel.default_language ?? "ko"}`
+                : "전체 실행으로 시작하며 이후 채널 기준으로 다시 분류할 수 있습니다."}
+            </small>
+          </div>
+          <div className="new-run-channel-badges">
+            <span
+              className={
+                selectedChannel?.status === "active"
+                  ? "ready"
+                  : selectedChannel?.status === "paused"
+                    ? "missing"
+                    : "setup"
+              }
+            >
+              {selectedChannel?.status === "active"
+                ? "운영 중"
+                : selectedChannel?.status === "paused"
+                  ? "일시중지"
+                  : selectedChannel
+                    ? "설정 중"
+                    : "미지정"}
+            </span>
+            <span
+              className={
+                !selectedChannel
+                  ? "setup"
+                  : selectedChannel.has_upload_refresh_token
+                    ? "ready"
+                    : "missing"
+              }
+            >
+              {!selectedChannel
+                ? "채널 선택 시 확인"
+                : selectedChannel.has_upload_refresh_token
+                  ? "업로드 토큰 있음"
+                  : "업로드 토큰 필요"}
+            </span>
+          </div>
+        </div>
         <div className="format-presets" aria-label="형식 빠른 선택">
           {[
             { label: "쇼츠 60초", format: "shorts", duration: 60 },
