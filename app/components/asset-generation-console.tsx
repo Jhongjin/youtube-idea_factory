@@ -151,6 +151,11 @@ export function AssetGenerationConsole({
 
   async function generateImage(assetId: string) {
     setMessage("");
+    const providerBlocker = directGenerationBlocker("image");
+    if (providerBlocker) {
+      setMessage(providerBlocker);
+      return;
+    }
     const confirmation = window.prompt(`${imageConfirmToken}를 입력하면 이미지를 생성합니다.`);
     if (confirmation === null) {
       return;
@@ -182,6 +187,11 @@ export function AssetGenerationConsole({
 
   async function generateVideo(assetId: string) {
     setMessage("");
+    const providerBlocker = directGenerationBlocker("video");
+    if (providerBlocker) {
+      setMessage(providerBlocker);
+      return;
+    }
     const confirmation = window.prompt(`${videoConfirmToken}를 입력하면 영상을 생성합니다.`);
     if (confirmation === null) {
       return;
@@ -234,6 +244,11 @@ export function AssetGenerationConsole({
 
   async function generateVoice(assetId: string) {
     setMessage("");
+    const providerBlocker = directGenerationBlocker("tts");
+    if (providerBlocker) {
+      setMessage(providerBlocker);
+      return;
+    }
     const confirmation = window.prompt(`${ttsConfirmToken}를 입력하면 음성을 생성합니다.`);
     if (confirmation === null) {
       return;
@@ -273,10 +288,31 @@ export function AssetGenerationConsole({
     options: providerOptionsForRole(providerSettings, role),
     role,
   }));
+  const selectedProviderOption = (role: ProviderRoleId) => {
+    const row = providerRows.find((item) => item.role === role);
+    const selectedId = selectedProviders[role] ?? row?.options[0]?.id ?? "";
+    return row?.options.find((option) => option.id === selectedId);
+  };
   const selectedProviderProfile = (role: ProviderRoleId) => {
     const value = selectedProviders[role];
     return value && value !== "default" ? value : undefined;
   };
+  const directGenerationBlocker = (role: "image" | "video" | "tts") => {
+    const option = selectedProviderOption(role);
+    if (!option) {
+      return `${roleLabel(role)} provider가 설정되어 있지 않습니다. API 등록에서 직접 실행 가능한 provider를 먼저 저장하세요.`;
+    }
+    if (option.capability.status !== "direct") {
+      return `${option.provider}는 현재 직접 생성 어댑터가 아닙니다. 수동 핸드오프를 만들고 완료 파일을 등록하세요.`;
+    }
+    if (!option.hasApiKey) {
+      return `${option.provider} API 키가 저장되어 있지 않습니다. API 등록에서 키를 저장한 뒤 다시 시도하세요.`;
+    }
+    return "";
+  };
+  const imageGenerationBlocker = directGenerationBlocker("image");
+  const videoGenerationBlocker = directGenerationBlocker("video");
+  const voiceGenerationBlocker = directGenerationBlocker("tts");
 
   return (
     <div className="asset-console">
@@ -376,8 +412,9 @@ export function AssetGenerationConsole({
             <AssetStatus item={item} />
             <button
               className="text-button"
-              disabled={item.status !== "pending_generation" || Boolean(loadingId)}
+              disabled={item.status !== "pending_generation" || Boolean(loadingId) || Boolean(imageGenerationBlocker)}
               onClick={() => generateImage(item.id)}
+              title={imageGenerationBlocker || undefined}
               type="button"
             >
               {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <ImageIcon size={15} />}
@@ -399,8 +436,9 @@ export function AssetGenerationConsole({
             <AssetStatus item={item} />
             <button
               className="text-button"
-              disabled={item.status !== "pending_generation" || Boolean(loadingId)}
+              disabled={item.status !== "pending_generation" || Boolean(loadingId) || Boolean(videoGenerationBlocker)}
               onClick={() => generateVideo(item.id)}
+              title={videoGenerationBlocker || undefined}
               type="button"
             >
               {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <Video size={15} />}
@@ -419,8 +457,9 @@ export function AssetGenerationConsole({
             <AssetStatus item={voiceItem} />
             <button
               className="text-button"
-              disabled={voiceItem.status !== "pending_generation" || Boolean(loadingId)}
+              disabled={voiceItem.status !== "pending_generation" || Boolean(loadingId) || Boolean(voiceGenerationBlocker)}
               onClick={() => generateVoice(voiceItem.id)}
+              title={voiceGenerationBlocker || undefined}
               type="button"
             >
               {loadingId === voiceItem.id ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
