@@ -20,10 +20,11 @@ This queue keeps the build loop explicit:
 | channel-oauth-inventory | Phase 7 | done | codex | no | Admin channel records can persist upload and analytics token inventory in Supabase. |
 | channel-run-linking | Phase 7 | done | codex | no | New runs can store a selected brand channel in `package.brief.channel`; upload jobs and workers use the selected channel token when present. |
 | dashboard-channel-filtering | Phase 7 | done | codex | no | Dashboard sidebar can filter run history by brand channel, and new runs inherit the selected channel context. |
+| channel-analytics-snapshot | Phase 7 | done | codex | no | Performance snapshots attach YouTube Analytics API metrics when the selected channel has an analytics refresh token. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
-| youtube-analytics-oauth | Phase 6 | deferred | operator | no | Enable YouTube Analytics API and issue a refresh token with analytics read scope. |
+| youtube-analytics-oauth | Phase 6 | deferred | operator | no | Enable YouTube Analytics API and issue a refresh token with analytics read scope for each brand channel that needs private analytics. |
 | taste-interaction-polish | Phase 5 | done | codex | no | Apply TasteSkill interaction/accessibility polish: skip link, focus rings, pointer cursors, and hover/active states. |
 | first-run-next-step-guide | Phase 5 | done | codex | no | Show a three-step guide after new run creation so operators move from sources to draft execution. |
 | new-run-onboarding-form | Phase 5 | done | codex | no | Rework the new-run form into brief, source, and advanced option sections with preset buttons. |
