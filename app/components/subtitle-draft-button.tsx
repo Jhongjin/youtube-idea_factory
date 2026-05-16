@@ -17,7 +17,7 @@ export function SubtitleDraftButton({ runId }: { runId: string }) {
       setLoading(false);
       return;
     }
-    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=production`;
   }
 
   return (
