@@ -139,19 +139,6 @@ const approvalGateLabels: Record<ApprovalGate, string> = {
   publish: "게시 승인",
 };
 
-const workflowStageLabels = [
-  "리서치",
-  "소스",
-  "분석",
-  "대본",
-  "스토리보드",
-  "미디어",
-  "배포 초안",
-  "검수",
-  "생성",
-  "렌더/배포",
-];
-
 const guidedStepDefinitions = [
   {
     description: "운영 채널과 제작 브리프를 확인합니다.",
@@ -1259,108 +1246,6 @@ function AdvancedActionMenu({ run }: { run: RunSummary }) {
         </div>
       </div>
     </details>
-  );
-}
-
-function isEarlyProductionRun(run: RunSummary) {
-  return (
-    run.package.claim_ledger.length === 0 &&
-    run.package.storyboard.length === 0 &&
-    (run.package.media_prompts.image_prompts?.length ?? 0) === 0 &&
-    (run.package.media_prompts.video_prompts?.length ?? 0) === 0
-  );
-}
-
-function FirstRunGuide({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
-  if (!isEarlyProductionRun(run) || plan.stageIndex > 3) {
-    return null;
-  }
-
-  const sourceCount = run.package.sources.length;
-  return (
-    <div className="first-run-guide">
-      <div className="first-run-guide-heading">
-        <strong>새 제작 다음 순서</strong>
-        <span>시드 소스 {sourceCount}개로 시작했습니다.</span>
-      </div>
-      <div className="first-run-guide-steps">
-        <a href="#youtube-finder">
-          <span>01</span>
-          <strong>후보 더 찾기</strong>
-          <small>유튜브 파인더에서 관련 소스를 보강합니다.</small>
-        </a>
-        <a href="#sources-panel">
-          <span>02</span>
-          <strong>스크립트 확인</strong>
-          <small>자막 슬롯을 채우거나 STT를 실행합니다.</small>
-        </a>
-        <a href="#next-action">
-          <span>03</span>
-          <strong>초안 실행</strong>
-          <small>현재 단계 버튼으로 분석과 대본 흐름을 시작합니다.</small>
-        </a>
-      </div>
-    </div>
-  );
-}
-
-function RunNextActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
-  const secondaryActions = plan.secondaryActionIds ?? [];
-  return (
-    <section className="panel next-action-panel" id="next-action">
-      <div className="next-action-main">
-        <div>
-          <p className="eyebrow">
-            {plan.stageIndex}/{plan.totalStages} {plan.stageLabel}
-          </p>
-          <h3>{plan.headline}</h3>
-          <p>{plan.detail}</p>
-        </div>
-        <StatusPill status={plan.status} />
-      </div>
-      <div aria-label="제작 단계" className="stage-rail">
-        {workflowStageLabels.map((label, index) => {
-          const stageNumber = index + 1;
-          const state =
-            stageNumber < plan.stageIndex ? "done" : stageNumber === plan.stageIndex ? "current" : "pending";
-          return (
-            <div className={`stage-rail-item ${state}`} key={label}>
-              <span>{stageNumber.toString().padStart(2, "0")}</span>
-              <strong>{label}</strong>
-            </div>
-          );
-        })}
-      </div>
-      <FirstRunGuide plan={plan} run={run} />
-      <div className="next-action-cta">
-        {plan.primaryActionId ? (
-          <div className="guide-action-primary">
-            <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
-          </div>
-        ) : (
-          <p className="next-action-note">오른쪽 패널에서 승인 또는 수동 확인을 완료하세요.</p>
-        )}
-        {secondaryActions.length > 0 ? (
-          <div className="guide-action-secondary">
-            {secondaryActions.map((actionId) => (
-              <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
-            ))}
-          </div>
-        ) : null}
-      </div>
-      <div className="next-action-list">
-        {plan.items.map((item) => (
-          <div className="next-action-item" key={`${item.title}-${item.detail}`}>
-            <div>
-              <strong>{item.title}</strong>
-              <span>{item.detail}</span>
-              {item.command ? <code>{item.command}</code> : null}
-            </div>
-            <StatusPill status={item.status} />
-          </div>
-        ))}
-      </div>
-    </section>
   );
 }
 
