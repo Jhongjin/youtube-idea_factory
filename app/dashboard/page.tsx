@@ -865,35 +865,40 @@ function Sidebar({
       </section>
 
       {channels.length > 0 ? (
-        <section className="nav-section">
-          <h2>운영 채널</h2>
-          <div className="channel-filter-list">
-            <Link className={`channel-filter ${activeChannelId ? "" : "active"}`} href="/dashboard">
-              <strong>전체 실행</strong>
-              <span>{totalRuns}개</span>
-            </Link>
-            {channels.map((channel) => {
-              const channelRuns = allRuns.filter((run) => runChannelId(run) === channel.id).length;
-              return (
-                <Link
-                  className={`channel-filter ${channel.id === activeChannelId ? "active" : ""}`}
-                  href={dashboardHref({ channelId: channel.id })}
-                  key={channel.id}
-                >
-                  <strong>{channel.brand_name}</strong>
-                  <span>
-                    {channel.channel_name} / {channelRuns}개
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-          {activeChannel ? (
+        <details className="sidebar-disclosure channel-filter-disclosure">
+          <summary>
+            <span>운영 채널</span>
+            <strong>{activeChannel ? activeChannel.brand_name : `${channels.length}개`}</strong>
+          </summary>
+          <div className="sidebar-disclosure-body">
+            <div className="channel-filter-list">
+              <Link className={`channel-filter ${activeChannelId ? "" : "active"}`} href="/dashboard">
+                <strong>전체 실행</strong>
+                <span>{totalRuns}개</span>
+              </Link>
+              {channels.map((channel) => {
+                const channelRuns = allRuns.filter((run) => runChannelId(run) === channel.id).length;
+                return (
+                  <Link
+                    className={`channel-filter ${channel.id === activeChannelId ? "active" : ""}`}
+                    href={dashboardHref({ channelId: channel.id })}
+                    key={channel.id}
+                  >
+                    <strong>{channel.brand_name}</strong>
+                    <span>
+                      {channel.channel_name} / {channelRuns}개
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
             <p className="channel-filter-note">
-              {activeChannel.channel_name} 기준으로 실행 기록을 보고 있습니다.
+              {activeChannel
+                ? `${activeChannel.channel_name} 기준으로 실행 기록을 보고 있습니다.`
+                : "상단 운영 채널 바에서 먼저 채널을 고르면 새 제작에도 반영됩니다."}
             </p>
-          ) : null}
-        </section>
+          </div>
+        </details>
       ) : null}
 
       <section className="nav-section">
