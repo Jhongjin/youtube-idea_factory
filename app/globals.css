@@ -1005,6 +1005,7 @@ button:disabled,
 
 .guided-secondary-actions > div,
 .guided-checklist > .next-action-list,
+.guided-secondary-panel > div,
 .guided-secondary-panel > .workspace-grid,
 .guided-secondary-panel > .panel {
   border-top: 1px solid var(--line);

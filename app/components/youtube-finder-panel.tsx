@@ -18,9 +18,11 @@ function formatDuration(seconds: number) {
 }
 
 export function YouTubeFinderPanel({
+  channelId = "",
   defaultQuery,
   runId,
 }: {
+  channelId?: string;
   defaultQuery: string;
   runId: string;
 }) {
@@ -88,7 +90,14 @@ export function YouTubeFinderPanel({
       return;
     }
 
-    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=research#sources-panel`;
+    const nextParams = new URLSearchParams({
+      run: runId,
+      step: "research",
+    });
+    if (channelId) {
+      nextParams.set("channel", channelId);
+    }
+    window.location.href = `/dashboard?${nextParams.toString()}#sources-panel`;
   }
 
   return (

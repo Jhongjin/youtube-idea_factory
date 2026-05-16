@@ -788,12 +788,7 @@ function GuidedRunWorkspace({
       ) : null}
 
       {activeStep === "research" ? (
-        <>
-          <div id="youtube-finder">
-            <YouTubeFinderPanel defaultQuery={run.package.brief.topic} runId={run.id} />
-          </div>
-          <SourcesPanel run={run} />
-        </>
+        <ResearchStepPanel channelId={channelId} run={run} />
       ) : null}
 
       {activeStep === "draft" ? (
@@ -850,6 +845,35 @@ function GuidedRunWorkspace({
         </>
       ) : null}
     </div>
+  );
+}
+
+function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSummary }) {
+  const hasSources = run.package.sources.length > 0;
+  if (!hasSources) {
+    return (
+      <>
+        <div id="youtube-finder">
+          <YouTubeFinderPanel channelId={channelId} defaultQuery={run.package.brief.topic} runId={run.id} />
+        </div>
+        <details className="guided-secondary-panel">
+          <summary>소스 목록 보기</summary>
+          <SourcesPanel run={run} />
+        </details>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <SourcesPanel run={run} />
+      <details className="guided-secondary-panel">
+        <summary>후보 영상 검색으로 더 보강</summary>
+        <div id="youtube-finder">
+          <YouTubeFinderPanel channelId={channelId} defaultQuery={run.package.brief.topic} runId={run.id} />
+        </div>
+      </details>
+    </>
   );
 }
 
