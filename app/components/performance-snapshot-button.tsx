@@ -28,7 +28,7 @@ export function PerformanceSnapshotButton({ runId, videoId }: { runId: string; v
       setLoading(false);
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   return (

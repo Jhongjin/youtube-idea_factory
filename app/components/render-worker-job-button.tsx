@@ -32,7 +32,7 @@ export function RenderWorkerJobButton({ runId }: { runId: string }) {
       setLoading(false);
       return;
     }
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   return (

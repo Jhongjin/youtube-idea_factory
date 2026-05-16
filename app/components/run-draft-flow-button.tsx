@@ -33,7 +33,7 @@ export function RunDraftFlowButton({ runId }: { runId: string }) {
       }
     }
 
-    window.location.href = `/?run=${encodeURIComponent(runId)}`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}`;
   }
 
   return (

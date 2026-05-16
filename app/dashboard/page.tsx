@@ -76,7 +76,7 @@ import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
 export const dynamic = "force-dynamic";
 
 const navItems = [
-  { label: "파이프라인", icon: ListChecks, active: true },
+  { label: "제작 단계", icon: ListChecks, active: true },
   { label: "소스", icon: FileSearch, active: false },
   { label: "대본", icon: FileText, active: false },
   { label: "스토리보드", icon: Clapperboard, active: false },
@@ -144,6 +144,38 @@ const workflowStageLabels = [
   "생성",
   "렌더/배포",
 ];
+
+const guidedStepDefinitions = [
+  {
+    description: "운영 채널과 제작 브리프를 확인합니다.",
+    key: "setup",
+    label: "준비",
+  },
+  {
+    description: "후보 영상을 찾고 소스 근거를 보강합니다.",
+    key: "research",
+    label: "리서치",
+  },
+  {
+    description: "분석, 대본, 스토리보드를 차례로 만듭니다.",
+    key: "draft",
+    label: "대본/스토리보드",
+  },
+  {
+    description: "미디어 프롬프트와 생성 큐를 준비합니다.",
+    key: "production",
+    label: "제작",
+  },
+  {
+    description: "검수, 렌더, 업로드, 성과 수집을 진행합니다.",
+    key: "review",
+    label: "검수/배포",
+  },
+] as const;
+
+type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
+
+const guidedStepKeys = new Set<string>(guidedStepDefinitions.map((step) => step.key));
 
 const pipelineStageTargets = [
   { href: "#next-action", label: "현재 작업" },
@@ -218,6 +250,65 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
   return 0;
 }
 
+function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
+  if (!plan) {
+    return "setup";
+  }
+  if (
+    plan.primaryActionId === "source-enrich" ||
+    plan.stageLabel === "리서치" ||
+    plan.stageLabel === "소스 검토"
+  ) {
+    return "research";
+  }
+  if (
+    plan.primaryActionId === "analysis-draft" ||
+    plan.primaryActionId === "analysis-refine" ||
+    plan.primaryActionId === "draft-flow" ||
+    plan.primaryActionId === "script-draft" ||
+    plan.primaryActionId === "script-refine" ||
+    plan.primaryActionId === "storyboard-draft" ||
+    plan.stageLabel === "영상 분석" ||
+    plan.stageLabel === "대본" ||
+    plan.stageLabel === "스토리보드"
+  ) {
+    return "draft";
+  }
+  if (
+    plan.primaryActionId === "media-draft" ||
+    plan.primaryActionId === "asset-manifest" ||
+    plan.primaryActionId === "generation-queue" ||
+    plan.primaryActionId === "subtitle-draft" ||
+    plan.stageLabel === "미디어 설계" ||
+    plan.stageLabel === "자산 구성" ||
+    plan.stageLabel === "자산 생성" ||
+    plan.stageLabel === "생성 승인"
+  ) {
+    return "production";
+  }
+  if (
+    plan.primaryActionId === "publishing-draft" ||
+    plan.primaryActionId === "publishing-handoff" ||
+    plan.primaryActionId === "youtube-upload-job" ||
+    plan.primaryActionId === "qa-draft" ||
+    plan.primaryActionId === "render-manifest" ||
+    plan.primaryActionId === "render-job" ||
+    plan.primaryActionId === "local-render" ||
+    plan.stageLabel === "배포 초안" ||
+    plan.stageLabel === "배포" ||
+    plan.stageLabel === "피드백" ||
+    plan.stageLabel === "검수" ||
+    plan.stageLabel === "패키지 보정"
+  ) {
+    return "review";
+  }
+  return "setup";
+}
+
+function normalizeGuidedStep(value: string | undefined, fallback: GuidedStepKey): GuidedStepKey {
+  return value && guidedStepKeys.has(value) ? (value as GuidedStepKey) : fallback;
+}
+
 const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
@@ -253,13 +344,16 @@ function runChannelId(run?: RunSummary) {
   return run?.package.brief.channel?.id ?? "";
 }
 
-function dashboardHref(params: { channelId?: string; runId?: string }) {
+function dashboardHref(params: { channelId?: string; runId?: string; step?: string }) {
   const search = new URLSearchParams();
   if (params.runId) {
     search.set("run", params.runId);
   }
   if (params.channelId) {
     search.set("channel", params.channelId);
+  }
+  if (params.step) {
+    search.set("step", params.step);
   }
   const query = search.toString();
   return query ? `/dashboard?${query}` : "/dashboard";
@@ -332,6 +426,236 @@ function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
   );
 }
 
+function OperatingChannelBar({
+  activeStep,
+  allRuns,
+  channels,
+  selectedChannelId,
+}: {
+  activeStep: GuidedStepKey;
+  allRuns: RunSummary[];
+  channels: SafeYouTubeChannel[];
+  selectedChannelId: string;
+}) {
+  const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
+  const selectedRunCount = selectedChannel
+    ? allRuns.filter((run) => runChannelId(run) === selectedChannel.id).length
+    : allRuns.length;
+  return (
+    <section className="operating-channel-bar" aria-label="운영 채널 선택">
+      <div className="operating-channel-copy">
+        <p className="eyebrow">먼저 선택</p>
+        <h2>운영 채널</h2>
+        <span>
+          {selectedChannel
+            ? `${selectedChannel.brand_name} / ${selectedChannel.channel_name}`
+            : "전체 실행을 보고 있습니다"}
+        </span>
+      </div>
+      <div className="operating-channel-selector" role="list" aria-label="운영 채널">
+        <Link
+          aria-current={selectedChannel ? undefined : "page"}
+          className={`operating-channel-option ${selectedChannel ? "" : "active"}`}
+          href={dashboardHref({ step: activeStep })}
+          role="listitem"
+        >
+          <strong>전체 실행</strong>
+          <span>{allRuns.length}개</span>
+        </Link>
+        {channels.map((channel) => {
+          const runCount = allRuns.filter((run) => runChannelId(run) === channel.id).length;
+          const active = channel.id === selectedChannel?.id;
+          return (
+            <Link
+              aria-current={active ? "page" : undefined}
+              className={`operating-channel-option ${active ? "active" : ""}`}
+              href={dashboardHref({ channelId: channel.id, step: activeStep })}
+              key={channel.id}
+              role="listitem"
+            >
+              <strong>{channel.brand_name}</strong>
+              <span>
+                {channel.channel_name}
+                {channel.youtube_handle ? ` / ${channel.youtube_handle}` : ""} / {runCount}개
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="operating-channel-meta">
+        <span>{selectedChannel?.status === "active" ? "운영 중" : selectedChannel ? "설정 중" : "전체 보기"}</span>
+        <strong>{selectedRunCount}개 실행</strong>
+        <Link className="text-button" href="/admin/channels">
+          <Settings size={15} />
+          채널 관리
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function GuidedStepNav({
+  activeStep,
+  channelId,
+  runId,
+}: {
+  activeStep: GuidedStepKey;
+  channelId: string;
+  runId: string;
+}) {
+  const activeIndex = guidedStepDefinitions.findIndex((step) => step.key === activeStep);
+  return (
+    <nav className="guided-step-nav" aria-label="제작 단계">
+      {guidedStepDefinitions.map((step, index) => {
+        const state = index < activeIndex ? "done" : index === activeIndex ? "current" : "pending";
+        return (
+          <Link
+            aria-current={state === "current" ? "step" : undefined}
+            className={`guided-step ${state}`}
+            href={dashboardHref({ channelId, runId, step: step.key })}
+            key={step.key}
+          >
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{step.label}</strong>
+            <small>{step.description}</small>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function GuidedActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSummary }) {
+  const secondaryActions = plan.secondaryActionIds ?? [];
+  return (
+    <section className="panel guided-action-panel" id="next-action">
+      <div className="guided-action-main">
+        <div>
+          <p className="eyebrow">다음 작업</p>
+          <h3>{plan.headline}</h3>
+          <p>{plan.detail}</p>
+        </div>
+        <StatusPill status={plan.status} />
+      </div>
+      <div className="guided-action-buttons">
+        {plan.primaryActionId ? (
+          <div className="guide-action-primary">
+            <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+          </div>
+        ) : (
+          <p className="next-action-note">오른쪽 검토 패널에서 승인 또는 수동 확인을 완료하세요.</p>
+        )}
+        {secondaryActions.length > 0 ? (
+          <details className="guided-secondary-actions">
+            <summary>보조 작업</summary>
+            <div>
+              {secondaryActions.map((actionId) => (
+                <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
+              ))}
+            </div>
+          </details>
+        ) : null}
+      </div>
+      <details className="guided-checklist">
+        <summary>필요한 확인</summary>
+        <div className="next-action-list">
+          {plan.items.map((item) => (
+            <div className="next-action-item" key={`${item.title}-${item.detail}`}>
+              <div>
+                <strong>{item.title}</strong>
+                <span>{item.detail}</span>
+                {item.command ? <code>{item.command}</code> : null}
+              </div>
+              <StatusPill status={item.status} />
+            </div>
+          ))}
+        </div>
+      </details>
+    </section>
+  );
+}
+
+function GuidedRunWorkspace({
+  activeStep,
+  artifacts,
+  channelId,
+  nextActionPlan,
+  run,
+}: {
+  activeStep: GuidedStepKey;
+  artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
+  channelId: string;
+  nextActionPlan: RunNextActionPlan;
+  run: RunSummary;
+}) {
+  const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
+  return (
+    <div className="guided-workspace">
+      <GuidedStepNav activeStep={activeStep} channelId={channelId} runId={run.id} />
+      <section className="guided-step-intro">
+        <div>
+          <p className="eyebrow">현재 화면</p>
+          <h3>{activeStepCopy.label}</h3>
+          <p>{activeStepCopy.description}</p>
+        </div>
+        <Link className="text-button" href={dashboardHref({ channelId, runId: run.id, step: defaultGuidedStep(nextActionPlan) })}>
+          현재 단계로 이동
+        </Link>
+      </section>
+      <GuidedActionPanel plan={nextActionPlan} run={run} />
+
+      {activeStep === "setup" ? (
+        <>
+          <SummaryGrid run={run} />
+          <BriefPanel run={run} />
+        </>
+      ) : null}
+
+      {activeStep === "research" ? (
+        <>
+          <div id="youtube-finder">
+            <YouTubeFinderPanel defaultQuery={run.package.brief.topic} runId={run.id} />
+          </div>
+          <SourcesPanel run={run} />
+        </>
+      ) : null}
+
+      {activeStep === "draft" ? (
+        <>
+          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+          <details className="guided-secondary-panel">
+            <summary>소스와 제작 단계 같이 보기</summary>
+            <div className="workspace-grid">
+              <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
+              <SourcesPanel run={run} />
+            </div>
+          </details>
+        </>
+      ) : null}
+
+      {activeStep === "production" ? (
+        <>
+          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+          <details className="guided-secondary-panel">
+            <summary>제작 준비 상태 보기</summary>
+            <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
+          </details>
+        </>
+      ) : null}
+
+      {activeStep === "review" ? (
+        <>
+          <div className="workspace-grid">
+            <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
+            <SourcesPanel run={run} />
+          </div>
+          <ArtifactWorkspace artifacts={artifacts} runId={run.id} />
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function Sidebar({
   activeRun,
   activeChannelId,
@@ -381,7 +705,7 @@ function Sidebar({
 
       {channels.length > 0 ? (
         <section className="nav-section">
-          <h2>브랜드 채널</h2>
+          <h2>운영 채널</h2>
           <div className="channel-filter-list">
             <Link className={`channel-filter ${activeChannelId ? "" : "active"}`} href="/dashboard">
               <strong>전체 실행</strong>
@@ -435,7 +759,7 @@ function Sidebar({
       <WorkQueuePanel summary={workQueueSummary} />
 
       <section className="nav-section">
-        <h2>스킬</h2>
+        <h2>자동화 도구</h2>
         <ul className="nav-list">
           {skillItems.map((skill) => (
             <li key={skill} className="nav-item">
@@ -449,9 +773,25 @@ function Sidebar({
   );
 }
 
-function EmptyState({ channelName }: { channelName?: string }) {
+function EmptyState({
+  allRuns,
+  channelName,
+  channels,
+  selectedChannelId,
+}: {
+  allRuns: RunSummary[];
+  channelName?: string;
+  channels: SafeYouTubeChannel[];
+  selectedChannelId: string;
+}) {
   return (
     <main className="main">
+      <OperatingChannelBar
+        activeStep="setup"
+        allRuns={allRuns}
+        channels={channels}
+        selectedChannelId={selectedChannelId}
+      />
       <div className="topbar">
         <div>
           <p className="eyebrow">1단계</p>
@@ -464,8 +804,8 @@ function EmptyState({ channelName }: { channelName?: string }) {
           <h3>{channelName ? "이 채널의 제작 실행이 없습니다" : "아직 제작 실행이 없습니다"}</h3>
           <p>
             {channelName
-              ? "오른쪽 새 실행 만들기에서 이 브랜드 채널을 선택해 첫 실행을 시작하세요."
-              : "새 실행을 만들면 제작 패키지가 파이프라인을 따라 여기에 표시됩니다."}
+              ? "오른쪽 새 제작 시작에서 이 운영 채널을 선택해 첫 패키지를 시작하세요."
+              : "새 제작을 시작하면 패키지가 단계 흐름에 맞춰 여기에 표시됩니다."}
           </p>
         </div>
       </div>
@@ -656,7 +996,7 @@ function FirstRunGuide({ plan, run }: { plan: RunNextActionPlan; run: RunSummary
   return (
     <div className="first-run-guide">
       <div className="first-run-guide-heading">
-        <strong>새 실행 다음 순서</strong>
+        <strong>새 제작 다음 순서</strong>
         <span>시드 소스 {sourceCount}개로 시작했습니다.</span>
       </div>
       <div className="first-run-guide-steps">
@@ -746,7 +1086,7 @@ function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionP
   return (
     <section className="panel" id="pipeline-panel">
       <div className="panel-header">
-        <h3 className="panel-title">파이프라인</h3>
+        <h3 className="panel-title">제작 단계</h3>
         <span className="meta">{qaStatusCopy[run.package.qa.status] ?? run.package.qa.status}</span>
       </div>
       <div className="panel-body">
@@ -838,7 +1178,7 @@ function NewRunPanel({
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">새 실행</h3>
+        <h3 className="panel-title">새 제작 시작</h3>
         <Rocket size={16} />
       </div>
       <div className="panel-body">
@@ -920,7 +1260,7 @@ function BriefPanel({ run }: { run: RunSummary }) {
             <span>{brief.category || "미지정"}</span>
           </div>
           <div className="detail-row">
-            <span>브랜드 채널</span>
+            <span>운영 채널</span>
             <span>{channel ? `${channel.brand_name} / ${channel.channel_name}` : "미지정"}</span>
           </div>
           {channel?.youtube_handle ? (
@@ -1293,7 +1633,7 @@ function Inspector({
         {showFeedback ? <FeedbackPanel run={run} /> : null}
 
         <details className="inspector-more new-run-drawer">
-          <summary>새 실행 만들기</summary>
+          <summary>새 제작 시작</summary>
           <div className="detail-stack">
             <NewRunPanel channels={channels} initialChannelId={activeChannelId || runChannelId(run)} />
           </div>
@@ -1330,7 +1670,7 @@ function Inspector({
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ channel?: string; run?: string }>;
+  searchParams?: Promise<{ channel?: string; run?: string; step?: string }>;
 }) {
   await requireUser({ redirectTo: "/login?next=/dashboard" });
   const runs = await getRuns();
@@ -1366,6 +1706,8 @@ export default async function Home({
           workerStatus,
         })
       : null;
+  const selectedChannelId = activeChannelId || runChannelId(activeRun);
+  const activeStep = normalizeGuidedStep(params.step, defaultGuidedStep(nextActionPlan));
 
   return (
     <div className="shell">
@@ -1381,9 +1723,15 @@ export default async function Home({
       />
       {activeRun ? (
         <main className="main" id="main-content">
+          <OperatingChannelBar
+            activeStep={activeStep}
+            allRuns={runs}
+            channels={channels}
+            selectedChannelId={selectedChannelId}
+          />
           <div className="topbar">
             <div>
-              <p className="eyebrow">1단계 제작 실행</p>
+              <p className="eyebrow">제작 작업공간</p>
               <h2>{activeRun.package.brief.topic}</h2>
               <p className="muted">
                 {runChannelLabel(activeRun)} /{" "}
@@ -1403,23 +1751,23 @@ export default async function Home({
             </div>
           </div>
 
-          <SummaryGrid run={activeRun} />
-
-          {nextActionPlan ? <RunNextActionPanel plan={nextActionPlan} run={activeRun} /> : null}
-
-          <div id="youtube-finder">
-            <YouTubeFinderPanel defaultQuery={activeRun.package.brief.topic} runId={activeRun.id} />
-          </div>
-
-          <div className="workspace-grid">
-            <PipelinePanel nextActionPlan={nextActionPlan!} run={activeRun} />
-            <SourcesPanel run={activeRun} />
-          </div>
-
-          <ArtifactWorkspace artifacts={artifacts} runId={activeRun.id} />
+          {nextActionPlan ? (
+            <GuidedRunWorkspace
+              activeStep={activeStep}
+              artifacts={artifacts}
+              channelId={selectedChannelId}
+              nextActionPlan={nextActionPlan}
+              run={activeRun}
+            />
+          ) : null}
         </main>
       ) : (
-        <EmptyState channelName={activeChannel?.channel_name} />
+        <EmptyState
+          allRuns={runs}
+          channelName={activeChannel?.channel_name}
+          channels={channels}
+          selectedChannelId={selectedChannelId}
+        />
       )}
       {activeRun ? (
         <Inspector
@@ -1438,11 +1786,11 @@ export default async function Home({
         <aside className="inspector">
           <section className="panel">
             <div className="panel-header">
-              <h3 className="panel-title">새 실행</h3>
+              <h3 className="panel-title">새 제작 시작</h3>
               <Rocket size={16} />
             </div>
             <div className="panel-body">
-              <NewRunForm channels={channels} initialChannelId={activeChannelId} />
+              <NewRunForm channels={channels} initialChannelId={selectedChannelId} />
             </div>
           </section>
         </aside>
