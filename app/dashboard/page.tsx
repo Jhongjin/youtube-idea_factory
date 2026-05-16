@@ -590,6 +590,7 @@ function GuidedStepNav({
           >
             <span>{String(index + 1).padStart(2, "0")}</span>
             <strong>{step.label}</strong>
+            {state === "current" ? <em>현재</em> : null}
             <small>{step.description}</small>
           </Link>
         );
@@ -611,13 +612,24 @@ function GuidedActionPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSum
         <StatusPill status={plan.status} />
       </div>
       <div className="guided-action-buttons">
-        {plan.primaryActionId ? (
-          <div className="guide-action-primary">
-            <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+        <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
+          <div className="guided-primary-copy">
+            <span>지금 할 일</span>
+            <strong>{plan.headline}</strong>
+            <small>
+              {plan.primaryActionId
+                ? "이 버튼을 완료하면 다음 제작 단계로 이어집니다."
+                : "오른쪽 검토 패널에서 승인 또는 수동 확인을 완료하세요."}
+            </small>
           </div>
-        ) : (
-          <p className="next-action-note">오른쪽 검토 패널에서 승인 또는 수동 확인을 완료하세요.</p>
-        )}
+          {plan.primaryActionId ? (
+            <div className="guide-action-primary">
+              <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+            </div>
+          ) : (
+            <p className="next-action-note">승인 게이트 확인 필요</p>
+          )}
+        </div>
         {secondaryActions.length > 0 ? (
           <details className="guided-secondary-actions">
             <summary>보조 작업</summary>

@@ -674,6 +674,19 @@ button:disabled,
   line-height: 1.25;
 }
 
+.guided-step em {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border-radius: 999px;
+  background: #2f6f4e;
+  color: #ffffff;
+  padding: 3px 7px;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
 .guided-step small {
   color: var(--muted);
   font-size: 11px;
@@ -727,6 +740,75 @@ button:disabled,
   margin-top: 14px;
 }
 
+.guided-primary-cta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 260px);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid #b9d8c3;
+  border-radius: 12px;
+  background: #eff8f1;
+  padding: 14px;
+}
+
+.guided-primary-cta.manual {
+  border-color: #f1dba8;
+  background: #fff8e9;
+}
+
+.guided-primary-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.guided-primary-copy span {
+  color: #2f6f4e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guided-primary-cta.manual .guided-primary-copy span {
+  color: #8a650f;
+}
+
+.guided-primary-copy strong {
+  color: #172019;
+  font-size: 16px;
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+
+.guided-primary-copy small {
+  color: #455366;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.guided-primary-cta .guide-action-primary,
+.guided-primary-cta .guide-action-primary > *,
+.guided-primary-cta .source-action,
+.guided-primary-cta .draft-action {
+  width: 100%;
+  min-width: 0;
+}
+
+.guided-primary-cta .guide-action-primary .text-button {
+  justify-content: center;
+  width: 100%;
+  min-height: 50px;
+  border-color: #2f6f4e;
+  background: #2f6f4e;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.guided-primary-cta .guide-action-primary .text-button:hover {
+  border-color: #25583f;
+  background: #25583f;
+}
+
 .guided-action-buttons .guide-action-primary .draft-action,
 .guided-action-buttons .guide-action-primary .text-button {
   width: 100%;
@@ -735,6 +817,10 @@ button:disabled,
 .guided-action-buttons .guide-action-primary .text-button {
   min-height: 46px;
   font-size: 14px;
+}
+
+.guided-action-buttons .guided-primary-cta .guide-action-primary .text-button {
+  min-height: 50px;
 }
 
 .guided-secondary-actions,
@@ -3273,6 +3359,7 @@ button:disabled,
   .workspace-grid,
   .operating-channel-bar,
   .guided-step-intro,
+  .guided-primary-cta,
   .next-action-main,
   .guided-action-main,
   .next-action-item,
