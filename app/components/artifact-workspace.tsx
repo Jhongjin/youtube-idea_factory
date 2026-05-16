@@ -9,11 +9,25 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 export function ArtifactWorkspace({
   runId,
   artifacts,
+  description = "현재 단계에서 필요한 산출물을 먼저 편집합니다.",
+  focusArtifactIds = [],
+  title = "산출물",
 }: {
   runId: string;
   artifacts: RunArtifact[];
+  description?: string;
+  focusArtifactIds?: string[];
+  title?: string;
 }) {
-  const [activeId, setActiveId] = useState(artifacts[0]?.id ?? "");
+  const focusedArtifacts = useMemo(() => {
+    const focusSet = new Set(focusArtifactIds);
+    return artifacts.filter((artifact) => focusSet.has(artifact.id));
+  }, [artifacts, focusArtifactIds]);
+  const focusKey = focusArtifactIds.join("|");
+  const hasFocusFilter = focusedArtifacts.length > 0 && focusedArtifacts.length < artifacts.length;
+  const defaultArtifactId = focusedArtifacts[0]?.id ?? artifacts[0]?.id ?? "";
+  const [activeId, setActiveId] = useState(defaultArtifactId);
+  const [showAllArtifacts, setShowAllArtifacts] = useState(!hasFocusFilter);
   const [contents, setContents] = useState(() =>
     Object.fromEntries(artifacts.map((artifact) => [artifact.id, artifact.content])),
   );
@@ -31,6 +45,9 @@ export function ArtifactWorkspace({
       }
       if (artifacts.some((artifact) => artifact.id === artifactId)) {
         setActiveId(artifactId);
+        if (hasFocusFilter && !focusedArtifacts.some((artifact) => artifact.id === artifactId)) {
+          setShowAllArtifacts(true);
+        }
         setSaveState("idle");
         setError("");
       }
@@ -39,12 +56,31 @@ export function ArtifactWorkspace({
     selectArtifactFromHash();
     window.addEventListener("hashchange", selectArtifactFromHash);
     return () => window.removeEventListener("hashchange", selectArtifactFromHash);
-  }, [artifacts]);
+  }, [artifacts, focusedArtifacts, hasFocusFilter]);
+
+  useEffect(() => {
+    setShowAllArtifacts(!hasFocusFilter);
+  }, [focusKey, hasFocusFilter]);
+
+  useEffect(() => {
+    if (!artifacts.some((artifact) => artifact.id === activeId)) {
+      setActiveId(defaultArtifactId);
+      return;
+    }
+    if (
+      hasFocusFilter &&
+      !showAllArtifacts &&
+      !focusedArtifacts.some((artifact) => artifact.id === activeId)
+    ) {
+      setActiveId(defaultArtifactId);
+    }
+  }, [activeId, artifacts, defaultArtifactId, focusedArtifacts, hasFocusFilter, showAllArtifacts]);
 
   const activeArtifact = useMemo(
     () => artifacts.find((artifact) => artifact.id === activeId) ?? artifacts[0],
     [activeId, artifacts],
   );
+  const visibleArtifacts = showAllArtifacts || !hasFocusFilter ? artifacts : focusedArtifacts;
 
   if (!activeArtifact) {
     return null;
@@ -88,8 +124,8 @@ export function ArtifactWorkspace({
     <section className="panel artifact-workspace" id="artifact-workspace">
       <div className="panel-header">
         <div>
-          <h3 className="panel-title">작업 산출물 편집기</h3>
-          <p className="panel-subtitle">{activeArtifact.description}</p>
+          <h3 className="panel-title">{title}</h3>
+          <p className="panel-subtitle">{description}</p>
         </div>
         <button
           className="text-button primary"
@@ -104,7 +140,13 @@ export function ArtifactWorkspace({
 
       <div className="artifact-layout">
         <div className="artifact-tabs" role="tablist" aria-label="실행 산출물">
-          {artifacts.map((artifact) => (
+          <div className="artifact-tabs-heading">
+            <span>{showAllArtifacts || !hasFocusFilter ? "전체 산출물" : "이번 단계"}</span>
+            <strong>
+              {visibleArtifacts.length}/{artifacts.length}
+            </strong>
+          </div>
+          {visibleArtifacts.map((artifact) => (
             <button
               aria-selected={artifact.id === activeArtifact.id}
               className={`artifact-tab ${artifact.id === activeArtifact.id ? "active" : ""}`}
@@ -122,14 +164,31 @@ export function ArtifactWorkspace({
               <span>{artifact.label}</span>
             </button>
           ))}
+          {hasFocusFilter ? (
+            <button
+              className="artifact-view-toggle"
+              onClick={() => {
+                const nextShowAll = !showAllArtifacts;
+                setShowAllArtifacts(nextShowAll);
+                if (!nextShowAll && !focusedArtifacts.some((artifact) => artifact.id === activeId)) {
+                  setActiveId(defaultArtifactId);
+                }
+              }}
+              type="button"
+            >
+              {showAllArtifacts ? "이번 단계만 보기" : "전체 산출물 보기"}
+            </button>
+          ) : null}
         </div>
 
         <div className="artifact-editor">
           <div className="artifact-meta">
+            <span>{activeArtifact.label}</span>
             <span>{activeArtifact.filename}</span>
             <span>{activeArtifact.skill}</span>
             <span>{activeArtifact.size.toLocaleString()}바이트</span>
           </div>
+          <p className="artifact-description">{activeArtifact.description}</p>
           <textarea
             aria-label={`${activeArtifact.label} 마크다운 내용`}
             value={activeContent}
