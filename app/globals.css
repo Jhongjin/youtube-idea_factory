@@ -4019,8 +4019,8 @@ button:disabled,
 .marketing-hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(360px, 0.82fr) minmax(540px, 1.18fr);
-  gap: clamp(34px, 5vw, 76px);
+  grid-template-columns: minmax(0, 620px);
+  gap: 34px;
   align-items: center;
   overflow: hidden;
   width: min(1320px, calc(100% - 40px));
@@ -4029,6 +4029,18 @@ button:disabled,
   border-top: 1px solid var(--home-line);
   border-bottom: 1px solid var(--home-line);
   padding: clamp(54px, 7vw, 96px) 0 clamp(64px, 9vw, 118px);
+  isolation: isolate;
+}
+
+.marketing-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(247, 248, 243, 0.98) 0%, rgba(247, 248, 243, 0.86) 32%, rgba(247, 248, 243, 0.12) 78%),
+    linear-gradient(180deg, rgba(247, 248, 243, 0) 74%, rgba(247, 248, 243, 0.8) 100%);
 }
 
 .hero-copy {
@@ -4038,7 +4050,7 @@ button:disabled,
   align-self: start;
   align-content: start;
   gap: 18px;
-  max-width: 540px;
+  max-width: 610px;
   padding-top: 22px;
 }
 
@@ -4097,6 +4109,32 @@ button:disabled,
   gap: 14px;
 }
 
+.hero-signals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 610px;
+}
+
+.hero-signals span {
+  display: grid;
+  gap: 6px;
+  min-height: 68px;
+  align-content: center;
+  border-top: 1px solid var(--home-line);
+  color: #4f5d50;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.hero-signals strong {
+  color: var(--home-ink);
+  font-family:
+    "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
+  font-size: 18px;
+  line-height: 1;
+}
+
 .marketing-page .text-button.primary {
   min-height: 46px;
   border-color: transparent;
@@ -4119,16 +4157,19 @@ button:disabled,
 }
 
 .home-gallery {
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  inset: clamp(34px, 5vw, 66px) 0 clamp(36px, 6vw, 86px) clamp(470px, 38vw, 570px);
+  z-index: 0;
   display: grid;
-  width: 100%;
-  min-height: 540px;
+  width: auto;
+  min-height: auto;
   grid-auto-flow: dense;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: 68px;
+  grid-auto-rows: minmax(58px, 1fr);
   gap: 12px;
-  opacity: 0.94;
+  opacity: 0.98;
+  transform: perspective(1400px) rotateY(-7deg) rotateX(2deg) translateX(2%);
+  transform-origin: center right;
 }
 
 .gallery-card {
@@ -5447,6 +5488,10 @@ button:disabled,
     padding-bottom: 42px;
   }
 
+  .marketing-hero::before {
+    background: linear-gradient(180deg, rgba(247, 248, 243, 0.86), rgba(247, 248, 243, 0.24) 72%);
+  }
+
   .home-gallery {
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
@@ -5493,6 +5538,10 @@ button:disabled,
 
   .run-preview-grid strong {
     font-size: 24px;
+  }
+
+  .hero-signals {
+    grid-template-columns: 1fr;
   }
 
   .home-proof-strip div,
