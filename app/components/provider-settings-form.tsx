@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { CheckCircle2, KeyRound, Loader2, Plus, RefreshCw, Save, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { getProviderCapability } from "@/lib/provider-capabilities";
 import {
   getStaticProviderModels,
@@ -34,6 +35,7 @@ function looksLikeAutofilledAccount(value: string) {
 }
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
+  const router = useRouter();
   const [settings, setSettings] = useState(initialSettings);
   const [modelCatalogs, setModelCatalogs] = useState<ModelCatalogState>({});
   const [modelCatalogErrors, setModelCatalogErrors] = useState<Record<string, string>>({});
@@ -290,6 +292,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     const body = (await response.json()) as { settings: SafeProviderSettings };
     setSettings(body.settings);
     setState("saved");
+    router.refresh();
   }
 
   return (

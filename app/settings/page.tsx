@@ -12,11 +12,39 @@ import { ProviderSettingsForm } from "@/app/components/provider-settings-form";
 import { requireUser } from "@/lib/auth";
 import { getDeploymentReadiness, type DeploymentReadiness } from "@/lib/deployment-readiness";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
-import { providerRoles } from "@/lib/provider-settings-shared";
+import {
+  providerRoles,
+  type ProviderRoleId,
+  type SafeProviderSettings,
+} from "@/lib/provider-settings-shared";
 
 export const dynamic = "force-dynamic";
 
-function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }) {
+function providerRoleSummary(settings: SafeProviderSettings, role: ProviderRoleId) {
+  const base = settings.roles[role];
+  const profiles = settings.profiles.filter((profile) => profile.role === role);
+  const enabledProfiles = profiles.filter((profile) => profile.enabled);
+  const enabledCount = Number(base.enabled) + enabledProfiles.length;
+  const keyCount = Number(base.hasApiKey) + profiles.filter((profile) => profile.hasApiKey).length;
+  const labels = [
+    ...(base.enabled ? [`기본 ${base.provider}${base.model ? ` / ${base.model}` : ""}`] : []),
+    ...enabledProfiles.map((profile) => `${profile.provider}${profile.model ? ` / ${profile.model}` : ""}`),
+  ];
+  return {
+    enabledCount,
+    keyCount,
+    labels,
+    profileCount: profiles.length,
+  };
+}
+
+function DeploymentStatusPanel({
+  readiness,
+  settings,
+}: {
+  readiness: DeploymentReadiness;
+  settings: SafeProviderSettings;
+}) {
   const schemaReady =
     readiness.supabase.schema.productionRuns &&
     readiness.supabase.schema.runArtifacts &&
@@ -139,6 +167,7 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
           <div className="provider-readiness-grid">
             {providerRoles.map((role) => {
               const item = readiness.providers.roles[role.id];
+              const summary = providerRoleSummary(settings, role.id);
               return (
                 <div className="provider-readiness-card" key={role.id}>
                   <div>
@@ -147,9 +176,19 @@ function DeploymentStatusPanel({ readiness }: { readiness: DeploymentReadiness }
                   </div>
                   <span className={`readiness-chip ${item.status}`}>{item.message}</span>
                   <p>
-                    {item.hasApiKey ? "키 저장됨" : "키 없음"}
+                    사용 {summary.enabledCount}개 · 저장 키 {summary.keyCount}개
                     {item.model ? ` · ${item.model}` : ""}
                   </p>
+                  {summary.labels.length > 0 ? (
+                    <small className="provider-readiness-profiles">
+                      {summary.labels.slice(0, 2).join(" · ")}
+                      {summary.labels.length > 2 ? ` 외 ${summary.labels.length - 2}개` : ""}
+                    </small>
+                  ) : summary.profileCount > 0 ? (
+                    <small className="provider-readiness-profiles">
+                      추가 슬롯 {summary.profileCount}개가 저장되어 있습니다.
+                    </small>
+                  ) : null}
                 </div>
               );
             })}
@@ -224,7 +263,7 @@ export default async function SettingsPage() {
             : "로컬 전용 제공자 설정"}
         </div>
       </div>
-      <DeploymentStatusPanel readiness={readiness} />
+      <DeploymentStatusPanel readiness={readiness} settings={settings} />
       <ProviderSettingsForm initialSettings={settings} />
     </main>
   );
