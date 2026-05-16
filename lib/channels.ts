@@ -29,6 +29,18 @@ export type SafeYouTubeChannel = Omit<YouTubeChannel, "analytics_refresh_token" 
   has_upload_refresh_token: boolean;
 };
 
+export type YouTubeChannelCredentials = Pick<
+  YouTubeChannel,
+  | "analytics_refresh_token"
+  | "brand_name"
+  | "channel_id"
+  | "channel_name"
+  | "id"
+  | "status"
+  | "upload_refresh_token"
+  | "youtube_handle"
+>;
+
 type ChannelStoreFile = {
   channels: YouTubeChannel[];
 };
@@ -146,7 +158,7 @@ export async function listYouTubeChannels(): Promise<SafeYouTubeChannel[]> {
   return (await listStoredChannels()).map(safeChannel);
 }
 
-export async function getYouTubeChannel(channelId: string): Promise<SafeYouTubeChannel | null> {
+async function getStoredYouTubeChannel(channelId: string): Promise<YouTubeChannel | null> {
   const id = channelId.trim();
   if (!id) {
     return null;
@@ -161,11 +173,34 @@ export async function getYouTubeChannel(channelId: string): Promise<SafeYouTubeC
       }
       throw error;
     });
-    return rows[0] ? safeChannel(rows[0]) : null;
+    return rows[0] ?? null;
   }
 
-  const channel = (await readLocalChannels()).find((item) => item.id === id);
+  return (await readLocalChannels()).find((item) => item.id === id) ?? null;
+}
+
+export async function getYouTubeChannel(channelId: string): Promise<SafeYouTubeChannel | null> {
+  const channel = await getStoredYouTubeChannel(channelId);
   return channel ? safeChannel(channel) : null;
+}
+
+export async function getYouTubeChannelCredentials(
+  channelId: string,
+): Promise<YouTubeChannelCredentials | null> {
+  const channel = await getStoredYouTubeChannel(channelId);
+  if (!channel) {
+    return null;
+  }
+  return {
+    analytics_refresh_token: channel.analytics_refresh_token ?? null,
+    brand_name: channel.brand_name,
+    channel_id: channel.channel_id,
+    channel_name: channel.channel_name,
+    id: channel.id,
+    status: channel.status,
+    upload_refresh_token: channel.upload_refresh_token ?? null,
+    youtube_handle: channel.youtube_handle ?? null,
+  };
 }
 
 export async function createYouTubeChannel(input: {
