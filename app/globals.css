@@ -5086,6 +5086,45 @@ button:disabled,
   line-height: 1.45;
 }
 
+.admin-pending-card {
+  border-color: #b9dfcb;
+  background: #fbfffc;
+}
+
+.admin-pending-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-pending-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid #dbe9e0;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.admin-pending-row div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-pending-row strong {
+  color: #172019;
+  font-size: 14px;
+}
+
+.admin-pending-row span {
+  overflow-wrap: anywhere;
+  color: #667386;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .user-row {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(120px, 0.7fr)) minmax(108px, auto);
@@ -5129,6 +5168,47 @@ button:disabled,
 .text-button.approve:hover {
   border-color: #2f6f4e;
   background: #e4f5ec;
+}
+
+.admin-create-user {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-create-user summary {
+  display: flex;
+  min-height: 44px;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-create-user summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-create-user summary span {
+  color: #172019;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.admin-create-user summary svg {
+  color: #2f6f4e;
+}
+
+.admin-create-user > p {
+  margin: 0;
+  color: #526173;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.admin-create-user[open] summary {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
 }
 
 .channel-grid {
@@ -5532,6 +5612,7 @@ button:disabled,
   .admin-form-grid,
   .channel-form-grid,
   .channel-oauth-guide-grid,
+  .admin-pending-row,
   .user-row,
   .channel-update-grid {
     grid-template-columns: 1fr;

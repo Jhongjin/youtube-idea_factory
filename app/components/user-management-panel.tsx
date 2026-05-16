@@ -22,7 +22,9 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [approvingUserId, setApprovingUserId] = useState("");
-  const pendingUserCount = users.filter((user) => user.status === "pending").length;
+  const pendingUsers = users.filter((user) => user.status === "pending");
+  const pendingUserCount = pendingUsers.length;
+  const orderedUsers = [...pendingUsers, ...users.filter((user) => user.status !== "pending")];
 
   async function createUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,57 +98,45 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
 
   return (
     <div className="admin-stack">
-      <section className="admin-card">
-        <div className="admin-card-header">
-          <div>
-            <h2>회원 만들기</h2>
-            <p>팀원이 가입 요청을 보내기 전에도 관리자 계정에서 직접 등록할 수 있습니다.</p>
-          </div>
-          <UserPlus size={18} />
-        </div>
-        <form className="admin-form-grid" onSubmit={createUser}>
-          <label>
-            <span>이름</span>
-            <input name="name" placeholder="콘텐츠 운영자" required />
-          </label>
-          <label>
-            <span>이메일</span>
-            <input name="email" placeholder="creator@example.com" required type="email" />
-          </label>
-          <label>
-            <span>초기 비밀번호</span>
-            <input minLength={8} name="password" placeholder="8자 이상" required type="password" />
-          </label>
-          <label>
-            <span>권한</span>
-            <select defaultValue="member" name="role">
-              <option value="member">멤버</option>
-              <option value="admin">관리자</option>
-            </select>
-          </label>
-          <label>
-            <span>상태</span>
-            <select defaultValue="active" name="status">
-              <option value="active">활성</option>
-              <option value="pending">승인 대기</option>
-              <option value="disabled">비활성</option>
-            </select>
-          </label>
-          <button className="text-button primary" type="submit">
-            <Save size={15} />
-            회원 저장
-          </button>
-        </form>
-      </section>
-
       {error ? <p className="settings-message error">{error}</p> : null}
       {message ? <p className="settings-message saved">{message}</p> : null}
+
+      {pendingUserCount ? (
+        <section className="admin-card admin-pending-card" aria-label="승인 대기 회원">
+          <div className="admin-card-header">
+            <div>
+              <h2>승인 대기 {pendingUserCount}명</h2>
+              <p>가입 요청을 활성으로 바꾸면 해당 사용자가 바로 로그인할 수 있습니다.</p>
+            </div>
+            <span className="admin-count">먼저 처리</span>
+          </div>
+          <div className="admin-pending-list">
+            {pendingUsers.map((user) => (
+              <div className="admin-pending-row" key={user.id}>
+                <div>
+                  <strong>{user.name}</strong>
+                  <span>{user.email}</span>
+                </div>
+                <button
+                  className="text-button approve"
+                  disabled={approvingUserId === user.id}
+                  onClick={() => approveUser(user.id)}
+                  type="button"
+                >
+                  <CheckCircle2 size={15} />
+                  {approvingUserId === user.id ? "승인 중" : "활성으로 승인"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="admin-card">
         <div className="admin-card-header">
           <div>
             <h2>회원 목록</h2>
-            <p>관리자, 멤버, 승인 대기 계정을 한 화면에서 정리합니다.</p>
+            <p>승인 대기 계정은 위에 먼저 모으고, 전체 계정은 여기서 세부 값을 조정합니다.</p>
           </div>
           <span className="admin-count">{pendingUserCount ? `대기 ${pendingUserCount}` : users.length}</span>
         </div>
@@ -160,7 +150,7 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
           </div>
         ) : null}
         <div className="user-list">
-          {users.map((user) => (
+          {orderedUsers.map((user) => (
             <form className="user-row" key={user.id} onSubmit={(event) => updateUser(event, user.id)}>
               <div className="user-identity">
                 <strong>{user.name}</strong>
@@ -216,6 +206,47 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
           ))}
         </div>
       </section>
+
+      <details className="admin-card admin-create-user">
+        <summary>
+          <span>회원 직접 만들기</span>
+          <UserPlus size={18} />
+        </summary>
+        <p>팀원이 가입 요청을 보내기 전에도 관리자 계정에서 직접 등록할 수 있습니다.</p>
+        <form className="admin-form-grid" onSubmit={createUser}>
+          <label>
+            <span>이름</span>
+            <input name="name" placeholder="콘텐츠 운영자" required />
+          </label>
+          <label>
+            <span>이메일</span>
+            <input name="email" placeholder="creator@example.com" required type="email" />
+          </label>
+          <label>
+            <span>초기 비밀번호</span>
+            <input minLength={8} name="password" placeholder="8자 이상" required type="password" />
+          </label>
+          <label>
+            <span>권한</span>
+            <select defaultValue="member" name="role">
+              <option value="member">멤버</option>
+              <option value="admin">관리자</option>
+            </select>
+          </label>
+          <label>
+            <span>상태</span>
+            <select defaultValue="active" name="status">
+              <option value="active">활성</option>
+              <option value="pending">승인 대기</option>
+              <option value="disabled">비활성</option>
+            </select>
+          </label>
+          <button className="text-button primary" type="submit">
+            <Save size={15} />
+            회원 저장
+          </button>
+        </form>
+      </details>
     </div>
   );
 }
