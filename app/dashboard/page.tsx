@@ -1767,7 +1767,7 @@ function StageFocusPanel({
   const missingTranscripts = run.package.sources.filter(
     (source) => source.transcript_status !== "manual_transcript" && source.transcript_status !== "available",
   ).length;
-  const secondaryActions = plan.secondaryActionIds ?? [];
+  const secondaryActionCount = plan.secondaryActionIds?.length ?? 0;
   const decision = inspectorDecision({ plan, run, validation });
   const gate = activeApprovalGate(plan);
   const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
@@ -1804,21 +1804,16 @@ function StageFocusPanel({
             <p>{openApprovalCount}개 게이트가 아직 열려 있습니다.</p>
           </div>
         ) : null}
-        <div className="stage-focus-actions">
+        <div className="stage-focus-actions read-only">
           {plan.primaryActionId ? (
-            <div className="stage-focus-primary-action">
-              <WorkflowActionButton actionId={plan.primaryActionId} run={run} />
+            <div className="stage-focus-guidance">
+              <strong>실행은 중앙 단계 카드에서 진행하세요.</strong>
+              <p>오른쪽 패널은 현재 판단, 승인 상태, 필요한 확인만 보여줍니다.</p>
+              {secondaryActionCount > 0 ? <span>보조 도구 {secondaryActionCount}개는 중앙 카드에 있습니다.</span> : null}
             </div>
           ) : (
             <p className="stage-focus-note">승인, 수동 등록, 또는 워커 실행처럼 버튼 밖의 확인이 필요한 단계입니다.</p>
           )}
-          {secondaryActions.length > 0 ? (
-            <div className="stage-focus-secondary-actions">
-              {secondaryActions.map((actionId) => (
-                <WorkflowActionButton actionId={actionId} key={actionId} run={run} />
-              ))}
-            </div>
-          ) : null}
         </div>
         <div className="stage-focus-inputs">
           <div className="stage-focus-inputs-header">

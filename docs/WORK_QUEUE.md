@@ -45,6 +45,7 @@ This queue keeps the build loop explicit:
 | dashboard-refresh-link | Phase 7 | done | codex | no | Dashboard refresh control now reloads the current run and guided step instead of being an inert button. |
 | auth-admin-approval-ux | Phase 7 | done | codex | no | Pending logins now explain the admin approval path, `/admin` shows a quick approve action, and non-admin admin-page access returns to the dashboard with a clear notice. |
 | new-run-preserve-channel-context | Phase 7 | done | codex | no | New production runs now redirect back to the selected brand channel, created run, and research step after creation. |
+| dashboard-single-primary-action | Phase 7 | done | codex | no | The right inspector now explains state only; the executable next-step button stays in the central guided card. |
 | api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
