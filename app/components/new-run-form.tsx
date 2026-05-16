@@ -96,7 +96,14 @@ export function NewRunForm({
 
     const body = (await response.json()) as { run?: { id?: string } };
     if (body.run?.id) {
-      window.location.href = `/dashboard?run=${encodeURIComponent(body.run.id)}&step=research`;
+      const nextParams = new URLSearchParams({
+        run: body.run.id,
+        step: "research",
+      });
+      if (payload.channelId) {
+        nextParams.set("channel", payload.channelId);
+      }
+      window.location.href = `/dashboard?${nextParams.toString()}`;
       return;
     }
 
