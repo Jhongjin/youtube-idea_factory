@@ -7546,7 +7546,8 @@ body {
   min-width: 0;
 }
 
-.provider-model-field input {
+.provider-model-field input,
+.provider-model-field select {
   width: 100%;
   min-width: 0;
 }

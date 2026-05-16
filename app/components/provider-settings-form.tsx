@@ -29,6 +29,10 @@ function providerProfileLabel(profile: SafeProviderProfile) {
   return profile.provider || "등록 슬롯";
 }
 
+function looksLikeAutofilledAccount(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value.trim());
+}
+
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
   const [settings, setSettings] = useState(initialSettings);
   const [modelCatalogs, setModelCatalogs] = useState<ModelCatalogState>({});
@@ -128,6 +132,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
   async function refreshModelCatalog(role: ProviderRoleId, provider: string, profileId?: string) {
     const key = modelCatalogKey(role, provider, profileId);
+    if (!supportsLiveProviderModelRefresh(provider)) {
+      setModelCatalogs((current) => ({
+        ...current,
+        [key]: getStaticProviderModels(role, provider),
+      }));
+      setModelCatalogErrors((current) => ({ ...current, [key]: "" }));
+      return;
+    }
+
     setLoadingModelCatalog(key);
     setModelCatalogErrors((current) => ({ ...current, [key]: "" }));
 
@@ -172,40 +185,51 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     const key = modelCatalogKey(role, provider, profileId);
     const options = modelOptions(role, provider, profileId);
     const supportsLiveRefresh = supportsLiveProviderModelRefresh(provider);
+    const canRefresh = supportsLiveRefresh || getStaticProviderModels(role, provider).length > 0;
     const loading = loadingModelCatalog === key;
+    const normalizedValue = looksLikeAutofilledAccount(value) ? "" : value;
+    const hasCurrentModel = Boolean(
+      normalizedValue && !options.some((model) => model.id === normalizedValue),
+    );
     return (
       <>
         <div className="provider-model-field">
-          <input name={name} type="hidden" value={value} />
-          <input
-            aria-autocomplete="none"
-            autoCapitalize="none"
-            autoComplete="new-password"
-            autoCorrect="off"
-            data-1p-ignore="true"
-            data-form-type="other"
-            data-lpignore="true"
-            list={options.length > 0 ? `models-${key.replace(/[^a-z0-9_-]/giu, "-")}` : undefined}
-            onChange={(event) => onChange(event.target.value)}
-            placeholder={placeholder}
-            spellCheck={false}
-            value={value}
-          />
+          <input name={name} type="hidden" value={normalizedValue} />
           {options.length > 0 ? (
-            <datalist id={`models-${key.replace(/[^a-z0-9_-]/giu, "-")}`}>
+            <select
+              aria-label="모델 선택"
+              onChange={(event) => onChange(event.target.value)}
+              value={normalizedValue}
+            >
+              <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
+              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue}</option> : null}
               {options.map((model) => (
                 <option key={model.id} value={model.id}>
                   {model.label}
                 </option>
               ))}
-            </datalist>
-          ) : null}
-          {supportsLiveRefresh ? (
+            </select>
+          ) : (
+            <input
+              aria-autocomplete="none"
+              autoCapitalize="none"
+              autoComplete="new-password"
+              autoCorrect="off"
+              data-1p-ignore="true"
+              data-form-type="other"
+              data-lpignore="true"
+              onChange={(event) => onChange(event.target.value)}
+              placeholder={placeholder}
+              spellCheck={false}
+              value={normalizedValue}
+            />
+          )}
+          {canRefresh ? (
             <button
               className="icon-button"
               disabled={loading}
               onClick={() => refreshModelCatalog(role, provider, profileId)}
-              title="저장된 API 키로 모델 목록 새로고침"
+              title={supportsLiveRefresh ? "저장된 API 키로 모델 목록 새로고침" : "내장 모델 목록 다시 불러오기"}
               type="button"
             >
               {loading ? <Loader2 className="spin" size={14} /> : <RefreshCw size={14} />}
