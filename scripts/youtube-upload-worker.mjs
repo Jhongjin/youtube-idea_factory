@@ -12,6 +12,7 @@ const runsDir = path.join(root, "runs");
 const artifactsDir = path.join(root, "artifacts");
 const confirmToken = "RUN_YOUTUBE_UPLOAD";
 const defaultBucket = "youtube-assets";
+const localChannelStorePath = path.join(root, "config", "youtube-channels.local.json");
 
 function parseArgs(argv) {
   const args = {};
@@ -32,6 +33,10 @@ function parseArgs(argv) {
   return args;
 }
 
+function normalizeStorageMode(value) {
+  return String(value || "local").trim().toLowerCase() || "local";
+}
+
 function usage() {
   console.log(`Usage:
   npm run youtube:upload-worker -- --run-id <runId> --confirm ${confirmToken}
@@ -39,7 +44,7 @@ function usage() {
 Required OAuth env:
   YOUTUBE_OAUTH_CLIENT_ID
   YOUTUBE_OAUTH_CLIENT_SECRET
-  YOUTUBE_OAUTH_REFRESH_TOKEN
+  YOUTUBE_OAUTH_REFRESH_TOKEN (fallback when no run channel is selected)
 
 Options:
   --next                    Claim and run the next queued YouTube upload job.
@@ -50,6 +55,10 @@ Options:
   --skip-thumbnail           Upload video only.
   --interval-seconds <n>     Poll interval. Defaults to 15.
   --max-jobs <n>             Stop after n jobs. Defaults to 1 for --next, unlimited for --poll.
+
+Channel tokens:
+  When youtube-upload-job.json has channel.id, the worker reads youtube_channels.upload_refresh_token
+  from Supabase or config/youtube-channels.local.json. The env refresh token remains a compatibility fallback.
 `);
 }
 
@@ -262,6 +271,7 @@ async function readWorkerJobRecords(storageMode, runId) {
 
 function uploadQueueRecord(runId, job, status) {
   const now = job.updated_at || new Date().toISOString();
+  const channel = job.channel ?? {};
   return {
     approval_gate: "publish",
     attempts: status === "queued" ? 0 : 1,
@@ -272,11 +282,16 @@ function uploadQueueRecord(runId, job, status) {
     last_error: job.error || "",
     log_artifact_key: "youtube-upload-log.json",
     payload: {
+      channel_id: channel.id || "",
+      channel_name: channel.channel_name || "",
+      channel_record_id: channel.id || "",
       made_for_kids: Boolean(job.metadata?.made_for_kids),
       privacy_status: job.metadata?.privacy_status || "",
       scheduled_at: job.metadata?.scheduled_at || "",
       title: job.metadata?.title || "",
       video_url: job.video_url || "",
+      youtube_channel_id: channel.youtube_channel_id || "",
+      youtube_handle: channel.youtube_handle || "",
     },
     provider_role: "youtube",
     queued_at: job.created_at || now,
@@ -467,20 +482,74 @@ async function resolveInputAsset({ runId, storageMode, assetPath, workDir, label
   return localArtifactFile(runId, assetPath);
 }
 
-function youtubeOAuthConfig() {
+function selectedUploadChannelId(job, pkg) {
+  return String(job?.channel?.id || pkg?.brief?.channel?.id || "").trim();
+}
+
+async function readLocalUploadChannel(channelId) {
+  const raw = await fs.readFile(localChannelStorePath, "utf-8").catch((error) => {
+    if (error.code === "ENOENT") {
+      return "";
+    }
+    throw error;
+  });
+  if (!raw) {
+    return null;
+  }
+  const parsed = JSON.parse(raw);
+  return (parsed.channels ?? []).find((channel) => channel.id === channelId) ?? null;
+}
+
+async function readSupabaseUploadChannel(channelId) {
+  const query = new URLSearchParams({
+    id: `eq.${channelId}`,
+    limit: "1",
+    select: "id,brand_name,channel_name,status,upload_refresh_token",
+  });
+  const response = await supabaseRequest(`rest/v1/youtube_channels?${query}`);
+  const rows = await response.json();
+  return rows[0] ?? null;
+}
+
+async function uploadRefreshTokenForJob({ job, pkg, storageMode } = {}) {
+  const channelId = selectedUploadChannelId(job, pkg);
+  if (!channelId) {
+    return process.env.YOUTUBE_OAUTH_REFRESH_TOKEN?.trim() || "";
+  }
+
+  const channel =
+    storageMode === "supabase"
+      ? await readSupabaseUploadChannel(channelId)
+      : await readLocalUploadChannel(channelId);
+  if (!channel) {
+    throw new Error(`Selected YouTube channel not found: ${channelId}`);
+  }
+  if (channel.status === "paused") {
+    throw new Error(`Selected YouTube channel is paused: ${channel.channel_name ?? channelId}`);
+  }
+  const refreshToken = String(channel.upload_refresh_token ?? "").trim();
+  if (!refreshToken) {
+    throw new Error(`Selected YouTube channel is missing upload_refresh_token: ${channel.channel_name ?? channelId}`);
+  }
+  return refreshToken;
+}
+
+function youtubeOAuthConfig(refreshTokenOverride = "") {
   const clientId = process.env.YOUTUBE_OAUTH_CLIENT_ID?.trim();
   const clientSecret = process.env.YOUTUBE_OAUTH_CLIENT_SECRET?.trim();
-  const refreshToken = process.env.YOUTUBE_OAUTH_REFRESH_TOKEN?.trim();
+  const refreshToken = refreshTokenOverride.trim() || process.env.YOUTUBE_OAUTH_REFRESH_TOKEN?.trim();
   if (!clientId || !clientSecret || !refreshToken) {
     throw new Error(
-      "YouTube upload worker requires YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET, and YOUTUBE_OAUTH_REFRESH_TOKEN.",
+      "YouTube upload worker requires YOUTUBE_OAUTH_CLIENT_ID, YOUTUBE_OAUTH_CLIENT_SECRET, and either a selected channel upload_refresh_token or YOUTUBE_OAUTH_REFRESH_TOKEN.",
     );
   }
   return { clientId, clientSecret, refreshToken };
 }
 
-async function getAccessToken() {
-  const { clientId, clientSecret, refreshToken } = youtubeOAuthConfig();
+async function getAccessToken(context = {}) {
+  const { clientId, clientSecret, refreshToken } = youtubeOAuthConfig(
+    await uploadRefreshTokenForJob(context),
+  );
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -641,7 +710,7 @@ async function runUploadJob({ args, runId, storageMode }) {
 
   if (dryRun) {
     const [accessToken, videoPath, thumbnailPath] = await Promise.all([
-      getAccessToken(),
+      getAccessToken({ job, pkg, storageMode }),
       resolveInputAsset({
         assetPath: job.video.path,
         label: "video",
@@ -665,6 +734,7 @@ async function runUploadJob({ args, runId, storageMode }) {
       runId,
       jobId: job.job_id,
       jobStatus: job.status,
+      channel: job.channel ?? pkg.brief?.channel ?? null,
       storageMode,
       oauth: accessToken ? "access_token_refreshed" : "missing",
       videoPath,
@@ -683,7 +753,7 @@ async function runUploadJob({ args, runId, storageMode }) {
 
   try {
     const [accessToken, videoPath, thumbnailPath] = await Promise.all([
-      getAccessToken(),
+      getAccessToken({ job, pkg, storageMode }),
       resolveInputAsset({
         assetPath: job.video.path,
         label: "video",
@@ -709,6 +779,7 @@ async function runUploadJob({ args, runId, storageMode }) {
     const uploadLog = {
       uploaded_at: now,
       worker_job_id: job.job_id,
+      channel: job.channel ?? pkg.brief?.channel ?? null,
       video_id: video.videoId,
       video_url: video.videoUrl,
       privacy_status: video.response?.status?.privacyStatus ?? job.metadata.privacy_status,
@@ -788,7 +859,7 @@ async function runQueuedMode(args, storageMode) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const runId = args["run-id"];
-  const storageMode = args.storage || process.env.APP_STORAGE_MODE || "local";
+  const storageMode = normalizeStorageMode(args.storage || process.env.APP_STORAGE_MODE || "local");
   if (args.confirm !== confirmToken) {
     usage();
     process.exitCode = 2;

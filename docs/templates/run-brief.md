@@ -5,6 +5,8 @@
 - Run id:
 - Date:
 - Category/topic:
+- Brand channel:
+- YouTube channel id/handle:
 - Target audience:
 - Format:
 - Target duration:
@@ -41,4 +43,3 @@
 - Script approved:
 - Media generation approved:
 - Publishing approved:
-

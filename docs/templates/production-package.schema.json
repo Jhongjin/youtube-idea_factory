@@ -21,6 +21,19 @@
       "properties": {
         "topic": { "type": "string" },
         "category": { "type": "string" },
+        "channel": {
+          "type": "object",
+          "required": ["id", "brand_name", "channel_name"],
+          "properties": {
+            "id": { "type": "string" },
+            "brand_name": { "type": "string" },
+            "channel_name": { "type": "string" },
+              "channel_id": { "type": ["string", "null"] },
+            "youtube_handle": { "type": ["string", "null"] },
+            "default_language": { "type": "string" },
+            "status": { "type": "string" }
+          }
+        },
         "format": { "type": "string" },
         "target_audience": { "type": "string" },
         "target_duration_seconds": { "type": "integer", "minimum": 1 },

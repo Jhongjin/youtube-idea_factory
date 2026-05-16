@@ -1,17 +1,20 @@
 import { ArrowLeft, Settings, Tv, Users } from "lucide-react";
 import Link from "next/link";
+import { SupabaseSetupNotice } from "@/app/components/supabase-setup-notice";
 import { UserManagementPanel } from "@/app/components/user-management-panel";
 import { requireUser } from "@/lib/auth";
 import { listYouTubeChannels } from "@/lib/channels";
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { listAppUsers } from "@/lib/users";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [user, users, channels] = await Promise.all([
+  const [user, users, channels, readiness] = await Promise.all([
     requireUser({ redirectTo: "/login?next=/admin", role: "admin" }),
     listAppUsers(),
     listYouTubeChannels(),
+    getDeploymentReadiness(),
   ]);
 
   return (
@@ -50,6 +53,8 @@ export default async function AdminPage() {
           </span>
         </div>
       </section>
+
+      <SupabaseSetupNotice readiness={readiness} scope="users" />
 
       <UserManagementPanel users={users} />
     </main>

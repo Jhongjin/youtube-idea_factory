@@ -59,6 +59,7 @@ import { getRunApprovals, type RunApprovals } from "@/lib/approvals";
 import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-generation-state";
 import { getRunArtifacts } from "@/lib/artifacts";
 import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
+import { listYouTubeChannels, type SafeYouTubeChannel } from "@/lib/channels";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
@@ -68,6 +69,7 @@ import {
   type RunPrimaryActionId,
 } from "@/lib/run-next-actions";
 import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
+import { getAppStorageMode } from "@/lib/storage-mode";
 import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
 
@@ -239,6 +241,30 @@ const languageCopy: Record<string, string> = {
   en: "영어",
 };
 
+function runChannelLabel(run?: RunSummary) {
+  const channel = run?.package.brief.channel;
+  if (!channel) {
+    return "채널 미지정";
+  }
+  return `${channel.brand_name} / ${channel.channel_name}`;
+}
+
+function runChannelId(run?: RunSummary) {
+  return run?.package.brief.channel?.id ?? "";
+}
+
+function dashboardHref(params: { channelId?: string; runId?: string }) {
+  const search = new URLSearchParams();
+  if (params.runId) {
+    search.set("run", params.runId);
+  }
+  if (params.channelId) {
+    search.set("channel", params.channelId);
+  }
+  const query = search.toString();
+  return query ? `/dashboard?${query}` : "/dashboard";
+}
+
 const statusIcons = {
   done: CheckCircle2,
   review: AlertTriangle,
@@ -308,15 +334,24 @@ function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
 
 function Sidebar({
   activeRun,
+  activeChannelId,
+  allRuns,
+  channels,
   memoryIndex,
   runs,
+  totalRuns,
   workQueueSummary,
 }: {
   activeRun?: RunSummary;
+  activeChannelId: string;
+  allRuns: RunSummary[];
+  channels: SafeYouTubeChannel[];
   memoryIndex: ChannelMemoryIndex;
   runs: RunSummary[];
+  totalRuns: number;
   workQueueSummary: WorkQueueSummary;
 }) {
+  const activeChannel = channels.find((channel) => channel.id === activeChannelId);
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -344,20 +379,54 @@ function Sidebar({
         </ul>
       </section>
 
+      {channels.length > 0 ? (
+        <section className="nav-section">
+          <h2>브랜드 채널</h2>
+          <div className="channel-filter-list">
+            <Link className={`channel-filter ${activeChannelId ? "" : "active"}`} href="/dashboard">
+              <strong>전체 실행</strong>
+              <span>{totalRuns}개</span>
+            </Link>
+            {channels.map((channel) => {
+              const channelRuns = allRuns.filter((run) => runChannelId(run) === channel.id).length;
+              return (
+                <Link
+                  className={`channel-filter ${channel.id === activeChannelId ? "active" : ""}`}
+                  href={dashboardHref({ channelId: channel.id })}
+                  key={channel.id}
+                >
+                  <strong>{channel.brand_name}</strong>
+                  <span>
+                    {channel.channel_name} / {channelRuns}개
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+          {activeChannel ? (
+            <p className="channel-filter-note">
+              {activeChannel.channel_name} 기준으로 실행 기록을 보고 있습니다.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="nav-section">
-        <h2>실행 기록</h2>
+        <h2>{activeChannel ? "채널 실행 기록" : "실행 기록"}</h2>
         <div className="nav-list">
           {runs.slice(0, 5).map((run) => (
             <Link
               className={`run-card ${run.id === activeRun?.id ? "active" : ""}`}
-              href={`/dashboard?run=${encodeURIComponent(run.id)}`}
+              href={dashboardHref({ channelId: activeChannelId, runId: run.id })}
               key={run.id}
             >
               <strong>{run.package.brief.topic}</strong>
-              <span>{run.id}</span>
+              <span>
+                {runChannelLabel(run)} / {run.id}
+              </span>
             </Link>
           ))}
-          {runs.length === 0 ? <p className="muted">실행 기록이 없습니다</p> : null}
+          {runs.length === 0 ? <p className="muted">이 채널의 실행 기록이 없습니다</p> : null}
         </div>
       </section>
 
@@ -380,20 +449,24 @@ function Sidebar({
   );
 }
 
-function EmptyState() {
+function EmptyState({ channelName }: { channelName?: string }) {
   return (
     <main className="main">
       <div className="topbar">
         <div>
           <p className="eyebrow">1단계</p>
-          <h2>제작 작업공간</h2>
+          <h2>{channelName ? `${channelName} 제작 작업공간` : "제작 작업공간"}</h2>
         </div>
       </div>
       <div className="empty-state">
         <div>
           <Rocket size={34} />
-          <h3>아직 제작 실행이 없습니다</h3>
-          <p>새 실행을 만들면 제작 패키지가 파이프라인을 따라 여기에 표시됩니다.</p>
+          <h3>{channelName ? "이 채널의 제작 실행이 없습니다" : "아직 제작 실행이 없습니다"}</h3>
+          <p>
+            {channelName
+              ? "오른쪽 새 실행 만들기에서 이 브랜드 채널을 선택해 첫 실행을 시작하세요."
+              : "새 실행을 만들면 제작 패키지가 파이프라인을 따라 여기에 표시됩니다."}
+          </p>
         </div>
       </div>
     </main>
@@ -755,7 +828,13 @@ function narrationFromStoryboard(storyboard: unknown[]) {
     .join("\n\n");
 }
 
-function NewRunPanel() {
+function NewRunPanel({
+  channels,
+  initialChannelId = "",
+}: {
+  channels: SafeYouTubeChannel[];
+  initialChannelId?: string;
+}) {
   return (
     <section className="panel">
       <div className="panel-header">
@@ -763,7 +842,7 @@ function NewRunPanel() {
         <Rocket size={16} />
       </div>
       <div className="panel-body">
-        <NewRunForm />
+        <NewRunForm channels={channels} initialChannelId={initialChannelId} />
       </div>
     </section>
   );
@@ -819,6 +898,7 @@ function ProviderReadinessPanel({
 
 function BriefPanel({ run }: { run: RunSummary }) {
   const brief = run.package.brief;
+  const channel = brief.channel;
   return (
     <section className="panel">
       <div className="panel-header">
@@ -839,6 +919,16 @@ function BriefPanel({ run }: { run: RunSummary }) {
             <span>카테고리</span>
             <span>{brief.category || "미지정"}</span>
           </div>
+          <div className="detail-row">
+            <span>브랜드 채널</span>
+            <span>{channel ? `${channel.brand_name} / ${channel.channel_name}` : "미지정"}</span>
+          </div>
+          {channel?.youtube_handle ? (
+            <div className="detail-row">
+              <span>YouTube 핸들</span>
+              <span>{channel.youtube_handle}</span>
+            </div>
+          ) : null}
           <div className="detail-row">
             <span>형식</span>
             <span>{formatCopy[brief.format] ?? brief.format}</span>
@@ -1147,6 +1237,7 @@ function StageFocusPanel({ plan, run }: { plan: RunNextActionPlan; run: RunSumma
 
 function Inspector({
   run,
+  activeChannelId,
   validation,
   providerSettings,
   approvals,
@@ -1154,8 +1245,10 @@ function Inspector({
   nextActionPlan,
   storageMode,
   workerStatus,
+  channels,
 }: {
   run: RunSummary;
+  activeChannelId: string;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
   approvals: RunApprovals;
@@ -1163,6 +1256,7 @@ function Inspector({
   nextActionPlan: RunNextActionPlan;
   storageMode: string;
   workerStatus: RunWorkerStatus;
+  channels: SafeYouTubeChannel[];
 }) {
   const stage = nextActionPlan.stageLabel;
   const showApprovals = nextActionPlan.headline.includes("승인");
@@ -1201,7 +1295,7 @@ function Inspector({
         <details className="inspector-more new-run-drawer">
           <summary>새 실행 만들기</summary>
           <div className="detail-stack">
-            <NewRunPanel />
+            <NewRunPanel channels={channels} initialChannelId={activeChannelId || runChannelId(run)} />
           </div>
         </details>
 
@@ -1236,21 +1330,31 @@ function Inspector({
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ run?: string }>;
+  searchParams?: Promise<{ channel?: string; run?: string }>;
 }) {
   await requireUser({ redirectTo: "/login?next=/dashboard" });
   const runs = await getRuns();
+  const channels = await listYouTubeChannels();
   const memoryIndex = await getChannelMemoryIndex(runs);
   const workQueueSummary = getWorkQueueSummary();
   const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
-  const activeRun = runs.find((run) => run.id === params.run) ?? runs[0];
+  const activeChannelId = channels.some((channel) => channel.id === params.channel) ? (params.channel ?? "") : "";
+  const visibleRuns = activeChannelId
+    ? runs.filter((run) => runChannelId(run) === activeChannelId)
+    : runs;
+  const activeChannel = channels.find((channel) => channel.id === activeChannelId);
+  const requestedRun = params.run ? runs.find((run) => run.id === params.run) : undefined;
+  const activeRun =
+    requestedRun && (!activeChannelId || runChannelId(requestedRun) === activeChannelId)
+      ? requestedRun
+      : visibleRuns[0];
   const artifacts = activeRun ? await getRunArtifacts(activeRun.id) : [];
   const generationState = activeRun ? await getAssetGenerationState(activeRun.id) : null;
   const validation = activeRun ? validateProductionPackage(activeRun.package) : null;
   const approvals = activeRun ? await getRunApprovals(activeRun.id) : null;
   const workerStatus = activeRun ? await getRunWorkerStatus(activeRun.id, activeRun.package) : null;
-  const storageMode = process.env.APP_STORAGE_MODE?.trim() || "local";
+  const storageMode = getAppStorageMode();
   const nextActionPlan =
     activeRun && validation && approvals && generationState && workerStatus
       ? getRunNextActionPlan({
@@ -1267,8 +1371,12 @@ export default async function Home({
     <div className="shell">
       <Sidebar
         activeRun={activeRun}
+        activeChannelId={activeChannelId}
+        allRuns={runs}
+        channels={channels}
         memoryIndex={memoryIndex}
-        runs={runs}
+        runs={visibleRuns}
+        totalRuns={runs.length}
         workQueueSummary={workQueueSummary}
       />
       {activeRun ? (
@@ -1278,6 +1386,7 @@ export default async function Home({
               <p className="eyebrow">1단계 제작 실행</p>
               <h2>{activeRun.package.brief.topic}</h2>
               <p className="muted">
+                {runChannelLabel(activeRun)} /{" "}
                 {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} /{" "}
                 {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} /{" "}
                 {activeRun.package.brief.target_audience || "대상 시청자 미정"}
@@ -1310,15 +1419,17 @@ export default async function Home({
           <ArtifactWorkspace artifacts={artifacts} runId={activeRun.id} />
         </main>
       ) : (
-        <EmptyState />
+        <EmptyState channelName={activeChannel?.channel_name} />
       )}
       {activeRun ? (
         <Inspector
+          activeChannelId={activeChannelId}
           approvals={approvals!}
           generationState={generationState!}
           nextActionPlan={nextActionPlan!}
           providerSettings={providerSettings}
           run={activeRun}
+          channels={channels}
           storageMode={storageMode}
           validation={validation!}
           workerStatus={workerStatus!}
@@ -1331,7 +1442,7 @@ export default async function Home({
               <Rocket size={16} />
             </div>
             <div className="panel-body">
-              <NewRunForm />
+              <NewRunForm channels={channels} initialChannelId={activeChannelId} />
             </div>
           </section>
         </aside>

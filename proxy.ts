@@ -44,18 +44,37 @@ function getPresentedToken(request: NextRequest) {
   return "";
 }
 
+function isSessionProtectedApi(pathname: string) {
+  return (
+    pathname.startsWith("/api/admin/") ||
+    pathname.startsWith("/api/analytics/") ||
+    pathname.startsWith("/api/ops/") ||
+    pathname.startsWith("/api/runs") ||
+    pathname.startsWith("/api/settings/") ||
+    pathname.startsWith("/api/youtube/")
+  );
+}
+
+function isAdminApi(pathname: string) {
+  return pathname.startsWith("/api/admin/") || pathname.startsWith("/api/settings/");
+}
+
 export async function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/api/auth/")) {
+  const pathname = request.nextUrl.pathname;
+  const protectedApi = isSessionProtectedApi(pathname);
+  const adminApi = isAdminApi(pathname);
+
+  if (pathname.startsWith("/api/auth/") || pathname.startsWith("/api/health/")) {
     return NextResponse.next();
   }
 
-  if (SAFE_METHODS.has(request.method.toUpperCase())) {
+  if (!protectedApi && SAFE_METHODS.has(request.method.toUpperCase())) {
     return NextResponse.next();
   }
 
   const session = await verifySessionToken(request.cookies.get(SESSION_COOKIE_NAME)?.value);
   if (session) {
-    if (request.nextUrl.pathname.startsWith("/api/admin/") && session.role !== "admin") {
+    if (adminApi && session.role !== "admin") {
       return NextResponse.json({ error: "관리자 권한이 필요합니다." }, { status: 403 });
     }
     return NextResponse.next();
@@ -63,7 +82,7 @@ export async function proxy(request: NextRequest) {
 
   const configuredToken = getConfiguredAdminToken();
   if (!configuredToken) {
-    if (hasConfiguredLogin()) {
+    if (protectedApi || hasConfiguredLogin()) {
       return NextResponse.json(
         { error: "로그인이 필요합니다. /login에서 아이디와 비밀번호로 로그인하세요." },
         { status: 401 },

@@ -16,7 +16,11 @@ This queue keeps the build loop explicit:
 | ID | Phase | Status | Owner | Can Skip | Next Action |
 | --- | --- | --- | --- | --- | --- |
 | public-home-auth-admin-channels | Phase 7 | done | codex | no | Public homepage, login/signup/my page, admin users, and channel management are implemented. |
-| channel-oauth-inventory | Phase 7 | done | codex | no | Apply `docs/templates/supabase-auth-schema.sql` in Supabase for durable channel/user records. |
+| supabase-auth-channel-schema | Phase 7 | done | operator | no | `docs/templates/supabase-auth-schema.sql` has been applied; health reports `appUsers` and `youtubeChannels` as ready. |
+| channel-oauth-inventory | Phase 7 | done | codex | no | Admin channel records can persist upload and analytics token inventory in Supabase. |
+| channel-run-linking | Phase 7 | done | codex | no | New runs can store a selected brand channel in `package.brief.channel`; upload jobs and workers use the selected channel token when present. |
+| dashboard-channel-filtering | Phase 7 | done | codex | no | Dashboard sidebar can filter run history by brand channel, and new runs inherit the selected channel context. |
+| api-session-hardening | Phase 7 | done | codex | no | Sensitive run, settings, YouTube, analytics, and ops APIs require an authenticated session; settings/admin APIs require admin authority. |
 | phase-6-feedback-loop-flow | Phase 6 | done | codex | no | Run once against a real uploaded video ID after deployment. |
 | phase-6-work-queue | Phase 6 | done | codex | no | Use this queue to separate completed, deferred, and skipped work. |
 | youtube-analytics-oauth | Phase 6 | deferred | operator | no | Enable YouTube Analytics API and issue a refresh token with analytics read scope. |

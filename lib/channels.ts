@@ -11,7 +11,7 @@ export type YouTubeChannelStatus = "active" | "setup" | "paused";
 export type YouTubeChannel = {
   analytics_refresh_token?: string | null;
   brand_name: string;
-  channel_id: string;
+  channel_id: string | null;
   channel_name: string;
   created_at: string;
   default_language: string;
@@ -88,6 +88,28 @@ export async function listYouTubeChannels(): Promise<SafeYouTubeChannel[]> {
   return (await readLocalChannels()).map(safeChannel);
 }
 
+export async function getYouTubeChannel(channelId: string): Promise<SafeYouTubeChannel | null> {
+  const id = channelId.trim();
+  if (!id) {
+    return null;
+  }
+
+  if (getAppStorageMode() === "supabase") {
+    const rows = await supabaseRest<YouTubeChannel[]>(channelsTable, {
+      query: { id: supabaseEq(id), limit: 1, select: "*" },
+    }).catch((error) => {
+      if (isSupabaseMissingTableError(error)) {
+        return [];
+      }
+      throw error;
+    });
+    return rows[0] ? safeChannel(rows[0]) : null;
+  }
+
+  const channel = (await readLocalChannels()).find((item) => item.id === id);
+  return channel ? safeChannel(channel) : null;
+}
+
 export async function createYouTubeChannel(input: {
   analytics_refresh_token?: string;
   brand_name: string;
@@ -108,7 +130,7 @@ export async function createYouTubeChannel(input: {
   const channel: YouTubeChannel = {
     analytics_refresh_token: input.analytics_refresh_token?.trim() || null,
     brand_name: input.brand_name.trim(),
-    channel_id: input.channel_id.trim(),
+    channel_id: input.channel_id.trim() || null,
     channel_name: input.channel_name.trim(),
     created_at: timestamp,
     default_language: input.default_language?.trim() || "ko",
@@ -163,7 +185,7 @@ export async function updateYouTubeChannel(
     updates.brand_name = input.brand_name.trim();
   }
   if (input.channel_id !== undefined) {
-    updates.channel_id = input.channel_id.trim();
+    updates.channel_id = input.channel_id.trim() || null;
   }
   if (input.channel_name !== undefined) {
     updates.channel_name = input.channel_name.trim();
