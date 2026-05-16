@@ -4742,6 +4742,54 @@ button:disabled,
   color: var(--red);
 }
 
+.channel-readiness {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  border: 1px solid #cfe3d4;
+  border-radius: 10px;
+  background: #f4fbf6;
+  color: var(--green);
+  margin: 0 0 14px;
+  padding: 10px;
+}
+
+.channel-readiness.setup {
+  border-color: #f1dba8;
+  background: #fff8e9;
+  color: #8a650f;
+}
+
+.channel-readiness.missing {
+  border-color: #f4b4b4;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.channel-readiness.paused {
+  border-color: #d8dee8;
+  background: #f8fafc;
+  color: #59677a;
+}
+
+.channel-readiness div {
+  display: grid;
+  gap: 3px;
+}
+
+.channel-readiness strong {
+  color: inherit;
+  font-size: 13px;
+}
+
+.channel-readiness span {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.4;
+}
+
 .channel-update-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

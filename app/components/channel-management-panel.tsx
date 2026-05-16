@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, KeyRound, Loader2, Pencil, Save, Trash2, Tv } from "lucide-react";
+import { AlertTriangle, BadgeCheck, KeyRound, Loader2, Pencil, Save, Trash2, Tv } from "lucide-react";
 import type { SafeYouTubeChannel, YouTubeChannelStatus } from "@/lib/channels";
 
 const statusLabels: Record<YouTubeChannelStatus, string> = {
@@ -10,6 +10,35 @@ const statusLabels: Record<YouTubeChannelStatus, string> = {
   paused: "일시정지",
   setup: "설정 중",
 };
+
+function channelUploadReadiness(channel: SafeYouTubeChannel) {
+  if (channel.status === "paused") {
+    return {
+      detail: "일시정지 채널은 새 YouTube 업로드 작업이 차단됩니다.",
+      title: "업로드 차단",
+      tone: "paused",
+    };
+  }
+  if (!channel.has_upload_refresh_token) {
+    return {
+      detail: "업로드 OAuth refresh token을 등록해야 이 채널로 업로드할 수 있습니다.",
+      title: "업로드 토큰 필요",
+      tone: "missing",
+    };
+  }
+  if (channel.status !== "active") {
+    return {
+      detail: "토큰은 준비됐습니다. 업로드 전 상태를 운영 중으로 변경하세요.",
+      title: "활성화 필요",
+      tone: "setup",
+    };
+  }
+  return {
+    detail: "이 채널을 선택한 제작 실행은 채널별 업로드 토큰을 사용할 수 있습니다.",
+    title: "업로드 가능",
+    tone: "ready",
+  };
+}
 
 export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChannel[] }) {
   const router = useRouter();
@@ -214,6 +243,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 </option>
               ))}
             </select>
+            <small>운영 중 채널만 YouTube 업로드 작업에 사용할 수 있습니다.</small>
           </label>
           <label className="channel-notes">
             <span>메모</span>
@@ -234,8 +264,10 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <p>브랜드 채널 10개를 운영한다면 채널마다 업로드/분석 권한 상태를 따로 관리하세요.</p>
           </div>
         ) : null}
-        {channels.map((channel) => (
-          <article className="channel-card" key={channel.id}>
+        {channels.map((channel) => {
+          const uploadReadiness = channelUploadReadiness(channel);
+          return (
+            <article className="channel-card" key={channel.id}>
             <div className="channel-card-top">
               <div>
                 <span>{channel.brand_name}</span>
@@ -272,6 +304,13 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 <BadgeCheck size={14} />
                 Analytics OAuth {channel.has_analytics_refresh_token ? "등록" : "필요"}
               </span>
+            </div>
+            <div className={`channel-readiness ${uploadReadiness.tone}`}>
+              {uploadReadiness.tone === "ready" ? <BadgeCheck size={15} /> : <AlertTriangle size={15} />}
+              <div>
+                <strong>{uploadReadiness.title}</strong>
+                <span>{uploadReadiness.detail}</span>
+              </div>
             </div>
             <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
               {editingChannelId === channel.id ? (
@@ -320,6 +359,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                     </option>
                   ))}
                 </select>
+                <small>운영 중 채널만 업로드 작업에 사용할 수 있습니다.</small>
               </label>
               <label>
                 <span>업로드 토큰 교체</span>
@@ -339,7 +379,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
               </button>
             </form>
           </article>
-        ))}
+          );
+        })}
       </section>
     </div>
   );
