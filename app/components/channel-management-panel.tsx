@@ -153,6 +153,34 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
     }
   }
 
+  async function setChannelStatus(channel: SafeYouTubeChannel, status: YouTubeChannelStatus) {
+    setError("");
+    setMessage("");
+    setSaving(channel.id);
+    try {
+      const response = await fetch(`/api/admin/channels/${encodeURIComponent(channel.id)}`, {
+        body: JSON.stringify({ status }),
+        headers: { "Content-Type": "application/json" },
+        method: "PATCH",
+      });
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        setError(body?.error ?? `채널 상태를 변경하지 못했습니다. 상태 코드: ${response.status}`);
+        return;
+      }
+      setMessage(`${channel.channel_name} 상태를 ${statusLabels[status]}으로 변경했습니다.`);
+      router.refresh();
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? `채널 상태 변경 요청이 실패했습니다: ${requestError.message}`
+          : "채널 상태 변경 요청이 실패했습니다.",
+      );
+    } finally {
+      setSaving(null);
+    }
+  }
+
   async function deleteChannel(channel: SafeYouTubeChannel) {
     const confirmed = window.confirm(
       `${channel.brand_name} / ${channel.channel_name} 채널을 삭제할까요? 이미 생성된 run 기록은 지워지지 않습니다.`,
@@ -276,6 +304,17 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
               </div>
               <div className="channel-card-actions">
                 <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
+                {channel.status !== "active" ? (
+                  <button
+                    className="text-button"
+                    disabled={saving === channel.id}
+                    onClick={() => setChannelStatus(channel, "active")}
+                    type="button"
+                  >
+                    {saving === channel.id ? <Loader2 className="spin" size={14} /> : <BadgeCheck size={14} />}
+                    운영 중으로 전환
+                  </button>
+                ) : null}
                 <button
                   className="icon-button"
                   onClick={() => setEditingChannelId(editingChannelId === channel.id ? "" : channel.id)}
