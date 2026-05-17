@@ -4,6 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { AlertTriangle, Copy, Loader2, Plus, RefreshCw, Search } from "lucide-react";
 import type { SourceVideo } from "@/lib/runs";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
+import { decodeHtmlEntities } from "@/lib/html-text";
 import { sourceDedupKey } from "@/lib/youtube-url";
 
 type LoadingMode = "idle" | "category" | "search" | "import" | "manual";
@@ -425,7 +426,7 @@ export function YouTubeFinderPanel({
               <article className="finder-result" key={candidate.videoId}>
                 <div className="finder-rank">{String(index + 1).padStart(2, "0")}</div>
                 <div>
-                  <h4>{candidate.title}</h4>
+                  <h4>{decodeHtmlEntities(candidate.title)}</h4>
                   <p>
                     {candidate.channel} / {formatDate(candidate.publishedAt)}
                   </p>

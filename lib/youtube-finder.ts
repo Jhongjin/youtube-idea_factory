@@ -1,4 +1,5 @@
 import { getProviderSettings } from "@/lib/provider-settings";
+import { decodeHtmlEntities } from "@/lib/html-text";
 
 export type YouTubeSearchInput = {
   categoryTitle?: string;
@@ -508,11 +509,11 @@ async function fetchYouTubeSearchAttempt(
       return {
         videoId,
         url: `https://www.youtube.com/watch?v=${videoId}`,
-        title: snippet.title ?? "",
-        channel: snippet.channelTitle ?? "",
+        title: decodeHtmlEntities(snippet.title ?? ""),
+        channel: decodeHtmlEntities(snippet.channelTitle ?? ""),
         channelId: snippet.channelId ?? "",
         publishedAt: snippet.publishedAt ?? "",
-        description: snippet.description ?? "",
+        description: decodeHtmlEntities(snippet.description ?? ""),
         thumbnailUrl:
           snippet.thumbnails?.high?.url ??
           snippet.thumbnails?.medium?.url ??

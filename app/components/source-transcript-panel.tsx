@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, Loader2, Mic2, Save } from "lucide-react";
 import type { SourceVideo } from "@/lib/runs";
+import { decodeHtmlEntities } from "@/lib/html-text";
 
 type SaveState = "idle" | "loading" | "saving" | "saved" | "error";
 const transcribeConfirmToken = "TRANSCRIBE_AUDIO";
@@ -160,7 +161,7 @@ export function SourceTranscriptPanel({
       <div className="transcript-header">
         <div>
           <h4>스크립트 슬롯</h4>
-          <p>{activeSource.title}</p>
+          <p>{decodeHtmlEntities(activeSource.title)}</p>
         </div>
         <button className="text-button" disabled={!isDirty || state === "saving"} onClick={save} type="button">
           {state === "saving" || state === "loading" ? (
@@ -186,7 +187,7 @@ export function SourceTranscriptPanel({
                 type="button"
               >
                 <FileText size={14} />
-                <span>{source.title}</span>
+                <span>{decodeHtmlEntities(source.title)}</span>
                 <small>
                   {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
                     source.transcript_status ??

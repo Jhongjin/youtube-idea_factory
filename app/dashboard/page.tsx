@@ -59,6 +59,7 @@ import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-
 import { getRunArtifacts } from "@/lib/artifacts";
 import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
 import { listYouTubeChannels, type SafeYouTubeChannel } from "@/lib/channels";
+import { decodeHtmlEntities } from "@/lib/html-text";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
@@ -1574,7 +1575,7 @@ function SourcesPanel({
                   <tr key={`${source.url}-${index}`}>
                     <td>{source.rank ?? index + 1}</td>
                     <td>
-                      <div className="source-title">{source.title}</div>
+                      <div className="source-title">{decodeHtmlEntities(source.title)}</div>
                       <a className="source-url" href={source.url}>
                         {source.url}
                       </a>

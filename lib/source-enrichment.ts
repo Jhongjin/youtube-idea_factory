@@ -5,6 +5,7 @@ import {
   writeRunJson,
 } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
+import { decodeHtmlEntities } from "@/lib/html-text";
 
 export type SourceEnrichmentResult = {
   updatedFields: number;
@@ -84,8 +85,8 @@ export async function enrichSources(runId: string): Promise<SourceEnrichmentResu
   for (const source of sources) {
     try {
       const metadata = await fetchOEmbed(source.url);
-      const title = metadata.title?.trim();
-      const channel = metadata.author_name?.trim();
+      const title = decodeHtmlEntities(metadata.title?.trim() ?? "");
+      const channel = decodeHtmlEntities(metadata.author_name?.trim() ?? "");
 
       if (title && source.title !== title) {
         source.title = title;
