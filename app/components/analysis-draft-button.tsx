@@ -17,7 +17,7 @@ export function AnalysisDraftButton({ runId }: { runId: string }) {
       setLoading(false);
       return;
     }
-    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=draft#artifact-video-analysis`;
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=draft&notice=analysis-drafted#artifact-video-analysis`;
   }
 
   return (

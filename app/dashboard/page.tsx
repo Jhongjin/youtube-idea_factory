@@ -157,10 +157,148 @@ const guidedStepDefinitions = [
 
 type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
 
+function guidedStepIndex(stepKey: GuidedStepKey) {
+  return guidedStepDefinitions.findIndex((step) => step.key === stepKey);
+}
+
 const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, string[]> = {
   draft: ["video-analysis", "claim-ledger", "script-plan", "storyboard"],
   production: ["storyboard", "media-prompts"],
   review: ["publishing", "qa"],
+};
+
+const actionGuides: Partial<
+  Record<
+    RunPrimaryActionId,
+    {
+      caution?: string;
+      goal: string;
+      output: string;
+      title: string;
+    }
+  >
+> = {
+  "analysis-draft": {
+    goal: "소스 영상의 훅, 구조, 주장 후보를 분석 초안으로 정리합니다.",
+    output: "결과는 대본 만들기 단계의 영상 분석, 클레임 장부에서 확인합니다.",
+    title: "분석 초안",
+  },
+  "analysis-refine": {
+    goal: "등록한 LLM으로 분석 품질을 높이고 빈 주장 후보를 보강합니다.",
+    output: "영상 분석과 클레임 장부가 갱신됩니다.",
+    title: "분석 고도화",
+  },
+  "asset-manifest": {
+    goal: "장면별 이미지, 영상, 음성, 자막, 썸네일 자산 목록을 잠급니다.",
+    output: "미디어 만들기 단계의 자산 매니페스트와 생성 큐가 열립니다.",
+    title: "자산 목록 만들기",
+  },
+  "channel-memory": {
+    goal: "성과와 운영 메모를 다음 기획에 쓸 채널 기억으로 저장합니다.",
+    output: "좌측 채널 메모리와 피드백 산출물에 반영됩니다.",
+    title: "채널 메모리",
+  },
+  "draft-flow": {
+    goal: "분석, 클레임, 대본 자리표시자를 한 번에 준비합니다.",
+    output: "대본 만들기 단계의 산출물 탭이 채워집니다.",
+    title: "초안 흐름 만들기",
+  },
+  "feedback-flow": {
+    goal: "업로드 뒤 성과 수집과 다음 기획 반영 루프를 만듭니다.",
+    output: "피드백 루프 산출물이 저장됩니다.",
+    title: "피드백 루프",
+  },
+  "feedback-insights": {
+    goal: "성과 신호를 다음 제목, 훅, 포맷 의사결정으로 요약합니다.",
+    output: "피드백 인사이트 산출물이 저장됩니다.",
+    title: "성과 인사이트",
+  },
+  "generation-queue": {
+    goal: "승인과 provider 설정을 기준으로 생성 가능한 항목을 나눕니다.",
+    output: "직접 생성, 수동 전달, 차단 항목이 생성 콘솔에 표시됩니다.",
+    title: "생성 큐 준비",
+  },
+  "learning-log": {
+    goal: "A/B 결과와 운영 판단을 다음 run에 재사용할 로그로 남깁니다.",
+    output: "학습 로그 산출물이 저장됩니다.",
+    title: "학습 로그",
+  },
+  "local-render": {
+    goal: "로컬 ffmpeg 렌더로 MVP 영상을 조립합니다.",
+    output: "렌더 결과와 로그가 run 산출물에 남습니다.",
+    title: "로컬 렌더",
+  },
+  "media-draft": {
+    goal: "스토리보드를 이미지와 영상 생성 프롬프트로 바꿉니다.",
+    output: "미디어 만들기 단계의 프롬프트 탭에 저장됩니다.",
+    title: "미디어 프롬프트",
+  },
+  "open-settings": {
+    goal: "LLM, 이미지, 영상, TTS, 편집 provider 키와 모델을 점검합니다.",
+    output: "제공자가 준비되면 생성 버튼과 워커 큐가 열립니다.",
+    title: "API 설정 확인",
+  },
+  "performance-snapshot": {
+    goal: "업로드된 영상의 성과 스냅샷을 수집할 준비를 합니다.",
+    output: "성과 스냅샷 산출물이 저장됩니다.",
+    title: "성과 스냅샷",
+  },
+  "publishing-draft": {
+    goal: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 만듭니다.",
+    output: "검수/업로드 단계의 배포 패키지에서 확인합니다.",
+    title: "배포 초안",
+  },
+  "publishing-handoff": {
+    goal: "최종 파일과 업로드 메타데이터를 업로드 가능한 패킷으로 묶습니다.",
+    output: "YouTube 업로드 작업 생성 전 체크리스트가 만들어집니다.",
+    title: "배포 핸드오프",
+  },
+  "qa-draft": {
+    goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
+    output: "검수 산출물과 오른쪽 차단 항목이 갱신됩니다.",
+    title: "제작 검수",
+  },
+  "render-job": {
+    goal: "외부 렌더 워커가 처리할 작업을 큐에 등록합니다.",
+    output: "워커 큐와 렌더 상태 패널에 작업이 표시됩니다.",
+    title: "렌더 작업 큐",
+  },
+  "render-manifest": {
+    goal: "자산을 타임라인으로 묶고 렌더 차단 항목을 확인합니다.",
+    output: "렌더 매니페스트와 검수 상태가 갱신됩니다.",
+    title: "렌더 계획",
+  },
+  "script-draft": {
+    goal: "분석과 클레임 장부를 바탕으로 대본 구조를 만듭니다.",
+    output: "대본 만들기 단계의 대본 탭에 저장됩니다.",
+    title: "대본 초안",
+  },
+  "script-refine": {
+    goal: "등록한 LLM으로 훅, 전개, 내레이션을 고도화합니다.",
+    output: "대본 탭이 새 버전으로 갱신됩니다.",
+    title: "대본 고도화",
+  },
+  "source-enrich": {
+    caution: "자막은 자동 확보가 되지 않을 수 있어 아래 스크립트 슬롯에 직접 붙여넣어야 합니다.",
+    goal: "YouTube 후보 영상의 제목, 채널, 썸네일 같은 기본 정보를 다시 확인합니다.",
+    output: "소스 영상 표와 01-research.md가 갱신됩니다.",
+    title: "소스 정보 보강",
+  },
+  "storyboard-draft": {
+    goal: "대본을 장면, 내레이션, 화면 문구, 자산 요구사항으로 나눕니다.",
+    output: "스토리보드 산출물이 저장되고 미디어 만들기 단계가 준비됩니다.",
+    title: "스토리보드",
+  },
+  "subtitle-draft": {
+    goal: "내레이션 초안을 자막 초안으로 바꿉니다.",
+    output: "자막 산출물이 저장됩니다.",
+    title: "자막 초안",
+  },
+  "youtube-upload-job": {
+    goal: "승인된 배포 패키지를 YouTube 업로드 워커 큐에 등록합니다.",
+    output: "업로드 워커 패널에서 큐 상태를 확인합니다.",
+    title: "YouTube 업로드 작업",
+  },
 };
 
 const advancedActionGroupsByStep: Record<
@@ -333,6 +471,14 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     return "review";
   }
   return "setup";
+}
+
+function resolveGuidedStep(value: string | undefined, currentStep: GuidedStepKey): GuidedStepKey {
+  const requested = guidedStepDefinitions.find((step) => step.key === value)?.key;
+  if (!requested) {
+    return currentStep;
+  }
+  return guidedStepIndex(requested) <= guidedStepIndex(currentStep) ? requested : currentStep;
 }
 
 const learningStatusCopy: Record<string, string> = {
@@ -641,22 +787,33 @@ function OperatingChannelBar({
 function GuidedStepNav({
   activeStep,
   channelId,
+  currentStep,
   runId,
 }: {
   activeStep: GuidedStepKey;
   channelId: string;
+  currentStep: GuidedStepKey;
   runId: string;
 }) {
-  const activeIndex = guidedStepDefinitions.findIndex((step) => step.key === activeStep);
+  const activeIndex = guidedStepIndex(activeStep);
+  const currentIndex = guidedStepIndex(currentStep);
   return (
     <nav className="guided-step-nav" aria-label="제작 단계">
       {guidedStepDefinitions.map((step, index) => {
-        const state = index < activeIndex ? "done" : index === activeIndex ? "current" : "pending";
+        const state =
+          index === activeIndex
+            ? "current"
+            : index < currentIndex
+              ? "done"
+              : index === currentIndex
+                ? "available"
+                : "pending";
         const stepBody = (
           <>
             <span>{String(index + 1).padStart(2, "0")}</span>
             <strong>{step.label}</strong>
             {state === "current" ? <em>지금</em> : null}
+            {state === "available" ? <em>다음</em> : null}
             {state === "pending" ? <em>잠김</em> : null}
             <small>{step.description}</small>
           </>
@@ -693,7 +850,9 @@ function GuidedActionPanel({
   providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
-  const secondaryActions = plan.secondaryActionIds ?? [];
+  const visibleActions = Array.from(
+    new Set([plan.primaryActionId, ...(plan.secondaryActionIds ?? [])].filter(Boolean)),
+  ) as RunPrimaryActionId[];
   return (
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
@@ -724,25 +883,54 @@ function GuidedActionPanel({
               />
             </div>
           ) : (
-            <p className="next-action-note">승인 게이트 확인 필요</p>
-          )}
-        </div>
-        {secondaryActions.length > 0 ? (
-          <details className="guided-secondary-actions">
-            <summary>보조 작업</summary>
-            <div>
-              {secondaryActions.map((actionId) => (
-                <WorkflowActionButton
-                  actionId={actionId}
-                  key={actionId}
-                  providerSettings={providerSettings}
-                  run={run}
-                />
-              ))}
-            </div>
-          </details>
-        ) : null}
+          <p className="next-action-note">승인 게이트 확인 필요</p>
+        )}
       </div>
+      </div>
+      {visibleActions.length > 0 ? (
+        <div className="guided-tool-map" aria-label="현재 단계 기능 안내">
+          <div className="guided-tool-map-header">
+            <div>
+              <p className="eyebrow">단계 안의 기능</p>
+              <strong>버튼을 누르면 무엇이 바뀌는지 먼저 보여줍니다.</strong>
+            </div>
+            <span>{visibleActions.length}개 기능</span>
+          </div>
+          <div className="guided-tool-grid">
+            {visibleActions.map((actionId, index) => {
+              const guide = actionGuides[actionId] ?? {
+                goal: "현재 제작 패키지의 다음 산출물을 준비합니다.",
+                output: "완료 후 해당 단계의 산출물 패널에서 확인합니다.",
+                title: plan.headline,
+              };
+              const isPrimary = actionId === plan.primaryActionId;
+              return (
+                <article
+                  className={`guided-tool-card ${isPrimary ? "primary" : ""}`}
+                  key={actionId}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <strong>{guide.title}</strong>
+                    <p>{guide.goal}</p>
+                    <small>{guide.output}</small>
+                    {guide.caution ? <small className="warning">{guide.caution}</small> : null}
+                  </div>
+                  {isPrimary ? (
+                    <em>위의 큰 버튼</em>
+                  ) : (
+                    <WorkflowActionButton
+                      actionId={actionId}
+                      providerSettings={providerSettings}
+                      run={run}
+                    />
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
       <details className="guided-checklist">
         <summary>왜 이 버튼을 눌러야 하나요?</summary>
         <div className="next-action-list">
@@ -769,6 +957,7 @@ function GuidedRunWorkspace({
   activeStep,
   artifacts,
   channelId,
+  currentStep,
   nextActionPlan,
   providerSettings,
   run,
@@ -776,24 +965,60 @@ function GuidedRunWorkspace({
   activeStep: GuidedStepKey;
   artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
   channelId: string;
+  currentStep: GuidedStepKey;
   nextActionPlan: RunNextActionPlan;
   providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
   const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
   const activeStepIndex = guidedStepDefinitions.findIndex((step) => step.key === activeStep) + 1;
+  const isCurrentStep = activeStep === currentStep;
   return (
     <div className="guided-workspace">
-      <GuidedStepNav activeStep={activeStep} channelId={channelId} runId={run.id} />
+      <GuidedStepNav
+        activeStep={activeStep}
+        channelId={channelId}
+        currentStep={currentStep}
+        runId={run.id}
+      />
       <section className="guided-step-intro">
         <div>
-          <p className="eyebrow">처음이면 여기부터</p>
+          <p className="eyebrow">{isCurrentStep ? "처음이면 여기부터" : "이전 단계 다시 보기"}</p>
           <h3>{activeStepIndex}단계: {activeStepCopy.label}</h3>
-          <p>아래의 큰 버튼이 이 제작 실행에서 지금 눌러야 할 작업입니다. 다른 메뉴는 이 단계가 끝난 뒤 필요할 때만 열립니다.</p>
+          <p>
+            {isCurrentStep
+              ? "아래의 큰 버튼이 이 제작 실행에서 지금 눌러야 할 작업입니다. 다른 메뉴는 이 단계가 끝난 뒤 필요할 때만 열립니다."
+              : "이전 단계의 입력값과 산출물을 확인하는 화면입니다. 수정이 필요하면 이곳에서 확인하고, 진행은 현재 단계로 돌아가면 됩니다."}
+          </p>
         </div>
-        <a className="text-button primary" href="#next-action">지금 할 일 보기</a>
+        {isCurrentStep ? (
+          <a className="text-button primary" href="#next-action">지금 할 일 보기</a>
+        ) : (
+          <Link
+            className="text-button primary"
+            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
+          >
+            현재 단계로 돌아가기
+          </Link>
+        )}
       </section>
-      <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
+      {isCurrentStep ? (
+        <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
+      ) : (
+        <section className="panel guided-step-review">
+          <div>
+            <p className="eyebrow">진행 상태</p>
+            <h3>현재 해야 할 일은 {nextActionPlan.headline}입니다.</h3>
+            <p>{nextActionPlan.detail}</p>
+          </div>
+          <Link
+            className="text-button primary"
+            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
+          >
+            현재 단계 열기
+          </Link>
+        </section>
+      )}
 
       {activeStep === "setup" ? (
         <>
@@ -873,7 +1098,7 @@ function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSumm
         </div>
         <details className="guided-secondary-panel">
           <summary>소스 목록 보기</summary>
-          <SourcesPanel run={run} />
+          <SourcesPanel run={run} showEnrichAction={false} />
         </details>
       </>
     );
@@ -881,7 +1106,7 @@ function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSumm
 
   return (
     <>
-      <SourcesPanel run={run} />
+      <SourcesPanel run={run} showEnrichAction={false} />
       <details className="guided-secondary-panel">
         <summary>후보 영상 검색으로 더 보강</summary>
         <div id="youtube-finder">
@@ -1069,20 +1294,54 @@ function EmptyState({
   );
 }
 
+const dashboardNoticeCopy: Record<
+  string,
+  { actionHref?: string; actionLabel?: string; detail: string; title: string; tone?: "error" | "success" }
+> = {
+  "admin-required": {
+    actionHref: "/login?next=/admin",
+    actionLabel: "관리자 로그인",
+    detail: "회원 승인, 채널 OAuth, API 설정은 관리자 계정으로 로그인해야 열 수 있습니다.",
+    title: "관리자 권한이 필요한 화면입니다.",
+  },
+  "analysis-drafted": {
+    detail: "영상 분석과 클레임 장부가 갱신됐습니다. 다음 단계가 열렸는지 확인하세요.",
+    title: "분석 초안을 만들었습니다.",
+    tone: "success",
+  },
+  "sources-checked": {
+    detail: "소스 메타데이터를 확인했습니다. 자막/스크립트가 비어 있으면 아래 스크립트 슬롯에 붙여넣어야 합니다.",
+    title: "소스 정보를 확인했습니다.",
+    tone: "success",
+  },
+  "sources-enriched": {
+    detail: "제목, 채널, 썸네일 등 소스 정보가 갱신됐습니다. 자막은 소스 영상 패널에서 별도로 확인하세요.",
+    title: "소스 정보를 보강했습니다.",
+    tone: "success",
+  },
+  "sources-partial": {
+    detail: "일부 영상은 YouTube 메타데이터를 가져오지 못했습니다. 소스 목록을 보고 직접 보강해 주세요.",
+    title: "소스 일부만 보강됐습니다.",
+  },
+};
+
 function DashboardNotice({ notice }: { notice?: string }) {
-  if (notice !== "admin-required") {
+  const copy = notice ? dashboardNoticeCopy[notice] : undefined;
+  if (!copy) {
     return null;
   }
   return (
-    <section className="dashboard-notice" aria-label="권한 안내">
+    <section className={`dashboard-notice ${copy.tone ?? ""}`} aria-label="작업 안내">
       <ShieldCheck size={18} />
       <div>
-        <strong>관리자 권한이 필요한 화면입니다.</strong>
-        <span>회원 승인, 채널 OAuth, API 설정은 관리자 계정으로 로그인해야 열 수 있습니다.</span>
+        <strong>{copy.title}</strong>
+        <span>{copy.detail}</span>
       </div>
-      <Link className="text-button" href="/login?next=/admin">
-        관리자 로그인
-      </Link>
+      {copy.actionHref && copy.actionLabel ? (
+        <Link className="text-button" href={copy.actionHref}>
+          {copy.actionLabel}
+        </Link>
+      ) : null}
     </section>
   );
 }
@@ -1276,12 +1535,22 @@ function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionP
   );
 }
 
-function SourcesPanel({ run }: { run: RunSummary }) {
+function SourcesPanel({
+  run,
+  showEnrichAction = true,
+}: {
+  run: RunSummary;
+  showEnrichAction?: boolean;
+}) {
   return (
     <section className="panel" id="sources-panel">
       <div className="panel-header">
         <h3 className="panel-title">소스 영상</h3>
-        <EnrichSourcesButton runId={run.id} />
+        {showEnrichAction ? (
+          <EnrichSourcesButton runId={run.id} />
+        ) : (
+          <span className="meta">상단 큰 버튼에서 보강</span>
+        )}
       </div>
       <div className="panel-body">
         <table className="source-table">
@@ -1952,7 +2221,8 @@ export default async function Home({
         })
       : null;
   const selectedChannelId = activeChannelId || runChannelId(activeRun);
-  const activeStep = defaultGuidedStep(nextActionPlan);
+  const currentStep = defaultGuidedStep(nextActionPlan);
+  const activeStep = resolveGuidedStep(params.step, currentStep);
 
   return (
     <div className="shell">
@@ -2014,6 +2284,7 @@ export default async function Home({
               activeStep={activeStep}
               artifacts={artifacts}
               channelId={selectedChannelId}
+              currentStep={currentStep}
               nextActionPlan={nextActionPlan}
               providerSettings={providerSettings}
               run={activeRun}

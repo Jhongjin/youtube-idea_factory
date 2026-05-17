@@ -17,7 +17,16 @@ export function EnrichSourcesButton({ runId }: { runId: string }) {
       setLoading(false);
       return;
     }
-    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=research#sources-panel`;
+    const body = (await response.json().catch(() => null)) as {
+      result?: { failures?: string[]; updatedFields?: number };
+    } | null;
+    const notice =
+      (body?.result?.failures?.length ?? 0) > 0
+        ? "sources-partial"
+        : (body?.result?.updatedFields ?? 0) > 0
+          ? "sources-enriched"
+          : "sources-checked";
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=research&notice=${notice}#sources-panel`;
   }
 
   return (

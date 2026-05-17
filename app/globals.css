@@ -506,6 +506,12 @@ a {
   background: #ffffff;
 }
 
+.dashboard-notice.success {
+  border-color: #b9d8c3;
+  background: #eef8f1;
+  color: #2f6f4e;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -714,6 +720,11 @@ button:disabled,
   background: #f8faf9;
 }
 
+.guided-step.available {
+  border-color: #b9d8c3;
+  background: #f4faf5;
+}
+
 .guided-step span {
   color: #2f6f4e;
   font-family:
@@ -853,6 +864,153 @@ button:disabled,
   font-size: 12px;
   font-weight: 750;
   line-height: 1.5;
+}
+
+.guided-tool-map,
+.guided-step-review {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.guided-step-review {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.guided-step-review h3,
+.guided-step-review p,
+.guided-tool-map-header p {
+  margin: 0;
+}
+
+.guided-step-review h3 {
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.guided-step-review p:not(.eyebrow) {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guided-tool-map-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guided-tool-map-header strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.guided-tool-map-header > span {
+  border-radius: 999px;
+  background: rgba(47, 111, 78, 0.12);
+  color: #2f6f4e;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.guided-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.guided-tool-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.guided-tool-card.primary {
+  border-color: #b9d8c3;
+  background: #f3faf4;
+}
+
+.guided-tool-card > span {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guided-tool-card strong,
+.guided-tool-card p,
+.guided-tool-card small {
+  display: block;
+  margin: 0;
+}
+
+.guided-tool-card strong {
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.guided-tool-card p {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.guided-tool-card small {
+  margin-top: 7px;
+  color: #2f6f4e;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+
+.guided-tool-card small.warning {
+  color: #8a650f;
+}
+
+.guided-tool-card em {
+  align-self: end;
+  justify-self: start;
+  grid-column: 2;
+  border-radius: 999px;
+  background: rgba(47, 111, 78, 0.12);
+  color: #2f6f4e;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.guided-tool-card .source-action,
+.guided-tool-card .draft-action {
+  align-self: end;
+  grid-column: 2;
+  margin-top: 10px;
+}
+
+.guided-tool-card .text-button {
+  width: 100%;
+  justify-content: center;
 }
 
 .guided-primary-cta .guide-action-primary,
@@ -3842,6 +4000,7 @@ button:disabled,
   .guided-step-intro,
   .guided-primary-cta,
   .guided-action-main,
+  .guided-step-review,
   .next-action-item,
   .advanced-action-grid,
   .provider-setup-strip,
@@ -7029,9 +7188,11 @@ body {
 .stat,
 .guided-step-intro,
 .guided-action-panel,
+.guided-step-review,
 .guided-secondary-actions,
 .guided-checklist,
 .guided-secondary-panel,
+.guided-tool-card,
 .next-action-item,
 .advanced-action-grid,
 .worker-panel,
@@ -7157,6 +7318,11 @@ body {
   background: rgba(127, 183, 188, 0.08);
 }
 
+.guided-step.available {
+  border-color: rgba(155, 215, 167, 0.42);
+  background: rgba(155, 215, 167, 0.08);
+}
+
 .operating-focus-step.pending,
 .guided-step.pending {
   background: rgba(244, 239, 227, 0.045);
@@ -7182,6 +7348,44 @@ body {
 .guided-step.pending em {
   background: rgba(244, 239, 227, 0.14);
   color: rgba(244, 239, 227, 0.74);
+}
+
+.guided-step.available em,
+.guided-tool-card em,
+.guided-tool-map-header > span {
+  background: rgba(155, 215, 167, 0.13);
+  color: var(--green);
+}
+
+.guided-step-review h3,
+.guided-tool-map-header strong,
+.guided-tool-card strong {
+  color: #fff8ea;
+}
+
+.guided-step-review p:not(.eyebrow),
+.guided-tool-card p {
+  color: rgba(244, 239, 227, 0.74);
+}
+
+.guided-tool-card small {
+  color: #bdf0c6;
+}
+
+.guided-tool-card small.warning {
+  color: var(--amber);
+}
+
+.guided-tool-card.primary {
+  border-color: rgba(155, 215, 167, 0.48);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.13), rgba(244, 239, 227, 0.035)),
+    rgba(13, 21, 21, 0.8);
+}
+
+.guided-tool-card > span {
+  background: rgba(155, 215, 167, 0.13);
+  color: var(--green);
 }
 
 .stage-index {
@@ -7213,6 +7417,14 @@ body {
   border-color: rgba(239, 143, 132, 0.42);
   background: rgba(239, 143, 132, 0.12);
   color: var(--red);
+}
+
+.dashboard-notice.success {
+  border-color: rgba(155, 215, 167, 0.42);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.16), rgba(244, 239, 227, 0.035)),
+    rgba(13, 21, 21, 0.82);
+  color: var(--green);
 }
 
 .status-pill,
@@ -7411,6 +7623,37 @@ body {
 
 .sidebar .nav-item.active {
   color: #bdf0c6;
+}
+
+.sidebar .memory-index-card,
+.sidebar .work-queue-card {
+  border-color: rgba(244, 239, 227, 0.16);
+  background:
+    linear-gradient(180deg, rgba(244, 239, 227, 0.075), rgba(244, 239, 227, 0.032)),
+    rgba(10, 17, 17, 0.86);
+  color: #f8f2e7;
+}
+
+.sidebar .memory-index-heading,
+.sidebar .work-queue-heading {
+  color: rgba(244, 239, 227, 0.82);
+}
+
+.sidebar .memory-index-card strong,
+.sidebar .work-queue-card strong {
+  color: #fff8ea;
+}
+
+.sidebar .memory-index-card p,
+.sidebar .work-queue-card p,
+.sidebar .work-queue-heading span {
+  color: rgba(244, 239, 227, 0.74);
+}
+
+.sidebar .memory-index-stats span,
+.sidebar .work-queue-stats span {
+  background: rgba(244, 239, 227, 0.08);
+  color: rgba(244, 239, 227, 0.82);
 }
 
 .empty-state,
