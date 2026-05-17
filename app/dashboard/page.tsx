@@ -1103,6 +1103,7 @@ function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSumm
           existingSources={run.package.sources}
           format={run.package.brief.format}
           language={run.package.brief.language}
+          regionCode={run.package.brief.region_code ?? ""}
           runId={run.id}
           targetDurationSeconds={run.package.brief.target_duration_seconds ?? 60}
         />

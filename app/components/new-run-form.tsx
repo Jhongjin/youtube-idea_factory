@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Loader2, Plus } from "lucide-react";
 
 type FormState = "idle" | "submitting" | "error";
-type SourceMode = "categoryTop" | "manual";
+type SourceMode = "topicSearch" | "categoryTop";
 type VideoFormat = "shorts" | "longform";
 
 type ChannelOption = {
@@ -33,28 +33,30 @@ const fallbackCategories: YouTubeCategory[] = [
   { assignable: true, id: "26", title: "Howto & Style" },
 ];
 
-const languageOptions = [
-  { label: "한국어", value: "ko" },
-  { label: "영어", value: "en" },
-  { label: "일본어", value: "ja" },
-  { label: "스페인어", value: "es" },
+const marketOptions = [
+  { label: "대한민국 / 한국어", language: "ko", regionCode: "KR", value: "KR:ko" },
+  { label: "미국 / 영어", language: "en", regionCode: "US", value: "US:en" },
+  { label: "일본 / 일본어", language: "ja", regionCode: "JP", value: "JP:ja" },
+  { label: "스페인 / 스페인어", language: "es", regionCode: "ES", value: "ES:es" },
+  { label: "영국 / 영어", language: "en", regionCode: "GB", value: "GB:en" },
+  { label: "인도 / 영어", language: "en", regionCode: "IN", value: "IN:en" },
 ];
 
-function regionForLanguage(language: string) {
-  if (language === "ja") {
-    return "JP";
-  }
-  if (language === "es") {
-    return "ES";
-  }
-  if (language === "en") {
-    return "US";
-  }
-  return "KR";
+function marketForLanguage(language?: string) {
+  const normalized = language?.toLowerCase() ?? "";
+  return marketOptions.find((option) => option.language === normalized)?.value ?? marketOptions[0].value;
 }
 
 function uniqueList(values: string[]) {
   return values.filter((value, index, array) => value.trim() && array.indexOf(value) === index).slice(0, 5);
+}
+
+function longformMinutesValue(value: string) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 8;
+  }
+  return Math.max(2, Math.min(180, Math.floor(parsed)));
 }
 
 export function NewRunForm({
@@ -69,11 +71,10 @@ export function NewRunForm({
   const [error, setError] = useState("");
   const [topic, setTopic] = useState("");
   const [format, setFormat] = useState<VideoFormat>("shorts");
-  const [language, setLanguage] = useState(initialChannel?.default_language || "ko");
-  const [durationSeconds, setDurationSeconds] = useState(60);
-  const [longformMinutes, setLongformMinutes] = useState(8);
+  const [longformMinutes, setLongformMinutes] = useState("8");
   const [selectedChannelId, setSelectedChannelId] = useState(initialChannel?.id ?? "");
-  const [sourceMode, setSourceMode] = useState<SourceMode>("categoryTop");
+  const [sourceMode, setSourceMode] = useState<SourceMode>("topicSearch");
+  const [marketCode, setMarketCode] = useState(marketForLanguage(initialChannel?.default_language));
   const [categories, setCategories] = useState<YouTubeCategory[]>(fallbackCategories);
   const [categoryId, setCategoryId] = useState("25");
   const [categoriesLoading, setCategoriesLoading] = useState(false);
@@ -81,6 +82,10 @@ export function NewRunForm({
   const [targetAudience, setTargetAudience] = useState("");
   const [tone, setTone] = useState("");
 
+  const selectedMarket = marketOptions.find((option) => option.value === marketCode) ?? marketOptions[0];
+  const language = selectedMarket.language;
+  const regionCode = selectedMarket.regionCode;
+  const durationSeconds = format === "shorts" ? 60 : longformMinutesValue(longformMinutes) * 60;
   const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
   const selectedCategory =
     categories.find((category) => category.id === categoryId) ?? categories[0] ?? fallbackCategories[0];
@@ -107,7 +112,7 @@ export function NewRunForm({
   const audienceSuggestions = useMemo(
     () =>
       uniqueList([
-        `${selectedCategoryTitle} 트렌드를 빠르게 파악하려는 시청자`,
+        sourceMode === "categoryTop" ? `${selectedCategoryTitle} 트렌드를 빠르게 파악하려는 시청자` : "",
         topic ? `${topic}을 실무에 적용하려는 초급자` : "",
         topic ? `${topic} 관련 의사결정을 해야 하는 운영자` : "",
         format === "shorts" ? "짧은 시간에 핵심만 확인하려는 모바일 시청자" : "근거와 맥락까지 확인하려는 심층 시청자",
@@ -115,7 +120,7 @@ export function NewRunForm({
         "업계 흐름을 빠르게 훑는 일반 시청자",
         "다음 행동을 정하고 싶은 실무자",
       ]),
-    [format, selectedCategoryTitle, selectedChannel, topic],
+    [format, selectedCategoryTitle, selectedChannel, sourceMode, topic],
   );
 
   const toneSuggestions = useMemo(
@@ -137,7 +142,7 @@ export function NewRunForm({
     setCategoriesLoading(true);
     setCategoryError("");
 
-    fetch(`/api/youtube/categories?regionCode=${regionForLanguage(language)}`)
+    fetch(`/api/youtube/categories?regionCode=${regionCode}`)
       .then(async (response) => {
         const body = (await response.json().catch(() => null)) as {
           categories?: YouTubeCategory[];
@@ -173,27 +178,18 @@ export function NewRunForm({
     return () => {
       cancelled = true;
     };
-  }, [language]);
+  }, [regionCode]);
 
   function selectChannel(channelId: string) {
     setSelectedChannelId(channelId);
     const channel = channels.find((item) => item.id === channelId);
     if (channel?.default_language) {
-      setLanguage(channel.default_language);
+      setMarketCode(marketForLanguage(channel.default_language));
     }
   }
 
-  function selectFormat(nextFormat: VideoFormat) {
-    setFormat(nextFormat);
-    setDurationSeconds(nextFormat === "shorts" ? 60 : longformMinutes * 60);
-  }
-
-  function updateLongformMinutes(value: number) {
-    const minutes = Number.isFinite(value) ? Math.max(2, Math.min(180, Math.floor(value))) : 8;
-    setLongformMinutes(minutes);
-    if (format === "longform") {
-      setDurationSeconds(minutes * 60);
-    }
+  function finishLongformEdit() {
+    setLongformMinutes(String(longformMinutesValue(longformMinutes)));
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -202,27 +198,35 @@ export function NewRunForm({
     setError("");
 
     const formData = new FormData(event.currentTarget);
-    const sourceModeValue = String(formData.get("sourceMode") ?? "categoryTop") as SourceMode;
-    const seedUrls =
-      sourceModeValue === "manual"
-        ? String(formData.get("seedUrls") ?? "")
-            .split(/\r?\n/)
-            .map((url) => url.trim())
-            .filter(Boolean)
-        : [];
+    const sourceModeValue = String(formData.get("sourceMode") ?? "topicSearch") as SourceMode;
+    const topicValue = String(formData.get("topic") ?? "").trim();
+    const categoryValue = sourceModeValue === "categoryTop" ? String(formData.get("category") ?? "") : "";
+    const categoryIdValue = sourceModeValue === "categoryTop" ? String(formData.get("categoryId") ?? "") : "";
+
+    if (sourceModeValue === "topicSearch" && !topicValue) {
+      setError("아이디어 직접 작성 모드에서는 영상 주제나 리서치 키워드가 필요합니다.");
+      setState("error");
+      return;
+    }
+    if (sourceModeValue === "categoryTop" && !categoryIdValue) {
+      setError("카테고리 선택 모드에서는 유튜브 공식 카테고리가 필요합니다.");
+      setState("error");
+      return;
+    }
 
     const payload = {
-      topic: String(formData.get("topic") ?? ""),
-      category: String(formData.get("category") ?? ""),
-      categoryId: String(formData.get("categoryId") ?? ""),
+      topic: topicValue,
+      category: categoryValue,
+      categoryId: categoryIdValue,
       channelId: String(formData.get("channelId") ?? ""),
       format: String(formData.get("format") ?? "shorts"),
       language: String(formData.get("language") ?? "ko"),
+      regionCode: String(formData.get("regionCode") ?? "KR"),
       sourceMode: sourceModeValue,
       targetAudience: String(formData.get("targetAudience") ?? ""),
       tone: String(formData.get("tone") ?? ""),
       durationSeconds: Number(formData.get("durationSeconds") ?? 60),
-      seedUrls,
+      seedUrls: [],
     };
 
     const response = await fetch("/api/runs", {
@@ -259,6 +263,7 @@ export function NewRunForm({
       <input name="format" readOnly type="hidden" value={format} />
       <input name="durationSeconds" readOnly type="hidden" value={durationSeconds} />
       <input name="language" readOnly type="hidden" value={language} />
+      <input name="regionCode" readOnly type="hidden" value={regionCode} />
       <input name="sourceMode" readOnly type="hidden" value={sourceMode} />
       <input name="category" readOnly type="hidden" value={sourceMode === "categoryTop" ? selectedCategoryTitle : ""} />
       <input name="categoryId" readOnly type="hidden" value={sourceMode === "categoryTop" ? categoryId : ""} />
@@ -267,23 +272,125 @@ export function NewRunForm({
         <div className="new-run-section-heading">
           <span>01</span>
           <div>
-            <strong>채널과 영상 방향</strong>
-            <p>어느 브랜드 채널에서 만들지 고르고, 최종 제목이 아니라 리서치 기준이 될 핵심 키워드를 입력합니다.</p>
+            <strong>아이디어 시작 방식</strong>
+            <p>직접 떠올린 주제나 카테고리 중 하나만 선택합니다. 둘을 동시에 묶어 검색하지 않습니다.</p>
+          </div>
+        </div>
+        <div className="source-mode-grid" aria-label="아이디어 시작 방식">
+          <button
+            className={sourceMode === "topicSearch" ? "active" : ""}
+            onClick={() => setSourceMode("topicSearch")}
+            type="button"
+          >
+            <strong>아이디어 직접 작성</strong>
+            <span>주제나 키워드로 최근 조회수 높은 후보 10개를 찾습니다.</span>
+          </button>
+          <button
+            className={sourceMode === "categoryTop" ? "active" : ""}
+            onClick={() => setSourceMode("categoryTop")}
+            type="button"
+          >
+            <strong>카테고리 선택</strong>
+            <span>아이디어가 없을 때 공식 카테고리만으로 후보 10개를 찾습니다.</span>
+          </button>
+        </div>
+
+        {sourceMode === "topicSearch" ? (
+          <label>
+            <span>영상 주제 / 리서치 키워드</span>
+            <input
+              name="topic"
+              onChange={(event) => setTopic(event.target.value)}
+              placeholder="예: AI 최신 소식, 한국 방산 수출, 생산성 자동화"
+              required
+              value={topic}
+            />
+            <small className="field-help">
+              이 키워드만으로 YouTube 후보를 찾습니다. 카테고리와 AND 조건으로 묶지 않습니다.
+            </small>
+          </label>
+        ) : (
+          <label>
+            <span>유튜브 공식 카테고리</span>
+            <select onChange={(event) => setCategoryId(event.target.value)} value={categoryId}>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.title}
+                </option>
+              ))}
+            </select>
+            <small className="field-help">
+              {categoriesLoading
+                ? "선택한 국가 기준 공식 카테고리 목록을 불러오는 중입니다."
+                : "키워드 없이 카테고리와 국가 기준으로 최근 조회수 높은 후보를 가져옵니다."}
+            </small>
+            {categoryError ? <small className="field-help warning">{categoryError}</small> : null}
+          </label>
+        )}
+      </section>
+
+      <section className="new-run-section">
+        <div className="new-run-section-heading">
+          <span>02</span>
+          <div>
+            <strong>공통 검색 기준</strong>
+            <p>아이디어 직접 작성과 카테고리 선택 모두 국가/언어, 쇼츠/롱폼 기준으로 후보를 가져옵니다.</p>
           </div>
         </div>
         <label>
-          <span>영상 주제 / 리서치 키워드</span>
-          <input
-            name="topic"
-            onChange={(event) => setTopic(event.target.value)}
-            placeholder="예: AI 최신 소식, 한국 방산 수출, 생산성 자동화"
-            required
-            value={topic}
-          />
-          <small className="field-help">
-            제목 후보는 나중에 따로 생성합니다. 이 값은 YouTube 후보 검색, 분석 관점, 대본 방향에 영향을 줍니다.
-          </small>
+          <span>국가 / 언어</span>
+          <select onChange={(event) => setMarketCode(event.target.value)} value={marketCode}>
+            {marketOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <small className="field-help">YouTube 지역 코드와 관련 언어를 함께 적용합니다.</small>
         </label>
+        <div className="format-presets two" aria-label="형식 빠른 선택">
+          <button
+            className={format === "shorts" ? "active" : ""}
+            onClick={() => setFormat("shorts")}
+            type="button"
+          >
+            <strong>쇼츠</strong>
+            <span>60초 내외</span>
+          </button>
+          <button
+            className={format === "longform" ? "active" : ""}
+            onClick={() => setFormat("longform")}
+            type="button"
+          >
+            <strong>롱폼</strong>
+            <span>사용자 지정 길이</span>
+          </button>
+        </div>
+        {format === "longform" ? (
+          <label className="longform-duration-control">
+            <span>롱폼 목표 길이(분)</span>
+            <input
+              max={180}
+              min={2}
+              onBlur={finishLongformEdit}
+              onChange={(event) => setLongformMinutes(event.target.value)}
+              required
+              type="number"
+              value={longformMinutes}
+            />
+            <small className="field-help">값을 지우고 다시 입력할 수 있습니다. 제출 시 2-180분 범위로 사용됩니다.</small>
+          </label>
+        ) : null}
+      </section>
+
+      <section className="new-run-section">
+        <div className="new-run-section-heading">
+          <span>03</span>
+          <div>
+            <strong>운영 채널</strong>
+            <p>채널을 고르면 이후 업로드 토큰과 채널 이력을 연결합니다. 리서치만 할 때는 미지정으로 시작할 수 있습니다.</p>
+          </div>
+        </div>
         {channels.length > 0 ? (
           <label>
             <span>운영 채널</span>
@@ -359,122 +466,12 @@ export function NewRunForm({
         </div>
       </section>
 
-      <section className="new-run-section">
-        <div className="new-run-section-heading">
-          <span>02</span>
-          <div>
-            <strong>첫 소스 수집 방식</strong>
-            <p>자동으로 카테고리 후보를 가져오거나, 이미 정해둔 YouTube URL을 직접 넣습니다.</p>
-          </div>
-        </div>
-
-        <div className="source-mode-grid" aria-label="소스 수집 방식">
-          <button
-            className={sourceMode === "categoryTop" ? "active" : ""}
-            onClick={() => setSourceMode("categoryTop")}
-            type="button"
-          >
-            <strong>카테고리 TOP 10 자동 수집</strong>
-            <span>공식 카테고리와 주제를 기준으로 최근 후보를 찾습니다.</span>
-          </button>
-          <button
-            className={sourceMode === "manual" ? "active" : ""}
-            onClick={() => setSourceMode("manual")}
-            type="button"
-          >
-            <strong>첫 소스 URL 직접 입력</strong>
-            <span>분석하고 싶은 영상이 이미 있을 때 사용합니다.</span>
-          </button>
-        </div>
-
-        {sourceMode === "categoryTop" ? (
-          <label>
-            <span>유튜브 공식 카테고리</span>
-            <select onChange={(event) => setCategoryId(event.target.value)} value={categoryId}>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.title}
-                </option>
-              ))}
-            </select>
-            <small className="field-help">
-              {categoriesLoading
-                ? "공식 카테고리 목록을 불러오는 중입니다."
-                : "최근 7일 게시 영상 중 현재 조회수와 형식이 맞는 후보를 최대 10개 가져옵니다."}
-            </small>
-            {categoryError ? <small className="field-help warning">{categoryError}</small> : null}
-          </label>
-        ) : (
-          <label>
-            <span>시드 URL</span>
-            <textarea
-              name="seedUrls"
-              placeholder="https://www.youtube.com/watch?v=..."
-              required={sourceMode === "manual"}
-              rows={3}
-            />
-            <small className="field-help">한 줄에 하나씩 넣습니다. 이 URL들이 첫 분석 소스가 됩니다.</small>
-          </label>
-        )}
-      </section>
-
-      <section className="new-run-section">
-        <div className="new-run-section-heading">
-          <span>03</span>
-          <div>
-            <strong>제작 형식과 길이</strong>
-            <p>쇼츠는 60초 기준, 롱폼은 원하는 분량을 직접 입력합니다.</p>
-          </div>
-        </div>
-        <div className="format-presets two" aria-label="형식 빠른 선택">
-          <button
-            className={format === "shorts" ? "active" : ""}
-            onClick={() => selectFormat("shorts")}
-            type="button"
-          >
-            <strong>쇼츠</strong>
-            <span>60초 내외</span>
-          </button>
-          <button
-            className={format === "longform" ? "active" : ""}
-            onClick={() => selectFormat("longform")}
-            type="button"
-          >
-            <strong>롱폼</strong>
-            <span>사용자 지정 길이</span>
-          </button>
-        </div>
-        {format === "longform" ? (
-          <label className="longform-duration-control">
-            <span>롱폼 목표 길이(분)</span>
-            <input
-              max={180}
-              min={2}
-              onChange={(event) => updateLongformMinutes(Number(event.target.value))}
-              type="number"
-              value={longformMinutes}
-            />
-            <small className="field-help">대본 길이, 씬 수, 렌더 계획의 기준으로 사용됩니다.</small>
-          </label>
-        ) : null}
-      </section>
-
       <details className="new-run-advanced">
         <summary>
           <span>상세 옵션</span>
-          <small>언어, 대상 시청자, 톤 추천</small>
+          <small>대상 시청자, 톤 추천</small>
         </summary>
         <div className="new-run-advanced-body">
-          <label>
-            <span>언어</span>
-            <select onChange={(event) => setLanguage(event.target.value)} value={language}>
-              {languageOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
           <label>
             <span>대상 시청자</span>
             <input

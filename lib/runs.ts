@@ -42,6 +42,7 @@ export type ProductionPackage = {
     target_audience?: string;
     target_duration_seconds?: number;
     language: string;
+    region_code?: string;
     source_mode?: string;
     tone?: string;
   };

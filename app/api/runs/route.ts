@@ -27,6 +27,16 @@ function regionForLanguage(language: string) {
   return "KR";
 }
 
+function normalizeSourceMode(value: unknown) {
+  if (value === "categoryTop") {
+    return "categoryTop" as const;
+  }
+  if (value === "manual") {
+    return "manual" as const;
+  }
+  return "topicSearch" as const;
+}
+
 function publishedAfterDays(days: number) {
   const date = new Date();
   date.setDate(date.getDate() - days);
@@ -77,32 +87,37 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as Partial<CreateRunInput>;
-    const sourceMode = body.sourceMode === "categoryTop" ? "categoryTop" : "manual";
+    const sourceMode = normalizeSourceMode(body.sourceMode);
     const format = String(body.format ?? "shorts");
     const language = String(body.language ?? "ko");
+    const regionCode = String(body.regionCode ?? "").trim().toUpperCase() || regionForLanguage(language);
     const durationSeconds = Number(body.durationSeconds ?? 60);
     let sourceCandidates: YouTubeCandidate[] = [];
 
-    if (sourceMode === "categoryTop") {
+    if (sourceMode !== "manual") {
+      const query = String(body.topic ?? "").trim();
       const categoryId = String(body.categoryId ?? "").trim();
-      if (!categoryId) {
-        throw new Error("유튜브 카테고리를 선택해야 TOP 10 후보를 가져올 수 있습니다.");
+      if (sourceMode === "topicSearch" && !query) {
+        throw new Error("아이디어 직접 작성 모드에서는 영상 주제나 리서치 키워드가 필요합니다.");
+      }
+      if (sourceMode === "categoryTop" && !categoryId) {
+        throw new Error("카테고리 선택 모드에서는 유튜브 카테고리가 필요합니다.");
       }
 
       const candidates = await searchYouTubeVideos({
-        query: String(body.topic ?? ""),
+        query: sourceMode === "topicSearch" ? query : "",
         maxResults: 25,
         order: "viewCount",
         publishedAfter: publishedAfterDays(7),
-        regionCode: regionForLanguage(language),
+        regionCode,
         relevanceLanguage: language,
-        videoCategoryId: categoryId,
+        videoCategoryId: sourceMode === "categoryTop" ? categoryId : "",
         videoDuration: format === "shorts" ? "short" : durationSeconds > 1200 ? "long" : "medium",
       });
       sourceCandidates = selectFormatMatches(candidates, format, durationSeconds);
 
       if (sourceCandidates.length === 0) {
-        throw new Error("최근 7일 기준으로 선택한 카테고리의 YouTube 후보 영상을 찾지 못했습니다.");
+        throw new Error("최근 7일 기준으로 조건에 맞는 YouTube 후보 영상을 찾지 못했습니다.");
       }
     }
 
@@ -113,6 +128,7 @@ export async function POST(request: Request) {
       channelId: String(body.channelId ?? ""),
       format,
       language,
+      regionCode,
       sourceCandidates,
       sourceMode,
       targetAudience: String(body.targetAudience ?? ""),

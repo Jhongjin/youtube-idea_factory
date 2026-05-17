@@ -100,6 +100,7 @@ export function YouTubeFinderPanel({
   existingSources = [],
   format = "shorts",
   language = "ko",
+  regionCode: regionCodeProp = "",
   runId,
   targetDurationSeconds = 60,
 }: {
@@ -110,6 +111,7 @@ export function YouTubeFinderPanel({
   existingSources?: SourceVideo[];
   format?: string;
   language?: string;
+  regionCode?: string;
   runId: string;
   targetDurationSeconds?: number;
 }) {
@@ -124,7 +126,7 @@ export function YouTubeFinderPanel({
     [existingSources],
   );
   const loading = loadingMode !== "idle";
-  const regionCode = regionForLanguage(language);
+  const regionCode = regionCodeProp || regionForLanguage(language);
   const formatLabel = format === "longform" ? "롱폼" : "쇼츠";
 
   function applyCandidateResults(nextCandidates: YouTubeCandidate[], label: string) {
@@ -182,7 +184,7 @@ export function YouTubeFinderPanel({
         maxResults: 25,
         order: "viewCount",
         publishedAfter: publishedAfterDays(7),
-        query: defaultQuery,
+        query: "",
         regionCode,
         relevanceLanguage: language,
         videoCategoryId: defaultCategoryId,

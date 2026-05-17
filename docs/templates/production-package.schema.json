@@ -38,6 +38,8 @@
         "target_audience": { "type": "string" },
         "target_duration_seconds": { "type": "integer", "minimum": 1 },
         "language": { "type": "string" },
+        "region_code": { "type": "string" },
+        "source_mode": { "type": "string" },
         "tone": { "type": "string" }
       }
     },

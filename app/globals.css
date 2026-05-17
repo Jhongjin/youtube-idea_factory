@@ -2198,6 +2198,15 @@ button:disabled,
   color: var(--blue);
 }
 
+.new-run-drawer .source-mode-grid,
+.new-run-drawer .new-run-channel-summary {
+  grid-template-columns: 1fr;
+}
+
+.new-run-drawer .new-run-channel-badges {
+  justify-content: flex-start;
+}
+
 .detail-stack {
   display: grid;
   gap: 12px;
