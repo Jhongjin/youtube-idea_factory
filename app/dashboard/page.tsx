@@ -129,35 +129,33 @@ const approvalGateLabels: Record<ApprovalGate, string> = {
 
 const guidedStepDefinitions = [
   {
-    description: "운영 채널과 제작 브리프를 확인합니다.",
+    description: "채널과 이번 영상 주제를 확인합니다.",
     key: "setup",
-    label: "준비",
+    label: "채널/주제",
   },
   {
-    description: "후보 영상을 찾고 소스 근거를 보강합니다.",
+    description: "후보 영상과 근거를 먼저 채웁니다.",
     key: "research",
-    label: "리서치",
+    label: "소스 찾기",
   },
   {
-    description: "분석, 대본, 스토리보드를 차례로 만듭니다.",
+    description: "분석, 대본, 스토리보드를 만듭니다.",
     key: "draft",
-    label: "대본/스토리보드",
+    label: "대본 만들기",
   },
   {
-    description: "미디어 프롬프트와 생성 큐를 준비합니다.",
+    description: "이미지, 영상, 음성 생성 준비를 합니다.",
     key: "production",
-    label: "제작",
+    label: "미디어 만들기",
   },
   {
-    description: "검수, 렌더, 업로드, 성과 수집을 진행합니다.",
+    description: "검수, 편집, 렌더, 업로드를 진행합니다.",
     key: "review",
-    label: "검수/배포",
+    label: "검수/업로드",
   },
 ] as const;
 
 type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
-
-const guidedStepKeys = new Set<string>(guidedStepDefinitions.map((step) => step.key));
 
 const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, string[]> = {
   draft: ["video-analysis", "claim-ledger", "script-plan", "storyboard"],
@@ -335,10 +333,6 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     return "review";
   }
   return "setup";
-}
-
-function normalizeGuidedStep(value: string | undefined, fallback: GuidedStepKey): GuidedStepKey {
-  return value && guidedStepKeys.has(value) ? (value as GuidedStepKey) : fallback;
 }
 
 const learningStatusCopy: Record<string, string> = {
@@ -528,17 +522,13 @@ function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
 
 function OperatingChannelBar({
   activeStep,
-  activeRun,
   allRuns,
   channels,
-  nextActionPlan,
   selectedChannelId,
 }: {
   activeStep: GuidedStepKey;
-  activeRun?: RunSummary;
   allRuns: RunSummary[];
   channels: SafeYouTubeChannel[];
-  nextActionPlan?: RunNextActionPlan | null;
   selectedChannelId: string;
 }) {
   const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
@@ -632,41 +622,6 @@ function OperatingChannelBar({
           })}
         </div>
       </details>
-      <div className="operating-focus-rail" aria-label="대시보드 진행 순서">
-        <Link
-          className={`operating-focus-step ${selectedChannel ? "done" : "current"}`}
-          href={
-            selectedChannel
-              ? dashboardHref({ channelId: selectedChannel.id, step: activeStep })
-              : "/admin/channels"
-          }
-        >
-          <span>01</span>
-          <strong>{selectedChannel ? selectedChannel.brand_name : "운영 채널 선택"}</strong>
-          <small>
-            {selectedChannel
-              ? "이 채널 기준으로 제작 이력을 봅니다."
-              : "채널을 등록하거나 전체 실행으로 시작합니다."}
-          </small>
-        </Link>
-        <a
-          className={`operating-focus-step ${activeRun ? "done" : "current"}`}
-          href={activeRun ? "#next-action" : "#new-run-panel"}
-        >
-          <span>02</span>
-          <strong>{activeRun ? "현재 실행 계속" : "새 제작 시작"}</strong>
-          <small>
-            {activeRun
-              ? activeRun.package.brief.topic
-              : "주제와 형식을 넣어 첫 패키지를 만듭니다."}
-          </small>
-        </a>
-        <a className={`operating-focus-step ${activeRun ? "current" : "pending"}`} href="#next-action">
-          <span>03</span>
-          <strong>{nextActionPlan?.headline ?? "다음 작업 실행"}</strong>
-          <small>{nextActionPlan?.detail ?? "실행이 만들어지면 가장 먼저 누를 버튼을 보여줍니다."}</small>
-        </a>
-      </div>
       {channelUploadNudge ? (
         <div className={`operating-channel-nudge ${channelUploadNudge.tone}`}>
           <AlertTriangle size={17} />
@@ -697,17 +652,31 @@ function GuidedStepNav({
     <nav className="guided-step-nav" aria-label="제작 단계">
       {guidedStepDefinitions.map((step, index) => {
         const state = index < activeIndex ? "done" : index === activeIndex ? "current" : "pending";
-        return (
+        const stepBody = (
+          <>
+            <span>{String(index + 1).padStart(2, "0")}</span>
+            <strong>{step.label}</strong>
+            {state === "current" ? <em>지금</em> : null}
+            {state === "pending" ? <em>잠김</em> : null}
+            <small>{step.description}</small>
+          </>
+        );
+        return state === "pending" ? (
+          <span
+            aria-disabled="true"
+            className={`guided-step ${state}`}
+            key={step.key}
+          >
+            {stepBody}
+          </span>
+        ) : (
           <Link
             aria-current={state === "current" ? "step" : undefined}
             className={`guided-step ${state}`}
             href={dashboardHref({ channelId, runId, step: step.key })}
             key={step.key}
           >
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{step.label}</strong>
-            {state === "current" ? <em>현재</em> : null}
-            <small>{step.description}</small>
+            {stepBody}
           </Link>
         );
       })}
@@ -729,7 +698,7 @@ function GuidedActionPanel({
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
         <div>
-          <p className="eyebrow">다음 작업</p>
+          <p className="eyebrow">지금 누를 버튼</p>
           <h3>{plan.headline}</h3>
           <p>{plan.detail}</p>
         </div>
@@ -742,8 +711,8 @@ function GuidedActionPanel({
             <strong>{plan.headline}</strong>
             <small>
               {plan.primaryActionId
-                ? "이 버튼을 완료하면 다음 제작 단계로 이어집니다."
-                : "오른쪽 검토 패널에서 승인 또는 수동 확인을 완료하세요."}
+                ? "이 화면에서는 이 큰 버튼 하나만 먼저 보면 됩니다."
+                : "승인 또는 확인이 끝나야 다음 버튼이 열립니다."}
             </small>
           </div>
           {plan.primaryActionId ? (
@@ -775,7 +744,7 @@ function GuidedActionPanel({
         ) : null}
       </div>
       <details className="guided-checklist">
-        <summary>필요한 확인</summary>
+        <summary>왜 이 버튼을 눌러야 하나요?</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -789,6 +758,9 @@ function GuidedActionPanel({
           ))}
         </div>
       </details>
+      <p className="guided-location-note">
+        편집 provider, 이미지/영상/TTS 생성 메뉴는 해당 단계가 열릴 때만 표시됩니다. 지금 단계에서는 숨겨두고 현재 버튼만 보여줍니다.
+      </p>
     </section>
   );
 }
@@ -809,18 +781,17 @@ function GuidedRunWorkspace({
   run: RunSummary;
 }) {
   const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
+  const activeStepIndex = guidedStepDefinitions.findIndex((step) => step.key === activeStep) + 1;
   return (
     <div className="guided-workspace">
       <GuidedStepNav activeStep={activeStep} channelId={channelId} runId={run.id} />
       <section className="guided-step-intro">
         <div>
-          <p className="eyebrow">현재 화면</p>
-          <h3>{activeStepCopy.label}</h3>
-          <p>{activeStepCopy.description}</p>
+          <p className="eyebrow">처음이면 여기부터</p>
+          <h3>{activeStepIndex}단계: {activeStepCopy.label}</h3>
+          <p>아래의 큰 버튼이 이 제작 실행에서 지금 눌러야 할 작업입니다. 다른 메뉴는 이 단계가 끝난 뒤 필요할 때만 열립니다.</p>
         </div>
-        <Link className="text-button" href={dashboardHref({ channelId, runId: run.id, step: defaultGuidedStep(nextActionPlan) })}>
-          현재 단계로 이동
-        </Link>
+        <a className="text-button primary" href="#next-action">지금 할 일 보기</a>
       </section>
       <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
 
@@ -1074,7 +1045,6 @@ function EmptyState({
         activeStep="setup"
         allRuns={allRuns}
         channels={channels}
-        nextActionPlan={null}
         selectedChannelId={selectedChannelId}
       />
       <div className="topbar">
@@ -1982,7 +1952,7 @@ export default async function Home({
         })
       : null;
   const selectedChannelId = activeChannelId || runChannelId(activeRun);
-  const activeStep = normalizeGuidedStep(params.step, defaultGuidedStep(nextActionPlan));
+  const activeStep = defaultGuidedStep(nextActionPlan);
 
   return (
     <div className="shell">
@@ -2001,10 +1971,8 @@ export default async function Home({
           <DashboardNotice notice={params.notice} />
           <OperatingChannelBar
             activeStep={activeStep}
-            activeRun={activeRun}
             allRuns={runs}
             channels={channels}
-            nextActionPlan={nextActionPlan}
             selectedChannelId={selectedChannelId}
           />
           <div className="topbar">
