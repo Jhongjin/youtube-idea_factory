@@ -11,6 +11,7 @@ type LoadingMode = "idle" | "category" | "search" | "import" | "manual";
 type SearchMeta = {
   duplicateCount: number;
   label: string;
+  scope?: string;
   total: number;
 };
 
@@ -131,10 +132,12 @@ export function YouTubeFinderPanel({
 
   function applyCandidateResults(nextCandidates: YouTubeCandidate[], label: string) {
     const freshCandidates = nextCandidates.filter((candidate) => !existingKeys.has(sourceDedupKey(candidate)));
+    const scope = nextCandidates.find((candidate) => candidate.searchScope)?.searchScope;
     setCandidates(freshCandidates);
     setSearchMeta({
       duplicateCount: Math.max(0, nextCandidates.length - freshCandidates.length),
       label,
+      scope,
       total: nextCandidates.length,
     });
     setCopied(false);
@@ -181,7 +184,9 @@ export function YouTubeFinderPanel({
 
     await runSearch(
       {
+        categoryTitle: defaultCategoryTitle,
         maxResults: 25,
+        minResults: 10,
         order: "viewCount",
         publishedAfter: publishedAfterDays(7),
         query: "",
@@ -202,6 +207,7 @@ export function YouTubeFinderPanel({
     await runSearch(
       {
         maxResults: Number(formData.get("maxResults") ?? 10),
+        minResults: 10,
         order: String(formData.get("order") ?? "viewCount"),
         query: String(formData.get("query") ?? ""),
         regionCode: String(formData.get("regionCode") ?? ""),
@@ -408,6 +414,7 @@ export function YouTubeFinderPanel({
             <span>
               검색 {searchMeta.total}개 중 새 후보 {candidates.length}개
               {searchMeta.duplicateCount > 0 ? `, 중복 ${searchMeta.duplicateCount}개 제외` : ""}
+              {searchMeta.scope ? ` / ${searchMeta.scope}` : ""}
             </span>
           </div>
         ) : null}

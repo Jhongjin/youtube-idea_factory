@@ -12,6 +12,9 @@ export type SourceVideo = {
   duration_seconds?: number;
   like_count?: number;
   metadata_status?: string;
+  search_published_after?: string;
+  search_query?: string;
+  search_scope?: string;
   source_mode?: string;
   thumbnail_url?: string;
   view_count?: number;

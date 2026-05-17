@@ -105,8 +105,10 @@ export async function POST(request: Request) {
       }
 
       const candidates = await searchYouTubeVideos({
+        categoryTitle: String(body.category ?? ""),
         query: sourceMode === "topicSearch" ? query : "",
-        maxResults: 25,
+        maxResults: 50,
+        minResults: 10,
         order: "viewCount",
         publishedAfter: publishedAfterDays(7),
         regionCode,
@@ -117,7 +119,7 @@ export async function POST(request: Request) {
       sourceCandidates = selectFormatMatches(candidates, format, durationSeconds);
 
       if (sourceCandidates.length === 0) {
-        throw new Error("최근 7일 기준으로 조건에 맞는 YouTube 후보 영상을 찾지 못했습니다.");
+        throw new Error("검색 조건을 완화해도 YouTube 후보 영상을 찾지 못했습니다. 검색어, 국가, 카테고리를 바꿔보세요.");
       }
     }
 

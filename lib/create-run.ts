@@ -98,11 +98,14 @@ function buildSourceFromCandidate(
     duration_seconds: candidate.durationSeconds,
     inclusion_reason:
       sourceMode === "topicSearch"
-        ? "Selected from YouTube topic search intake using recency, view count, and format match."
-        : "Selected from YouTube category intake using recency, view count, and format match.",
+        ? `Selected from YouTube topic search intake using recency, view count, and format match.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`
+        : `Selected from YouTube category intake using recency, view count, and format match.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`,
     like_count: candidate.likeCount,
     metadata_status: "youtube_data_api",
     published_at: candidate.publishedAt,
+    search_published_after: candidate.searchPublishedAfter,
+    search_query: candidate.searchQuery,
+    search_scope: candidate.searchScope,
     source_mode: sourceModeLabel(sourceMode),
     thumbnail_url: candidate.thumbnailUrl,
     transcript_status: "not_checked",

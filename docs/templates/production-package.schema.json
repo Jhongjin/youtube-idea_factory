@@ -215,6 +215,9 @@
         "channel": { "type": "string" },
         "view_count": { "type": "integer", "minimum": 0 },
         "published_at": { "type": "string" },
+        "search_published_after": { "type": "string" },
+        "search_query": { "type": "string" },
+        "search_scope": { "type": "string" },
         "inclusion_reason": { "type": "string" },
         "transcript_status": { "type": "string" }
       }
