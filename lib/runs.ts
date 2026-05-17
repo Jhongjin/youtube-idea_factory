@@ -5,6 +5,15 @@ export type SourceVideo = {
   url: string;
   title: string;
   channel?: string;
+  channel_id?: string;
+  comment_count?: number;
+  description?: string;
+  duration?: string;
+  duration_seconds?: number;
+  like_count?: number;
+  metadata_status?: string;
+  source_mode?: string;
+  thumbnail_url?: string;
   view_count?: number;
   published_at?: string;
   inclusion_reason: string;
@@ -27,11 +36,13 @@ export type ProductionPackage = {
   brief: {
     topic: string;
     category?: string;
+    category_id?: string;
     channel?: ProductionRunChannel;
     format: string;
     target_audience?: string;
     target_duration_seconds?: number;
     language: string;
+    source_mode?: string;
     tone?: string;
   };
   sources: SourceVideo[];

@@ -2341,6 +2341,17 @@ button:disabled,
   resize: vertical;
 }
 
+.field-help {
+  color: #667386;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.field-help.warning {
+  color: #b7791f;
+}
+
 .new-run-channel-summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -2507,21 +2518,39 @@ button:disabled,
   gap: 6px;
 }
 
+.format-presets.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .format-presets button {
+  display: grid;
+  gap: 3px;
   min-height: 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #ffffff;
   color: #334155;
   padding: 0 8px;
-  font-size: 11px;
-  font-weight: 850;
+  text-align: center;
   cursor: pointer;
   transition:
     background 160ms ease,
     border-color 160ms ease,
     color 160ms ease,
     transform 160ms ease;
+}
+
+.format-presets button strong {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.format-presets button span {
+  color: inherit;
+  font-size: 11px;
+  font-weight: 760;
+  opacity: 0.78;
 }
 
 .format-presets button:hover {
@@ -2537,6 +2566,86 @@ button:disabled,
   border-color: var(--blue);
   background: var(--blue-soft);
   color: var(--blue);
+}
+
+.source-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.source-mode-grid button {
+  display: grid;
+  gap: 5px;
+  min-height: 76px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #27364a;
+  padding: 11px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.source-mode-grid button:hover {
+  border-color: #b8c5d5;
+  background: #f8fafc;
+}
+
+.source-mode-grid button:active {
+  transform: translateY(1px);
+}
+
+.source-mode-grid button.active {
+  border-color: #78b38a;
+  background: #f0fbf3;
+  color: #21583a;
+}
+
+.source-mode-grid strong {
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.source-mode-grid span {
+  color: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+.longform-duration-control {
+  max-width: 280px;
+}
+
+.suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suggestion-row button {
+  min-height: 30px;
+  border: 1px solid #cfe3d4;
+  border-radius: 999px;
+  background: #f4fbf6;
+  color: #2f6f4e;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.suggestion-row button:hover {
+  border-color: #9ac9aa;
+  background: #e8f6ec;
 }
 
 .new-run-advanced {
@@ -4029,6 +4138,7 @@ button:disabled,
   .upload-job-grid,
   .form-grid,
   .format-presets,
+  .source-mode-grid,
   .new-run-channel-summary {
     grid-template-columns: 1fr;
   }
@@ -7697,6 +7807,55 @@ body {
 .generation-provider-selector small,
 .provider-profile-intro span {
   color: rgba(244, 239, 227, 0.72);
+}
+
+.new-run-form label span,
+.new-run-advanced summary,
+.new-run-advanced summary span {
+  color: #f0c174;
+}
+
+.new-run-form .field-help,
+.new-run-advanced summary small {
+  color: rgba(244, 239, 227, 0.68);
+}
+
+.new-run-form .field-help.warning {
+  color: #f0c174;
+}
+
+.source-mode-grid button,
+.format-presets button,
+.new-run-advanced {
+  border-color: rgba(244, 239, 227, 0.16);
+  background: rgba(6, 12, 12, 0.46);
+  color: #f8f2e7;
+}
+
+.source-mode-grid button:hover,
+.format-presets button:hover {
+  border-color: rgba(244, 239, 227, 0.3);
+  background: rgba(244, 239, 227, 0.07);
+}
+
+.source-mode-grid button.active,
+.format-presets button.active {
+  border-color: rgba(155, 215, 167, 0.52);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.14), rgba(244, 239, 227, 0.04)),
+    rgba(13, 21, 21, 0.82);
+  color: #bdf0c6;
+}
+
+.suggestion-row button {
+  border-color: rgba(155, 215, 167, 0.32);
+  background: rgba(155, 215, 167, 0.11);
+  color: #bdf0c6;
+}
+
+.suggestion-row button:hover {
+  border-color: rgba(155, 215, 167, 0.52);
+  background: rgba(155, 215, 167, 0.16);
 }
 
 .settings-page select option,

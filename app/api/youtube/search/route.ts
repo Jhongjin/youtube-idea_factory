@@ -12,6 +12,7 @@ export async function POST(request: Request) {
       regionCode: body.regionCode ? String(body.regionCode) : undefined,
       relevanceLanguage: body.relevanceLanguage ? String(body.relevanceLanguage) : undefined,
       publishedAfter: body.publishedAfter ? String(body.publishedAfter) : undefined,
+      videoCategoryId: body.videoCategoryId ? String(body.videoCategoryId) : undefined,
       videoDuration: body.videoDuration ?? "any",
     });
 

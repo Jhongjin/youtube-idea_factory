@@ -1,13 +1,20 @@
 import { getProviderSettings } from "@/lib/provider-settings";
 
 export type YouTubeSearchInput = {
-  query: string;
+  query?: string;
   maxResults?: number;
   order?: "date" | "rating" | "relevance" | "title" | "videoCount" | "viewCount";
   regionCode?: string;
   relevanceLanguage?: string;
   publishedAfter?: string;
+  videoCategoryId?: string;
   videoDuration?: "any" | "short" | "medium" | "long";
+};
+
+export type YouTubeVideoCategory = {
+  assignable: boolean;
+  id: string;
+  title: string;
 };
 
 export type YouTubeCandidate = {
@@ -56,6 +63,17 @@ type VideosResponse = {
   }>;
 };
 
+type CategoriesResponse = {
+  items?: Array<{
+    id?: string;
+    snippet?: {
+      assignable?: boolean;
+      title?: string;
+    };
+  }>;
+};
+
+const categoriesEndpoint = "https://www.googleapis.com/youtube/v3/videoCategories";
 const searchEndpoint = "https://www.googleapis.com/youtube/v3/search";
 const videosEndpoint = "https://www.googleapis.com/youtube/v3/videos";
 
@@ -114,9 +132,10 @@ async function fetchJson<T>(url: URL) {
 }
 
 export async function searchYouTubeVideos(input: YouTubeSearchInput) {
-  const query = input.query.trim();
-  if (!query) {
-    throw new Error("Search query is required.");
+  const query = input.query?.trim() ?? "";
+  const videoCategoryId = input.videoCategoryId?.trim() ?? "";
+  if (!query && !videoCategoryId) {
+    throw new Error("Search query or YouTube category is required.");
   }
 
   const apiKey = await getYouTubeApiKey();
@@ -125,11 +144,16 @@ export async function searchYouTubeVideos(input: YouTubeSearchInput) {
   searchUrl.searchParams.set("key", apiKey);
   searchUrl.searchParams.set("part", "snippet");
   searchUrl.searchParams.set("type", "video");
-  searchUrl.searchParams.set("q", query);
   searchUrl.searchParams.set("maxResults", String(maxResults));
   searchUrl.searchParams.set("order", input.order ?? "viewCount");
   searchUrl.searchParams.set("safeSearch", "moderate");
 
+  if (query) {
+    searchUrl.searchParams.set("q", query);
+  }
+  if (videoCategoryId) {
+    searchUrl.searchParams.set("videoCategoryId", videoCategoryId);
+  }
   if (input.regionCode) {
     searchUrl.searchParams.set("regionCode", input.regionCode);
   }
@@ -196,4 +220,26 @@ export async function searchYouTubeVideos(input: YouTubeSearchInput) {
       };
     })
     .filter((candidate): candidate is YouTubeCandidate => candidate !== null);
+}
+
+export async function listYouTubeVideoCategories(regionCode = "KR") {
+  const apiKey = await getYouTubeApiKey();
+  const categoriesUrl = new URL(categoriesEndpoint);
+  categoriesUrl.searchParams.set("key", apiKey);
+  categoriesUrl.searchParams.set("part", "snippet");
+  categoriesUrl.searchParams.set("regionCode", regionCode.trim() || "KR");
+
+  const response = await fetchJson<CategoriesResponse>(categoriesUrl);
+  return (response.items ?? [])
+    .map((item): YouTubeVideoCategory | null => {
+      if (!item.id || !item.snippet?.title) {
+        return null;
+      }
+      return {
+        assignable: item.snippet.assignable ?? true,
+        id: item.id,
+        title: item.snippet.title,
+      };
+    })
+    .filter((category): category is YouTubeVideoCategory => Boolean(category?.assignable));
 }
