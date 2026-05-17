@@ -53,6 +53,11 @@ const staticCatalog: Partial<Record<ModelCatalogKey, ProviderModelOption[]>> = {
     { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash", source: "static" },
     { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash", source: "static" },
   ],
+  "subtitles:supadata": [
+    { id: "native", label: "Native transcript", source: "static" },
+    { id: "auto", label: "Native then AI fallback", source: "static" },
+    { id: "generate", label: "AI generated transcript", source: "static" },
+  ],
   "llm:anthropic": [
     { id: "claude-opus-4-7", label: "Claude Opus 4.7", source: "static" },
     { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", source: "static" },

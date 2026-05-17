@@ -46,6 +46,7 @@ import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
 import { ScriptRefineButton } from "@/app/components/script-refine-button";
+import { SourceDeleteButton } from "@/app/components/source-delete-button";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
 import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
@@ -112,8 +113,20 @@ const transcriptStatusCopy: Record<string, string> = {
   not_checked: "미확인",
   missing: "없음",
   manual_transcript: "수동 입력",
+  external_transcript: "외부 자막",
+  stt_transcript: "STT",
   available: "확보됨",
 };
+
+function sourceKey(source: RunSummary["package"]["sources"][number]) {
+  if (source.video_id) {
+    return source.video_id;
+  }
+  if (typeof source.rank === "number") {
+    return `source-${source.rank}`;
+  }
+  return source.url;
+}
 
 const feedbackStatusCopy: Record<string, string> = {
   learning: "학습 중",
@@ -1553,11 +1566,16 @@ function SourcesPanel({
     <section className="panel" id="sources-panel">
       <div className="panel-header">
         <h3 className="panel-title">소스 영상</h3>
-        {showEnrichAction ? (
-          <EnrichSourcesButton runId={run.id} />
-        ) : (
-          <span className="meta">상단 큰 버튼에서 보강</span>
-        )}
+        <div className="toolbar">
+          {showEnrichAction ? (
+            <EnrichSourcesButton runId={run.id} />
+          ) : (
+            <span className="meta">상단 큰 버튼에서 보강</span>
+          )}
+          {run.package.sources.length > 0 ? (
+            <SourceDeleteButton label="전체 삭제" mode="all" runId={run.id} />
+          ) : null}
+        </div>
       </div>
       <div className="panel-body">
         {run.package.sources.length > 0 ? (
@@ -1568,6 +1586,7 @@ function SourcesPanel({
                   <th>순위</th>
                   <th>소스</th>
                   <th>자막/스크립트</th>
+                  <th>관리</th>
                 </tr>
               </thead>
               <tbody>
@@ -1584,6 +1603,14 @@ function SourcesPanel({
                       {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
                         source.transcript_status ??
                         "미확인"}
+                    </td>
+                    <td>
+                      <SourceDeleteButton
+                        label="삭제"
+                        mode="single"
+                        runId={run.id}
+                        sourceKey={sourceKey(source)}
+                      />
                     </td>
                   </tr>
                 ))}

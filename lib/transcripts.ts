@@ -15,7 +15,7 @@ export type TranscriptPayload = {
 };
 
 export type SaveTranscriptOptions = {
-  status?: "manual_transcript" | "stt_transcript";
+  status?: "external_transcript" | "manual_transcript" | "stt_transcript";
   provider?: string;
   model?: string;
   sourceUrl?: string;
@@ -35,7 +35,7 @@ function getTranscriptPath(sourceKey: string) {
 }
 
 function matchesSource(source: SourceVideo, sourceKey: string) {
-  return source.video_id === sourceKey || `source-${source.rank ?? ""}` === sourceKey;
+  return source.video_id === sourceKey || (typeof source.rank === "number" && `source-${source.rank}` === sourceKey);
 }
 
 async function updateSourceStatus(

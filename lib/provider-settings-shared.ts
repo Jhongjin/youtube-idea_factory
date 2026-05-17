@@ -95,6 +95,7 @@ export const providerRoles = [
     description: "음성 인식, 자막 타이밍, 캡션 포맷팅에 사용합니다.",
     providers: [
       "OpenAI",
+      "Supadata",
       "AssemblyAI",
       "Deepgram",
       "Vrew",

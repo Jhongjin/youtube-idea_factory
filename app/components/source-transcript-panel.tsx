@@ -6,6 +6,7 @@ import type { SourceVideo } from "@/lib/runs";
 import { decodeHtmlEntities } from "@/lib/html-text";
 
 type SaveState = "idle" | "loading" | "saving" | "saved" | "error";
+const fetchTranscriptConfirmToken = "FETCH_TRANSCRIPT";
 const transcribeConfirmToken = "TRANSCRIBE_AUDIO";
 
 function getSourceKey(source: SourceVideo) {
@@ -16,6 +17,7 @@ const transcriptStatusCopy: Record<string, string> = {
   not_checked: "미확인",
   missing: "없음",
   manual_transcript: "수동 입력",
+  external_transcript: "외부 자막",
   stt_transcript: "STT",
   available: "확보됨",
 };
@@ -33,7 +35,9 @@ export function SourceTranscriptPanel({
   const [state, setState] = useState<SaveState>("idle");
   const [error, setError] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
+  const [fetchingTranscript, setFetchingTranscript] = useState(false);
   const [language, setLanguage] = useState("ko");
+  const [transcriptMode, setTranscriptMode] = useState<"auto" | "native">("auto");
   const [transcribing, setTranscribing] = useState(false);
 
   const activeSource = useMemo(
@@ -156,6 +160,43 @@ export function SourceTranscriptPanel({
     window.setTimeout(() => setState("idle"), 1200);
   }
 
+  async function fetchExternalTranscript() {
+    setError("");
+    const confirmation = window.prompt(
+      `${fetchTranscriptConfirmToken}를 입력하면 Supadata 자막 가져오기를 실행합니다. auto 방식은 공개 자막이 없으면 AI 생성 비용이 발생할 수 있습니다.`,
+    );
+    if (confirmation === null) {
+      return;
+    }
+    if (confirmation !== fetchTranscriptConfirmToken) {
+      setError(`외부 자막 가져오기에는 ${fetchTranscriptConfirmToken}가 필요합니다.`);
+      setState("error");
+      return;
+    }
+
+    setFetchingTranscript(true);
+    const response = await fetch(`/api/runs/${runId}/transcripts/${activeKey}/fetch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        confirmFetch: fetchTranscriptConfirmToken,
+        language,
+        mode: transcriptMode,
+      }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setError(body?.error ?? "외부 자막 가져오기에 실패했습니다.");
+      setState("error");
+      setFetchingTranscript(false);
+      return;
+    }
+    await refreshTranscript();
+    setState("saved");
+    setFetchingTranscript(false);
+    window.setTimeout(() => setState("idle"), 1200);
+  }
+
   return (
     <section className="transcript-panel">
       <div className="transcript-header">
@@ -199,6 +240,25 @@ export function SourceTranscriptPanel({
         </div>
         <div className="transcript-editor">
           <div className="transcript-automation">
+            <button
+              className="text-button primary"
+              disabled={fetchingTranscript}
+              onClick={fetchExternalTranscript}
+              type="button"
+            >
+              {fetchingTranscript ? <Loader2 className="spin" size={15} /> : <FileText size={15} />}
+              자막 가져오기
+            </button>
+            <label>
+              <span>자막 방식</span>
+              <select
+                onChange={(event) => setTranscriptMode(event.target.value === "native" ? "native" : "auto")}
+                value={transcriptMode}
+              >
+                <option value="auto">자동</option>
+                <option value="native">공개 자막만</option>
+              </select>
+            </label>
             <label>
               <span>오디오 URL</span>
               <input
