@@ -6,10 +6,12 @@ import {
 } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
+import { extractYouTubeVideoId, normalizeYouTubeUrl, sourceDedupKey } from "@/lib/youtube-url";
 
 export type ImportSourcesInput = {
   candidates: YouTubeCandidate[];
   mode?: "append" | "replace";
+  seedUrls?: string[];
 };
 
 export type ImportSourcesResult = {
@@ -62,7 +64,7 @@ async function updateResearchMarkdown(runId: string, sources: SourceVideo[]) {
 function normalizeCandidate(candidate: YouTubeCandidate, rank: number): SourceVideo & Record<string, unknown> {
   return {
     rank,
-    url: candidate.url,
+    url: normalizeYouTubeUrl(candidate.url),
     title: candidate.title,
     channel: candidate.channel,
     inclusion_reason: "Imported from YouTube Finder.",
@@ -82,24 +84,53 @@ function normalizeCandidate(candidate: YouTubeCandidate, rank: number): SourceVi
   };
 }
 
+function normalizeManualUrl(url: string, rank: number): SourceVideo & Record<string, unknown> {
+  const normalizedUrl = normalizeYouTubeUrl(url);
+  const videoId = extractYouTubeVideoId(normalizedUrl);
+  return {
+    rank,
+    url: normalizedUrl,
+    title: `Manual source ${rank}: ${videoId || normalizedUrl}`,
+    channel: "",
+    inclusion_reason: "Manually added in source review.",
+    transcript_status: "not_checked",
+    video_id: videoId,
+    source_mode: "manual_add",
+    metadata_status: "manual_pending",
+  };
+}
+
 export async function importRunSources(runId: string, input: ImportSourcesInput): Promise<ImportSourcesResult> {
   assertSafeRunId(runId);
   const existingSources =
     input.mode === "replace" ? [] : await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
   const productionPackage = await readRunJson<ProductionPackage>(runId, "production-package.json");
 
-  const existingUrls = new Set(existingSources.map((source) => source.url));
+  const existingKeys = new Set(existingSources.map((source) => sourceDedupKey(source)));
   const importedSources = [...existingSources];
   let imported = 0;
   let skipped = 0;
 
   for (const candidate of input.candidates) {
-    if (!candidate.url || existingUrls.has(candidate.url)) {
+    const key = sourceDedupKey(candidate);
+    if (!candidate.url || existingKeys.has(key)) {
       skipped += 1;
       continue;
     }
-    existingUrls.add(candidate.url);
+    existingKeys.add(key);
     importedSources.push(normalizeCandidate(candidate, importedSources.length + 1));
+    imported += 1;
+  }
+
+  for (const seedUrl of input.seedUrls ?? []) {
+    const trimmedUrl = seedUrl.trim();
+    const key = sourceDedupKey({ url: trimmedUrl });
+    if (!trimmedUrl || existingKeys.has(key)) {
+      skipped += 1;
+      continue;
+    }
+    existingKeys.add(key);
+    importedSources.push(normalizeManualUrl(trimmedUrl, importedSources.length + 1));
     imported += 1;
   }
 

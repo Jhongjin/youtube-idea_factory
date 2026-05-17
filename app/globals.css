@@ -1202,6 +1202,152 @@ button:disabled,
   margin-bottom: 16px;
 }
 
+.source-review-panel .panel-body {
+  display: grid;
+  gap: 12px;
+}
+
+.source-review-actions {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.82fr) minmax(0, 1.42fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.source-review-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.source-review-card.primary {
+  border-color: #b9d9c2;
+  background: #f5fbf6;
+}
+
+.source-review-card.search-card {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+
+.source-review-card.manual-card {
+  grid-column: 1;
+}
+
+.source-review-card-heading {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+}
+
+.source-review-card-heading svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--green);
+}
+
+.source-review-card-heading > div {
+  min-width: 0;
+}
+
+.source-review-card h4 {
+  margin: 0 0 4px;
+  color: #182235;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.source-review-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.source-review-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.source-review-meta span {
+  border-radius: 8px;
+  background: #e8f3eb;
+  color: #2f6f4e;
+  padding: 5px 7px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.source-review-card .finder-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.source-review-card .finder-query {
+  grid-column: 1 / -1;
+}
+
+.source-review-card .finder-form button {
+  grid-column: 1 / -1;
+  justify-content: center;
+  min-height: 36px;
+}
+
+.manual-source-field {
+  display: grid;
+  gap: 5px;
+}
+
+.manual-source-field span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.manual-source-field textarea {
+  width: 100%;
+  min-height: 92px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+.source-search-summary,
+.source-empty-hint {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  padding: 10px 12px;
+}
+
+.source-search-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.source-search-summary strong {
+  color: #182235;
+  font-size: 13px;
+}
+
+.source-search-summary span,
+.source-empty-hint {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -4150,6 +4296,17 @@ button:disabled,
 
   .finder-form {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .source-review-actions,
+  .source-review-card .finder-form {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .source-review-card.search-card,
+  .source-review-card.manual-card {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .finder-query {
@@ -7428,6 +7585,27 @@ body {
   background: rgba(127, 183, 188, 0.08);
 }
 
+@media (max-width: 640px) {
+  .source-review-actions,
+  .source-review-card .finder-form,
+  .source-search-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .source-search-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #sources-panel .panel-body {
+    overflow-x: auto;
+  }
+
+  .source-table {
+    min-width: 560px;
+  }
+}
+
 .guided-step.available {
   border-color: rgba(155, 215, 167, 0.42);
   background: rgba(155, 215, 167, 0.08);
@@ -7826,14 +8004,45 @@ body {
 
 .source-mode-grid button,
 .format-presets button,
-.new-run-advanced {
+.new-run-advanced,
+.source-review-card,
+.source-search-summary,
+.source-empty-hint {
   border-color: rgba(244, 239, 227, 0.16);
   background: rgba(6, 12, 12, 0.46);
   color: #f8f2e7;
 }
 
+.source-review-card.primary {
+  border-color: rgba(155, 215, 167, 0.42);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.12), rgba(244, 239, 227, 0.035)),
+    rgba(6, 12, 12, 0.58);
+}
+
+.source-review-card h4,
+.source-search-summary strong {
+  color: #fff8ea;
+}
+
+.source-review-card p,
+.source-search-summary span,
+.source-empty-hint {
+  color: rgba(244, 239, 227, 0.72);
+}
+
+.source-review-meta span {
+  background: rgba(155, 215, 167, 0.13);
+  color: #bdf0c6;
+}
+
+.manual-source-field span {
+  color: #f0c174;
+}
+
 .source-mode-grid button:hover,
-.format-presets button:hover {
+.format-presets button:hover,
+.source-review-card:hover {
   border-color: rgba(244, 239, 227, 0.3);
   background: rgba(244, 239, 227, 0.07);
 }

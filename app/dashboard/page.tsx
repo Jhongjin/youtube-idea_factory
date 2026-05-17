@@ -502,6 +502,8 @@ const formatCopy: Record<string, string> = {
 const languageCopy: Record<string, string> = {
   ko: "한국어",
   en: "영어",
+  ja: "일본어",
+  es: "스페인어",
 };
 
 function runChannelLabel(run?: RunSummary) {
@@ -1090,29 +1092,22 @@ function GuidedRunWorkspace({
 
 function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSummary }) {
   const hasSources = run.package.sources.length > 0;
-  if (!hasSources) {
-    return (
-      <>
-        <div id="youtube-finder">
-          <YouTubeFinderPanel channelId={channelId} defaultQuery={run.package.brief.topic} runId={run.id} />
-        </div>
-        <details className="guided-secondary-panel">
-          <summary>소스 목록 보기</summary>
-          <SourcesPanel run={run} showEnrichAction={false} />
-        </details>
-      </>
-    );
-  }
-
   return (
     <>
-      <SourcesPanel run={run} showEnrichAction={false} />
-      <details className="guided-secondary-panel">
-        <summary>후보 영상 검색으로 더 보강</summary>
-        <div id="youtube-finder">
-          <YouTubeFinderPanel channelId={channelId} defaultQuery={run.package.brief.topic} runId={run.id} />
-        </div>
-      </details>
+      <div id="youtube-finder">
+        <YouTubeFinderPanel
+          channelId={channelId}
+          defaultCategoryId={run.package.brief.category_id ?? ""}
+          defaultCategoryTitle={run.package.brief.category ?? ""}
+          defaultQuery={run.package.brief.topic}
+          existingSources={run.package.sources}
+          format={run.package.brief.format}
+          language={run.package.brief.language}
+          runId={run.id}
+          targetDurationSeconds={run.package.brief.target_duration_seconds ?? 60}
+        />
+      </div>
+      <SourcesPanel run={run} showEnrichAction={hasSources} />
     </>
   );
 }
@@ -1317,6 +1312,16 @@ const dashboardNoticeCopy: Record<
   "sources-enriched": {
     detail: "제목, 채널, 썸네일 등 소스 정보가 갱신됐습니다. 자막은 소스 영상 패널에서 별도로 확인하세요.",
     title: "소스 정보를 보강했습니다.",
+    tone: "success",
+  },
+  "sources-imported": {
+    detail: "검색 후보가 소스 영상 목록에 추가됐습니다. 다음으로 제목/채널 보강과 스크립트 슬롯을 확인하세요.",
+    title: "후보 영상을 소스로 추가했습니다.",
+    tone: "success",
+  },
+  "sources-manual-imported": {
+    detail: "입력한 URL이 소스 영상 목록에 추가됐습니다. 메타데이터 보강을 누르면 제목과 채널명을 확인합니다.",
+    title: "수동 URL을 소스로 추가했습니다.",
     tone: "success",
   },
   "sources-partial": {
@@ -1553,34 +1558,42 @@ function SourcesPanel({
         )}
       </div>
       <div className="panel-body">
-        <table className="source-table">
-          <thead>
-            <tr>
-              <th>순위</th>
-              <th>소스</th>
-              <th>자막/스크립트</th>
-            </tr>
-          </thead>
-          <tbody>
-            {run.package.sources.map((source, index) => (
-              <tr key={`${source.url}-${index}`}>
-                <td>{source.rank ?? index + 1}</td>
-                <td>
-                  <div className="source-title">{source.title}</div>
-                  <a className="source-url" href={source.url}>
-                    {source.url}
-                  </a>
-                </td>
-                <td>
-                  {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
-                    source.transcript_status ??
-                    "미확인"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <SourceTranscriptPanel runId={run.id} sources={run.package.sources} />
+        {run.package.sources.length > 0 ? (
+          <>
+            <table className="source-table">
+              <thead>
+                <tr>
+                  <th>순위</th>
+                  <th>소스</th>
+                  <th>자막/스크립트</th>
+                </tr>
+              </thead>
+              <tbody>
+                {run.package.sources.map((source, index) => (
+                  <tr key={`${source.url}-${index}`}>
+                    <td>{source.rank ?? index + 1}</td>
+                    <td>
+                      <div className="source-title">{source.title}</div>
+                      <a className="source-url" href={source.url}>
+                        {source.url}
+                      </a>
+                    </td>
+                    <td>
+                      {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
+                        source.transcript_status ??
+                        "미확인"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <SourceTranscriptPanel runId={run.id} sources={run.package.sources} />
+          </>
+        ) : (
+          <div className="source-empty-hint">
+            아직 소스가 없습니다. 위에서 카테고리 후보를 찾거나 YouTube URL을 직접 추가하세요.
+          </div>
+        )}
       </div>
     </section>
   );

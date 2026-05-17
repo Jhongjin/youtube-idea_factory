@@ -2,6 +2,7 @@ import { getYouTubeChannel } from "@/lib/channels";
 import { createRunWorkspace } from "@/lib/run-store";
 import type { ProductionPackage, ProductionRunChannel, SourceVideo } from "@/lib/runs";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
+import { extractYouTubeVideoId } from "@/lib/youtube-url";
 
 export type CreateRunInput = {
   topic: string;
@@ -40,36 +41,6 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return (slug || "run").slice(0, 48);
-}
-
-function extractYouTubeVideoId(url: string) {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase().replace(/^www\./, "");
-
-    if (host === "youtu.be") {
-      return parsed.pathname.replace(/^\/+/, "").split("/")[0] ?? "";
-    }
-
-    if (host.endsWith("youtube.com")) {
-      const queryVideoId = parsed.searchParams.get("v");
-      if (queryVideoId) {
-        return queryVideoId;
-      }
-
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      for (const marker of ["shorts", "embed", "live"]) {
-        const index = parts.indexOf(marker);
-        if (index >= 0 && parts[index + 1]) {
-          return parts[index + 1];
-        }
-      }
-    }
-  } catch {
-    return "";
-  }
-
-  return "";
 }
 
 function markdownTable(headers: string[], rows: string[][]) {

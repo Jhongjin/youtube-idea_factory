@@ -13,6 +13,7 @@ export async function POST(request: Request, context: RouteContext) {
     const result = await importRunSources(runId, {
       candidates: Array.isArray(body.candidates) ? body.candidates : [],
       mode: body.mode === "replace" ? "replace" : "append",
+      seedUrls: Array.isArray(body.seedUrls) ? body.seedUrls.map(String) : [],
     });
 
     return Response.json({ result });
