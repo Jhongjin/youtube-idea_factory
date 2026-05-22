@@ -346,24 +346,6 @@ export function getRunNextActionPlan({
     });
   }
 
-  if (!approvalReady(approvals.generation)) {
-    return step({
-      detail: "이미지, 영상, TTS, 자막, BGM 생성 전에 generation 승인이 필요합니다.",
-      headline: "생성 승인",
-      items: [
-        {
-          detail: "오른쪽 승인 게이트에서 generation을 승인하고 승인자를 남기세요.",
-          status: "review",
-          title: "승인 게이트",
-        },
-      ],
-      primaryActionId: undefined,
-      stageIndex: 9,
-      stageLabel: "생성 승인",
-      status: "review",
-    });
-  }
-
   if (!generationState.manifestExists || !pkg.asset_manifest) {
     return step({
       detail: "스토리보드와 미디어 프롬프트를 생성 가능한 자산 목록으로 변환합니다.",
@@ -379,6 +361,24 @@ export function getRunNextActionPlan({
       stageIndex: 9,
       stageLabel: "자산 구성",
       status: "pending",
+    });
+  }
+
+  if (!approvalReady(approvals.generation)) {
+    return step({
+      detail: "이미지, 영상, TTS, 자막, BGM 생성 전에 generation 승인이 필요합니다.",
+      headline: "생성 승인",
+      items: [
+        {
+          detail: "오른쪽 승인 게이트에서 generation을 승인하고 승인자를 남기세요.",
+          status: "review",
+          title: "승인 게이트",
+        },
+      ],
+      primaryActionId: undefined,
+      stageIndex: 9,
+      stageLabel: "생성 승인",
+      status: "review",
     });
   }
 

@@ -108,11 +108,15 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
     fixList.push("03-claim-ledger.md: verify claims and mark at least one safe claim as supported.");
   }
 
-  if (needsEvidence > 0 || highRisk > 0 || doNotUse > 0) {
+  if (needsEvidence > 0 || highRisk > 0) {
     blockers.push(
-      `Claim ledger has unresolved risk: ${needsEvidence} needs_evidence, ${highRisk} high_risk, ${doNotUse} do_not_use.`,
+      `Claim ledger has unresolved risk: ${needsEvidence} needs_evidence, ${highRisk} high_risk.`,
     );
     fixList.push("03-claim-ledger.md: resolve, remove, or reframe unresolved claim rows before publishing.");
+  }
+
+  if (doNotUse > 0) {
+    warnings.push(`${doNotUse} claim ledger rows are marked do_not_use and must stay out of the final script.`);
   }
 
   if (hasPendingMarkers(scriptPlan)) {
@@ -131,7 +135,7 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   }
 
   if (imagePrompts + videoPrompts > 0 && assetManifestItems === 0) {
-    blockers.push("Asset manifest is not built yet.");
+    warnings.push("Asset manifest is not built yet.");
     fixList.push("Build asset-manifest.json before calling paid generation adapters.");
   }
 
