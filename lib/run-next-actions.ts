@@ -67,17 +67,29 @@ function scriptPlanNotes(pkg: ProductionPackage) {
   return pkg.script_plan.notes ?? "";
 }
 
-function hasScriptPatternAnalysis(pkg: ProductionPackage) {
-  return scriptPlanNotes(pkg).includes("TOP10 script pattern analysis generated");
-}
-
-function hasStrategyRecommendations(pkg: ProductionPackage) {
-  return scriptPlanNotes(pkg).includes("Source-based strategy recommendations generated");
+function hasDownstreamDraftArtifacts(pkg: ProductionPackage) {
+  return (
+    pkg.storyboard.length > 0 ||
+    promptCount(pkg) > 0 ||
+    (pkg.publishing_package.title_candidates?.length ?? 0) > 0
+  );
 }
 
 function hasScriptDraft(pkg: ProductionPackage) {
   const notes = scriptPlanNotes(pkg);
-  return notes.includes("Script draft generated") || notes.includes("LLM-refined script plan generated");
+  return (
+    notes.includes("Script draft generated") ||
+    notes.includes("LLM-refined script plan generated") ||
+    hasDownstreamDraftArtifacts(pkg)
+  );
+}
+
+function hasStrategyRecommendations(pkg: ProductionPackage) {
+  return scriptPlanNotes(pkg).includes("Source-based strategy recommendations generated") || hasScriptDraft(pkg);
+}
+
+function hasScriptPatternAnalysis(pkg: ProductionPackage) {
+  return scriptPlanNotes(pkg).includes("TOP10 script pattern analysis generated") || hasStrategyRecommendations(pkg);
 }
 
 function hasTranscript(source: ProductionPackage["sources"][number]) {

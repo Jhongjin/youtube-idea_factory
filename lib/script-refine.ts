@@ -129,7 +129,7 @@ LLM refinement record:
 
   pkg.script_plan = {
     ...pkg.script_plan,
-    notes: `LLM-refined script plan generated at ${generatedAt} with ${result.provider}/${result.model}. Human review required.`,
+    notes: `${pkg.script_plan.notes ?? ""}\nLLM-refined script plan generated at ${generatedAt} with ${result.provider}/${result.model}. Human review required.`.trim(),
   };
 
   await Promise.all([
