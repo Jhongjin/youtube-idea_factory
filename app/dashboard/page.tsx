@@ -1723,31 +1723,27 @@ function ProviderReadinessPanel({
     }).length;
   const totalProviderSlots = providerRoles.length;
   return (
-    <section className="panel">
+    <section className="panel provider-readiness-panel">
       <div className="panel-header">
         <h3 className="panel-title">제공자 준비 상태</h3>
         <KeyRound size={16} />
       </div>
       <div className="panel-body">
-        <div className="detail-stack">
-          <div className="detail-row">
+        <div className="provider-readiness-list">
+          <div className="provider-readiness-meter">
             <span>준비됨</span>
-            <span>
+            <strong>
               {readyProviderCount}/{totalProviderSlots}
-            </span>
+            </strong>
           </div>
           {providerRoles.map((role) => {
             const setting = preferredSetting(role.id);
-            const status =
-              setting.enabled && setting.hasApiKey
-                ? "준비됨"
-                : setting.enabled
-                  ? "키 필요"
-                  : "꺼짐";
+            const statusClass = setting.enabled && setting.hasApiKey ? "ready" : setting.enabled ? "warning" : "off";
+            const status = statusClass === "ready" ? "준비됨" : statusClass === "warning" ? "키 필요" : "꺼짐";
             return (
-              <div className="detail-row" key={role.id}>
+              <div className="provider-readiness-row" key={role.id}>
                 <span>{role.label}</span>
-                <span>{status}</span>
+                <strong className={`provider-readiness-status ${statusClass}`}>{status}</strong>
               </div>
             );
           })}
@@ -1847,7 +1843,7 @@ function GenerationConsolePanel({
   run: RunSummary;
 }) {
   return (
-    <section className="panel">
+    <section className="panel generation-console-panel">
       <div className="panel-header">
         <h3 className="panel-title">생성 콘솔</h3>
         <Sparkles size={16} />

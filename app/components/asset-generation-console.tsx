@@ -95,6 +95,10 @@ function compactPath(value: string) {
   return value.replace(/^supabase:\/\/[^/]+\//, "").replace(/^artifacts\//, "");
 }
 
+function assetDisplayName(item: AssetGenerationStateItem) {
+  return `${item.id}${item.scene_id ? ` / ${item.scene_id}` : ""}`;
+}
+
 function AssetStatus({ item }: { item: AssetGenerationStateItem }) {
   const ready = item.status === "pending_generation" || item.status === "generated";
   return (
@@ -317,9 +321,18 @@ export function AssetGenerationConsole({
   return (
     <div className="asset-console">
       <div className="asset-console-summary">
-        <span>준비 {state.summary?.ready ?? 0}</span>
-        <span>생성 {state.summary?.generated ?? 0}</span>
-        <span>차단 {state.summary?.blocked ?? 0}</span>
+        <span>
+          <small>준비</small>
+          <strong>{state.summary?.ready ?? 0}</strong>
+        </span>
+        <span>
+          <small>생성</small>
+          <strong>{state.summary?.generated ?? 0}</strong>
+        </span>
+        <span>
+          <small>차단</small>
+          <strong>{state.summary?.blocked ?? 0}</strong>
+        </span>
         <button
           className="text-button"
           disabled={!state.manifestExists || Boolean(loadingId)}
@@ -399,72 +412,104 @@ export function AssetGenerationConsole({
       </label>
 
       <div className="asset-action-list">
-        {imageItems.slice(0, 6).map((item) => (
-          <div className="asset-action-row" key={item.id}>
-            <div>
-              <strong>
-                {item.id}
-                {item.scene_id ? ` / ${item.scene_id}` : ""}
-              </strong>
-              <small>{compactPath(item.expected_path)}</small>
-              {item.blockers.length > 0 ? <small>{item.blockers[0]}</small> : null}
+        {imageItems.length > 0 ? (
+          <div className="asset-action-section">
+            <div className="asset-action-section-title">
+              <strong>이미지/썸네일</strong>
+              <span>{imageItems.length}개 중 최대 6개 표시</span>
             </div>
-            <AssetStatus item={item} />
-            <button
-              className="text-button"
-              disabled={item.status !== "pending_generation" || Boolean(loadingId) || Boolean(imageGenerationBlocker)}
-              onClick={() => generateImage(item.id)}
-              title={imageGenerationBlocker || undefined}
-              type="button"
-            >
-              {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <ImageIcon size={15} />}
-              이미지
-            </button>
+            {imageItems.slice(0, 6).map((item) => {
+              const displayName = assetDisplayName(item);
+              const expectedPath = compactPath(item.expected_path);
+              return (
+                <div className="asset-action-row" key={item.id}>
+                  <div>
+                    <strong title={displayName}>{displayName}</strong>
+                    <small title={expectedPath}>{expectedPath}</small>
+                    {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
+                  </div>
+                  <AssetStatus item={item} />
+                  <button
+                    className="text-button"
+                    disabled={
+                      item.status !== "pending_generation" || Boolean(loadingId) || Boolean(imageGenerationBlocker)
+                    }
+                    onClick={() => generateImage(item.id)}
+                    title={imageGenerationBlocker || undefined}
+                    type="button"
+                  >
+                    {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <ImageIcon size={15} />}
+                    이미지
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        ) : null}
 
-        {videoItems.slice(0, 4).map((item) => (
-          <div className="asset-action-row" key={item.id}>
-            <div>
-              <strong>
-                {item.id}
-                {item.scene_id ? ` / ${item.scene_id}` : ""}
-              </strong>
-              <small>{compactPath(item.expected_path)}</small>
-              {item.blockers.length > 0 ? <small>{item.blockers[0]}</small> : null}
+        {videoItems.length > 0 ? (
+          <div className="asset-action-section">
+            <div className="asset-action-section-title">
+              <strong>영상</strong>
+              <span>{videoItems.length}개 중 최대 4개 표시</span>
             </div>
-            <AssetStatus item={item} />
-            <button
-              className="text-button"
-              disabled={item.status !== "pending_generation" || Boolean(loadingId) || Boolean(videoGenerationBlocker)}
-              onClick={() => generateVideo(item.id)}
-              title={videoGenerationBlocker || undefined}
-              type="button"
-            >
-              {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <Video size={15} />}
-              영상
-            </button>
+            {videoItems.slice(0, 4).map((item) => {
+              const displayName = assetDisplayName(item);
+              const expectedPath = compactPath(item.expected_path);
+              return (
+                <div className="asset-action-row" key={item.id}>
+                  <div>
+                    <strong title={displayName}>{displayName}</strong>
+                    <small title={expectedPath}>{expectedPath}</small>
+                    {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
+                  </div>
+                  <AssetStatus item={item} />
+                  <button
+                    className="text-button"
+                    disabled={
+                      item.status !== "pending_generation" || Boolean(loadingId) || Boolean(videoGenerationBlocker)
+                    }
+                    onClick={() => generateVideo(item.id)}
+                    title={videoGenerationBlocker || undefined}
+                    type="button"
+                  >
+                    {loadingId === item.id ? <Loader2 className="spin" size={15} /> : <Video size={15} />}
+                    영상
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        ) : null}
 
         {voiceItem ? (
-          <div className="asset-action-row">
-            <div>
-              <strong>{voiceItem.id}</strong>
-              <small>{compactPath(voiceItem.expected_path)}</small>
-              {voiceItem.blockers.length > 0 ? <small>{voiceItem.blockers[0]}</small> : null}
+          <div className="asset-action-section">
+            <div className="asset-action-section-title">
+              <strong>음성</strong>
+              <span>내레이션 1개</span>
             </div>
-            <AssetStatus item={voiceItem} />
-            <button
-              className="text-button"
-              disabled={voiceItem.status !== "pending_generation" || Boolean(loadingId) || Boolean(voiceGenerationBlocker)}
-              onClick={() => generateVoice(voiceItem.id)}
-              title={voiceGenerationBlocker || undefined}
-              type="button"
-            >
-              {loadingId === voiceItem.id ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
-              음성
-            </button>
+            <div className="asset-action-row">
+              <div>
+                <strong title={voiceItem.id}>{voiceItem.id}</strong>
+                <small title={compactPath(voiceItem.expected_path)}>{compactPath(voiceItem.expected_path)}</small>
+                {voiceItem.blockers.length > 0 ? (
+                  <small title={voiceItem.blockers[0]}>{voiceItem.blockers[0]}</small>
+                ) : null}
+              </div>
+              <AssetStatus item={voiceItem} />
+              <button
+                className="text-button"
+                disabled={
+                  voiceItem.status !== "pending_generation" || Boolean(loadingId) || Boolean(voiceGenerationBlocker)
+                }
+                onClick={() => generateVoice(voiceItem.id)}
+                title={voiceGenerationBlocker || undefined}
+                type="button"
+              >
+                {loadingId === voiceItem.id ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
+                음성
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
