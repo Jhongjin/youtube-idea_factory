@@ -1,4 +1,4 @@
-import { readRunFileIfExists, readRunJson, writeRunFile } from "@/lib/run-store";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type ScriptDraftResult = {
@@ -153,8 +153,25 @@ export async function createScriptDraft(runId: string): Promise<ScriptDraftResul
     readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
   ]);
   const draft = buildScriptDraft({ pkg, analysis, claimLedger });
+  const generatedAt = new Date().toISOString();
+  pkg.script_plan = {
+    ...pkg.script_plan,
+    angle: `Source-backed ${pkg.brief.topic} angle for ${pkg.brief.channel?.channel_name ?? "the selected channel"}.`,
+    hook: "Open with the strongest viewer tension from the source pattern analysis, then separate evidence from interpretation.",
+    outline: [
+      "Hook promise and viewer tension.",
+      "Why this topic matters now.",
+      "Main insight from source patterns.",
+      "Proof and claim-check moment.",
+      "Practical payoff and restrained CTA.",
+    ],
+    notes: `${pkg.script_plan.notes ?? ""}\nScript draft generated at ${generatedAt}. Human review required before storyboard, media generation, render, or publishing.`.trim(),
+  };
 
-  await writeRunFile(runId, "04-script-plan.md", draft.markdown);
+  await Promise.all([
+    writeRunFile(runId, "04-script-plan.md", draft.markdown),
+    writeRunJson(runId, "production-package.json", pkg),
+  ]);
 
   return {
     sources: pkg.sources.length,

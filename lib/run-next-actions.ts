@@ -63,6 +63,23 @@ function promptCount(pkg: ProductionPackage) {
   return (pkg.media_prompts.image_prompts?.length ?? 0) + (pkg.media_prompts.video_prompts?.length ?? 0);
 }
 
+function scriptPlanNotes(pkg: ProductionPackage) {
+  return pkg.script_plan.notes ?? "";
+}
+
+function hasScriptPatternAnalysis(pkg: ProductionPackage) {
+  return scriptPlanNotes(pkg).includes("TOP10 script pattern analysis generated");
+}
+
+function hasStrategyRecommendations(pkg: ProductionPackage) {
+  return scriptPlanNotes(pkg).includes("Source-based strategy recommendations generated");
+}
+
+function hasScriptDraft(pkg: ProductionPackage) {
+  const notes = scriptPlanNotes(pkg);
+  return notes.includes("Script draft generated") || notes.includes("LLM-refined script plan generated");
+}
+
 function hasTranscript(source: ProductionPackage["sources"][number]) {
   return (
     source.transcript_status === "manual_transcript" ||
@@ -150,7 +167,7 @@ export function getRunNextActionPlan({
 
   const includedSources = pkg.sources.filter((source) => !source.analysis_excluded);
   const missingTranscripts = includedSources.filter((source) => !hasTranscript(source)).length;
-  const analysisDraftGenerated = (pkg.script_plan.notes ?? "").includes("Analysis draft generated at");
+  const analysisDraftGenerated = scriptPlanNotes(pkg).includes("Analysis draft generated at");
   if (missingTranscripts > 0 && pkg.claim_ledger.length === 0 && !analysisDraftGenerated) {
     return step({
       detail: `${missingTranscripts}개 소스의 자막/스크립트가 미확인입니다. 분석 전에 소스 근거를 먼저 보강하세요.`,
@@ -189,7 +206,45 @@ export function getRunNextActionPlan({
     });
   }
 
-  if (pkg.script_plan.outline.length === 0) {
+  if (!hasScriptPatternAnalysis(pkg)) {
+    return step({
+      detail: "분석된 소스들의 훅, 첫 30초, 전개, retention, 신뢰 장치, CTA 패턴을 먼저 뽑습니다.",
+      headline: "TOP10 대본 유형 분석",
+      items: [
+        {
+          detail: "소스 구조를 베끼지 않고 재사용 가능한 패턴과 차별화 각도를 정리하세요.",
+          status: "pending",
+          title: "대본 유형",
+        },
+      ],
+      primaryActionId: "script-pattern-analysis",
+      secondaryActionIds: ["strategy-recommendations", "script-draft"],
+      stageIndex: 3,
+      stageLabel: "대본 전략",
+      status: "pending",
+    });
+  }
+
+  if (!hasStrategyRecommendations(pkg)) {
+    return step({
+      detail: "TOP10 패턴을 바탕으로 대상 시청자, 톤, 영상 각도, 추천 대본 구조를 고릅니다.",
+      headline: "LLM 전략 추천",
+      items: [
+        {
+          detail: "추천은 방향성 후보입니다. 최종 각도와 사실 사용은 사람이 검토해야 합니다.",
+          status: "pending",
+          title: "전략 추천",
+        },
+      ],
+      primaryActionId: "strategy-recommendations",
+      secondaryActionIds: ["script-draft", "script-refine"],
+      stageIndex: 3,
+      stageLabel: "대본 전략",
+      status: "pending",
+    });
+  }
+
+  if (!hasScriptDraft(pkg)) {
     return step({
       detail: "분석과 클레임 장부를 바탕으로 훅, 각도, 비트맵을 만듭니다.",
       headline: "대본 초안 생성",
