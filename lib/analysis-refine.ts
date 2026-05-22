@@ -174,11 +174,13 @@ export async function refineAnalysisWithLlm(
 ): Promise<AnalysisRefineResult> {
   assertSafeRunId(runId);
   const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
+  const includedSources = pkg.sources.filter((source) => !source.analysis_excluded);
+  const analysisPkg = { ...pkg, sources: includedSources };
   const [analysis, claimLedger, transcripts] = await Promise.all([
     readRunFileIfExists(runId, "02-video-analysis.md").then((value) => value ?? ""),
     readRunFileIfExists(runId, "03-claim-ledger.md").then((value) => value ?? ""),
     Promise.all(
-      pkg.sources.map(async (source) => ({
+      includedSources.map(async (source) => ({
         source,
         transcript: await readTranscript(runId, source),
       })),
@@ -188,7 +190,7 @@ export async function refineAnalysisWithLlm(
   const result = await generateLlmText({
     task: "youtube-analysis-claim-refine",
     instructions: buildInstructions(pkg),
-    input: buildInput({ pkg, transcripts, analysis, claimLedger }),
+    input: buildInput({ pkg: analysisPkg, transcripts, analysis, claimLedger }),
     providerProfileId: options.providerProfileId,
   });
   const refinedAnalysis = extractFile(result.text, "02-video-analysis.md");

@@ -8,9 +8,11 @@ export type CreateRunInput = {
   topic: string;
   category?: string;
   categoryId?: string;
+  candidateLimit?: number;
   channelId?: string;
   format?: string;
   language?: string;
+  lookbackDays?: number;
   regionCode?: string;
   sourceCandidates?: YouTubeCandidate[];
   sourceMode?: "manual" | "categoryTop" | "topicSearch";
@@ -23,10 +25,12 @@ export type CreateRunInput = {
 type NormalizedCreateRunInput = {
   category: string;
   categoryId: string;
+  candidateLimit: number;
   channelId: string;
   durationSeconds: number;
   format: string;
   language: string;
+  lookbackDays: number;
   regionCode: string;
   seedUrls: string[];
   sourceCandidates: YouTubeCandidate[];
@@ -81,6 +85,11 @@ function sourceModeLabel(sourceMode: NormalizedCreateRunInput["sourceMode"]) {
   return "manual_seed";
 }
 
+function clampPositiveInt(value: number | undefined, fallback: number, max: number) {
+  const parsed = Number.isFinite(value) ? value ?? fallback : fallback;
+  return Math.max(1, Math.min(max, Math.floor(parsed)));
+}
+
 function buildSourceFromCandidate(
   candidate: YouTubeCandidate,
   index: number,
@@ -98,8 +107,8 @@ function buildSourceFromCandidate(
     duration_seconds: candidate.durationSeconds,
     inclusion_reason:
       sourceMode === "topicSearch"
-        ? `Selected from YouTube topic search intake using recency, view count, and format match.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`
-        : `Selected from YouTube category intake using recency, view count, and format match.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`,
+        ? `Selected from YouTube topic search intake using recency, view count, format match, and channel diversity.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`
+        : `Selected from YouTube category intake using recency, view count, format match, and channel diversity.${candidate.searchScope ? ` Scope: ${candidate.searchScope}.` : ""}`,
     like_count: candidate.likeCount,
     metadata_status: "youtube_data_api",
     published_at: candidate.publishedAt,
@@ -133,6 +142,8 @@ function buildPackage(
       language: input.language,
       region_code: input.regionCode,
       source_mode: input.sourceMode,
+      source_candidate_limit: input.candidateLimit,
+      source_lookback_days: input.lookbackDays,
       tone: input.tone,
     },
     sources,
@@ -215,6 +226,8 @@ function buildMarkdownFiles(pkg: ProductionPackage): Record<string, string> {
 - Target duration: ${brief.target_duration_seconds ?? ""} seconds
 - Language: ${brief.language}
 - Region: ${brief.region_code ?? ""}
+- Source lookback: ${brief.source_lookback_days ?? ""} days
+- Source candidate limit: ${brief.source_candidate_limit ?? ""} videos
 - Tone: ${brief.tone ?? ""}
 
 ## Stage Checklist
@@ -281,9 +294,11 @@ export async function createRun(input: CreateRunInput) {
         : ""),
     category: input.category?.trim() ?? "",
     categoryId: input.categoryId?.trim() ?? "",
+    candidateLimit: clampPositiveInt(input.candidateLimit, 10, 10),
     channelId: input.channelId?.trim() ?? "",
     format: input.format?.trim() || "shorts",
     language: input.language?.trim() || "ko",
+    lookbackDays: clampPositiveInt(input.lookbackDays, 7, 30),
     regionCode: input.regionCode?.trim().toUpperCase() || "KR",
     sourceCandidates: (input.sourceCandidates ?? []).filter((candidate) => Boolean(candidate.url)),
     sourceMode:
@@ -347,6 +362,8 @@ export async function createRun(input: CreateRunInput) {
     channel: channel ?? null,
     source_mode: sourceModeLabel(normalized.sourceMode),
     source_category_id: normalized.categoryId || null,
+    source_candidate_limit: normalized.candidateLimit,
+    source_lookback_days: normalized.lookbackDays,
     source_region_code: normalized.regionCode,
     status: "needs_review",
     paths: {

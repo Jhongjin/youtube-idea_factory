@@ -27,6 +27,16 @@ List recent run IDs and queued worker jobs before running a worker command:
 npm run ops:status -- --storage supabase
 ```
 
+Check the worker host before leaving a process running:
+
+```powershell
+npm run ops:worker-doctor -- --storage supabase
+```
+
+The doctor checks `ffmpeg`, Supabase queue access, YouTube OAuth client variables, and active
+channel upload token inventory. Add `--strict` when a CI or supervisor should fail fast if either
+the render worker or upload worker is not ready.
+
 The worker CLI scripts automatically load `.env.local` from the project root. Copy `.env.example`
 to `.env.local`, fill the Supabase and YouTube OAuth values, and keep that file out of git.
 PowerShell `$env:` values override `.env.local` for the current terminal.

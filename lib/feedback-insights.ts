@@ -20,6 +20,17 @@ export type FeedbackInsights = {
     view_velocity_per_hour: number | null;
     views: number;
   };
+  analytics?: {
+    average_view_duration_seconds: number | null;
+    average_view_percentage: number | null;
+    impression_click_through_rate: number | null;
+    impressions: number | null;
+    subscribers_gained: number | null;
+    top_traffic_sources: Array<{
+      source_type: string;
+      views: number;
+    }>;
+  };
   source_benchmark: {
     max_view_count: number;
     median_view_count: number;
@@ -120,6 +131,17 @@ function buildSignals(insights: FeedbackInsights) {
       `Current views are ${(insights.source_benchmark.view_vs_median_ratio * 100).toFixed(1)}% of the source median.`,
     );
   }
+  if (insights.analytics?.impression_click_through_rate !== null && insights.analytics?.impression_click_through_rate !== undefined) {
+    signals.push(`Impression CTR is ${insights.analytics.impression_click_through_rate}%.`);
+  }
+  if (insights.analytics?.average_view_percentage !== null && insights.analytics?.average_view_percentage !== undefined) {
+    signals.push(`Average viewed percentage is ${insights.analytics.average_view_percentage}%.`);
+  }
+  if (insights.analytics?.top_traffic_sources.length) {
+    signals.push(
+      `Top traffic source is ${insights.analytics.top_traffic_sources[0].source_type} with ${insights.analytics.top_traffic_sources[0].views} views.`,
+    );
+  }
   return signals;
 }
 
@@ -142,6 +164,20 @@ function buildRecommendations(pkg: ProductionPackage, insights: FeedbackInsights
     insights.source_benchmark.view_vs_median_ratio < 0.1
   ) {
     recommendations.push("Source benchmark gap is large; re-check topic timing, search intent, and thumbnail contrast.");
+  }
+  if (
+    insights.analytics?.impression_click_through_rate !== null &&
+    insights.analytics?.impression_click_through_rate !== undefined &&
+    insights.analytics.impression_click_through_rate < 3
+  ) {
+    recommendations.push("CTR is below 3%; test a clearer title promise and a higher-contrast thumbnail variant.");
+  }
+  if (
+    insights.analytics?.average_view_percentage !== null &&
+    insights.analytics?.average_view_percentage !== undefined &&
+    insights.analytics.average_view_percentage < 35
+  ) {
+    recommendations.push("Average viewed percentage is weak; shorten setup time and move payoff earlier in the next script.");
   }
   if (pkg.script_plan.hook) {
     recommendations.push(`Carry forward or revise hook hypothesis: ${pkg.script_plan.hook.slice(0, 160)}`);
@@ -170,6 +206,26 @@ function markdownFor(pkg: ProductionPackage, insights: FeedbackInsights) {
     `- Like rate: ${(insights.metrics.like_rate * 100).toFixed(2)}%`,
     `- Comment rate: ${(insights.metrics.comment_rate * 100).toFixed(2)}%`,
     `- Engagement rate: ${(insights.metrics.engagement_rate * 100).toFixed(2)}%`,
+    "",
+    "## YouTube Analytics",
+    "",
+    ...(insights.analytics
+      ? [
+          `- Impressions: ${insights.analytics.impressions ?? "n/a"}`,
+          `- Impression CTR: ${insights.analytics.impression_click_through_rate ?? "n/a"}%`,
+          `- Average view duration: ${insights.analytics.average_view_duration_seconds ?? "n/a"} seconds`,
+          `- Average viewed: ${insights.analytics.average_view_percentage ?? "n/a"}%`,
+          `- Subscribers gained: ${insights.analytics.subscribers_gained ?? "n/a"}`,
+          "",
+          "### Traffic Sources",
+          "",
+          ...(insights.analytics.top_traffic_sources.length
+            ? insights.analytics.top_traffic_sources.map(
+                (source) => `- ${source.source_type}: ${source.views} views`,
+              )
+            : ["- No traffic source rows available."]),
+        ]
+      : ["- Not available. Add channel Analytics OAuth and collect another snapshot."]),
     "",
     "## Source Benchmark",
     "",
@@ -211,6 +267,21 @@ export async function createFeedbackInsights(runId: string) {
   const engagementRate = round(ratio(likes + comments, views), 5);
   const viewVelocityPerHour = elapsed > 0 ? round(viewDelta / elapsed, 2) : null;
   const benchmark = sourceBenchmark(pkg, views);
+  const analytics = latest.analytics
+    ? {
+        average_view_duration_seconds:
+          latest.analytics.metrics.average_view_duration_seconds ?? null,
+        average_view_percentage: latest.analytics.metrics.average_view_percentage ?? null,
+        impression_click_through_rate:
+          latest.analytics.metrics.impression_click_through_rate ?? null,
+        impressions: latest.analytics.metrics.impressions ?? null,
+        subscribers_gained: latest.analytics.metrics.subscribers_gained ?? null,
+        top_traffic_sources: (latest.analytics.traffic_sources ?? []).map((source) => ({
+          source_type: source.source_type,
+          views: source.views,
+        })),
+      }
+    : undefined;
   const now = new Date().toISOString();
   const baseInsights: FeedbackInsights = {
     created_at: now,
@@ -225,6 +296,7 @@ export async function createFeedbackInsights(runId: string) {
       view_velocity_per_hour: viewVelocityPerHour,
       views,
     },
+    ...(analytics ? { analytics } : {}),
     recommendations: [],
     signals: [],
     snapshot_count: snapshots.length,

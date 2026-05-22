@@ -33,6 +33,7 @@ export type PublishingHandoff = {
     tags: string[];
     language: string;
     category: string;
+    category_id: string;
     blockers: string[];
   };
   approvals: {
@@ -220,6 +221,7 @@ export async function createPublishingHandoff(runId: string): Promise<Publishing
       tags,
       language: pkg.brief.language,
       category: pkg.brief.category ?? "",
+      category_id: pkg.brief.category_id ?? "",
       blockers: metadataBlockers,
     },
     approvals: {

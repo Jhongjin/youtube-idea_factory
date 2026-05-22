@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { CalendarDays, ListVideo, Loader2, Search } from "lucide-react";
 
 type FormState = "idle" | "submitting" | "error";
 type SourceMode = "topicSearch" | "categoryTop";
@@ -42,6 +42,14 @@ const marketOptions = [
   { label: "인도 / 영어", language: "en", regionCode: "IN", value: "IN:en" },
 ];
 
+const lookbackOptions = [
+  { label: "최근 7일", value: "7" },
+  { label: "최근 14일", value: "14" },
+  { label: "최근 30일", value: "30" },
+];
+
+const candidateLimit = 10;
+
 function marketForLanguage(language?: string) {
   const normalized = language?.toLowerCase() ?? "";
   return marketOptions.find((option) => option.language === normalized)?.value ?? marketOptions[0].value;
@@ -75,6 +83,7 @@ export function NewRunForm({
   const [selectedChannelId, setSelectedChannelId] = useState(initialChannel?.id ?? "");
   const [sourceMode, setSourceMode] = useState<SourceMode>("topicSearch");
   const [marketCode, setMarketCode] = useState(marketForLanguage(initialChannel?.default_language));
+  const [lookbackDays, setLookbackDays] = useState("7");
   const [categories, setCategories] = useState<YouTubeCategory[]>(fallbackCategories);
   const [categoryId, setCategoryId] = useState("25");
   const [categoriesLoading, setCategoriesLoading] = useState(false);
@@ -83,6 +92,7 @@ export function NewRunForm({
   const [tone, setTone] = useState("");
 
   const selectedMarket = marketOptions.find((option) => option.value === marketCode) ?? marketOptions[0];
+  const selectedLookback = lookbackOptions.find((option) => option.value === lookbackDays) ?? lookbackOptions[0];
   const language = selectedMarket.language;
   const regionCode = selectedMarket.regionCode;
   const durationSeconds = format === "shorts" ? 60 : longformMinutesValue(longformMinutes) * 60;
@@ -90,6 +100,13 @@ export function NewRunForm({
   const selectedCategory =
     categories.find((category) => category.id === categoryId) ?? categories[0] ?? fallbackCategories[0];
   const selectedCategoryTitle = selectedCategory?.title ?? "";
+  const formatLabel = format === "longform" ? `${longformMinutesValue(longformMinutes)}분 롱폼` : "쇼츠";
+  const intakeLabel =
+    sourceMode === "topicSearch"
+      ? topic.trim() || "입력한 아이디어"
+      : selectedCategoryTitle
+        ? `${selectedCategoryTitle} 카테고리`
+        : "선택한 카테고리";
   const selectedChannelReadiness = selectedChannel
     ? selectedChannel.status !== "active"
       ? {
@@ -218,9 +235,11 @@ export function NewRunForm({
       topic: topicValue,
       category: categoryValue,
       categoryId: categoryIdValue,
+      candidateLimit,
       channelId: String(formData.get("channelId") ?? ""),
       format: String(formData.get("format") ?? "shorts"),
       language: String(formData.get("language") ?? "ko"),
+      lookbackDays: Number(formData.get("lookbackDays") ?? 7),
       regionCode: String(formData.get("regionCode") ?? "KR"),
       sourceMode: sourceModeValue,
       targetAudience: String(formData.get("targetAudience") ?? ""),
@@ -263,6 +282,7 @@ export function NewRunForm({
       <input name="format" readOnly type="hidden" value={format} />
       <input name="durationSeconds" readOnly type="hidden" value={durationSeconds} />
       <input name="language" readOnly type="hidden" value={language} />
+      <input name="lookbackDays" readOnly type="hidden" value={lookbackDays} />
       <input name="regionCode" readOnly type="hidden" value={regionCode} />
       <input name="sourceMode" readOnly type="hidden" value={sourceMode} />
       <input name="category" readOnly type="hidden" value={sourceMode === "categoryTop" ? selectedCategoryTitle : ""} />
@@ -272,8 +292,8 @@ export function NewRunForm({
         <div className="new-run-section-heading">
           <span>01</span>
           <div>
-            <strong>아이디어 시작 방식</strong>
-            <p>직접 떠올린 주제나 카테고리 중 하나만 선택합니다. 둘을 동시에 묶어 검색하지 않습니다.</p>
+            <strong>아이디어 또는 카테고리</strong>
+            <p>둘 중 하나로 시작합니다. 직접 작성과 카테고리 선택은 서로 다른 검색 경로입니다.</p>
           </div>
         </div>
         <div className="source-mode-grid" aria-label="아이디어 시작 방식">
@@ -283,7 +303,7 @@ export function NewRunForm({
             type="button"
           >
             <strong>아이디어 직접 작성</strong>
-            <span>주제나 키워드로 최근 조회수 높은 후보 10개를 찾습니다.</span>
+            <span>주제나 키워드만으로 조건에 맞는 우수 후보를 찾습니다.</span>
           </button>
           <button
             className={sourceMode === "categoryTop" ? "active" : ""}
@@ -291,7 +311,7 @@ export function NewRunForm({
             type="button"
           >
             <strong>카테고리 선택</strong>
-            <span>아이디어가 없을 때 공식 카테고리만으로 후보 10개를 찾습니다.</span>
+            <span>아이디어가 없을 때 공식 카테고리만으로 후보를 찾습니다.</span>
           </button>
         </div>
 
@@ -306,7 +326,7 @@ export function NewRunForm({
               value={topic}
             />
             <small className="field-help">
-              이 키워드만으로 YouTube 후보를 찾습니다. 카테고리와 AND 조건으로 묶지 않습니다.
+              이 키워드만 적용합니다. 카테고리 필터와 함께 묶지 않습니다.
             </small>
           </label>
         ) : (
@@ -322,7 +342,7 @@ export function NewRunForm({
             <small className="field-help">
               {categoriesLoading
                 ? "선택한 국가 기준 공식 카테고리 목록을 불러오는 중입니다."
-                : "키워드 없이 카테고리와 국가 기준으로 최근 조회수 높은 후보를 가져옵니다."}
+                : "키워드 없이 카테고리와 국가 기준으로 후보를 가져옵니다."}
             </small>
             {categoryError ? <small className="field-help warning">{categoryError}</small> : null}
           </label>
@@ -348,6 +368,27 @@ export function NewRunForm({
           </select>
           <small className="field-help">YouTube 지역 코드와 관련 언어를 함께 적용합니다.</small>
         </label>
+        <div className="new-run-search-controls">
+          <label>
+            <span>기간</span>
+            <select onChange={(event) => setLookbackDays(event.target.value)} value={lookbackDays}>
+              {lookbackOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <small className="field-help">이 기간 안에 게시된 영상의 현재 조회수를 기준으로 봅니다.</small>
+          </label>
+          <div className="new-run-output-card">
+            <ListVideo size={16} />
+            <div>
+              <span>결과 수</span>
+              <strong>후보 영상 최대 {candidateLimit}개</strong>
+              <small>동일 채널 쏠림을 줄여 소스 검토에 넣습니다.</small>
+            </div>
+          </div>
+        </div>
         <div className="format-presets two" aria-label="형식 빠른 선택">
           <button
             className={format === "shorts" ? "active" : ""}
@@ -466,6 +507,27 @@ export function NewRunForm({
         </div>
       </section>
 
+      <section className="new-run-output-summary" aria-label="생성될 후보 산출물">
+        <div>
+          <CalendarDays size={16} />
+          <div>
+            <span>찾는 조건</span>
+            <strong>{intakeLabel}</strong>
+            <small>
+              {selectedLookback.label} / {selectedMarket.regionCode}-{selectedMarket.language} / {formatLabel}
+            </small>
+          </div>
+        </div>
+        <div>
+          <ListVideo size={16} />
+          <div>
+            <span>생성되는 것</span>
+            <strong>검토용 소스 후보 최대 {candidateLimit}개</strong>
+            <small>sources.json과 production package에 기록됩니다.</small>
+          </div>
+        </div>
+      </section>
+
       <details className="new-run-advanced">
         <summary>
           <span>상세 옵션</span>
@@ -508,8 +570,10 @@ export function NewRunForm({
       </details>
       {error ? <p className="form-error">{error}</p> : null}
       <button className="text-button primary form-submit" disabled={state === "submitting"} type="submit">
-        {state === "submitting" ? <Loader2 className="spin" size={16} /> : <Plus size={16} />}
-        새 제작 시작
+        {state === "submitting" ? <Loader2 className="spin" size={16} /> : <Search size={16} />}
+        {state === "submitting"
+          ? `우수 후보 최대 ${candidateLimit}개 찾는 중`
+          : `조건에 맞는 우수 영상 최대 ${candidateLimit}개 찾기`}
       </button>
     </form>
   );

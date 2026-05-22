@@ -190,12 +190,12 @@ export function ArtifactWorkspace({
           </article>
           <details className="artifact-edit-disclosure">
             <summary>
-              <span>마크다운 편집</span>
+              <span>내용 편집</span>
               <strong>{isDirty ? "변경 있음" : "변경 없음"}</strong>
             </summary>
             <div className="artifact-edit-body">
               <textarea
-                aria-label={`${activeArtifact.label} 마크다운 내용`}
+                aria-label={`${activeArtifact.label} 내용`}
                 value={activeContent}
                 onChange={(event) =>
                   setContents((current) => ({

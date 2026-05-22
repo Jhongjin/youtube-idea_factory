@@ -45,10 +45,13 @@ import { RunDeleteButton } from "@/app/components/run-delete-button";
 import { RunDraftFlowButton } from "@/app/components/run-draft-flow-button";
 import { RunApprovalsPanel } from "@/app/components/run-approvals-panel";
 import { ScriptDraftButton } from "@/app/components/script-draft-button";
+import { ScriptPatternAnalysisButton } from "@/app/components/script-pattern-analysis-button";
 import { ScriptRefineButton } from "@/app/components/script-refine-button";
 import { SourceDeleteButton } from "@/app/components/source-delete-button";
+import { SourceReviewQueue } from "@/app/components/source-review-queue";
 import { SourceTranscriptPanel } from "@/app/components/source-transcript-panel";
 import { StoryboardDraftButton } from "@/app/components/storyboard-draft-button";
+import { StrategyRecommendationsButton } from "@/app/components/strategy-recommendations-button";
 import { SubtitleDraftButton } from "@/app/components/subtitle-draft-button";
 import { YouTubeFinderPanel } from "@/app/components/youtube-finder-panel";
 import { YouTubeUploadJobButton } from "@/app/components/youtube-upload-job-button";
@@ -60,7 +63,6 @@ import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-
 import { getRunArtifacts } from "@/lib/artifacts";
 import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
 import { listYouTubeChannels, type SafeYouTubeChannel } from "@/lib/channels";
-import { decodeHtmlEntities } from "@/lib/html-text";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
@@ -108,25 +110,6 @@ const qaStatusCopy: Record<string, string> = {
   blocked: "검수 차단",
   needs_review: "검토 필요",
 };
-
-const transcriptStatusCopy: Record<string, string> = {
-  not_checked: "미확인",
-  missing: "없음",
-  manual_transcript: "수동 입력",
-  external_transcript: "외부 자막",
-  stt_transcript: "STT",
-  available: "확보됨",
-};
-
-function sourceKey(source: RunSummary["package"]["sources"][number]) {
-  if (source.video_id) {
-    return source.video_id;
-  }
-  if (typeof source.rank === "number") {
-    return `source-${source.rank}`;
-  }
-  return source.url;
-}
 
 const feedbackStatusCopy: Record<string, string> = {
   learning: "학습 중",
@@ -176,9 +159,25 @@ function guidedStepIndex(stepKey: GuidedStepKey) {
 }
 
 const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, string[]> = {
-  draft: ["video-analysis", "claim-ledger", "script-plan", "storyboard"],
+  draft: [
+    "video-analysis",
+    "script-patterns",
+    "claim-ledger",
+    "strategy-recommendations",
+    "script-plan",
+    "storyboard",
+  ],
   production: ["storyboard", "media-prompts"],
-  review: ["publishing", "qa"],
+  review: [
+    "publishing",
+    "qa",
+    "render-edl",
+    "youtube-upload-job",
+    "performance-snapshot",
+    "feedback-insights",
+    "ab-learning-log",
+    "channel-memory-update",
+  ],
 };
 
 const actionGuides: Partial<
@@ -201,6 +200,16 @@ const actionGuides: Partial<
     goal: "등록한 LLM으로 분석 품질을 높이고 빈 주장 후보를 보강합니다.",
     output: "영상 분석과 클레임 장부가 갱신됩니다.",
     title: "분석 고도화",
+  },
+  "script-pattern-analysis": {
+    goal: "TOP10 소스의 훅, 첫 30초, 전개, retention, CTA 패턴을 대본 전략으로 요약합니다.",
+    output: "대본 만들기 단계의 대본 유형 탭에 저장됩니다.",
+    title: "TOP10 대본 유형",
+  },
+  "strategy-recommendations": {
+    goal: "TOP10 소스와 분석 산출물을 바탕으로 대상 시청자, 톤, 각도, 대본 구조를 추천합니다.",
+    output: "대본 만들기 단계의 전략 추천 탭에 저장됩니다.",
+    title: "LLM 전략 추천",
   },
   "asset-manifest": {
     goal: "장면별 이미지, 영상, 음성, 자막, 썸네일 자산 목록을 잠급니다.",
@@ -279,7 +288,7 @@ const actionGuides: Partial<
   },
   "render-manifest": {
     goal: "자산을 타임라인으로 묶고 렌더 차단 항목을 확인합니다.",
-    output: "렌더 매니페스트와 검수 상태가 갱신됩니다.",
+    output: "렌더 매니페스트, EDL, 검수 상태가 갱신됩니다.",
     title: "렌더 계획",
   },
   "script-draft": {
@@ -329,7 +338,15 @@ const advancedActionGroupsByStep: Record<
   ],
   draft: [
     {
-      actionIds: ["draft-flow", "analysis-draft", "analysis-refine", "script-draft", "script-refine"],
+      actionIds: [
+        "draft-flow",
+        "analysis-draft",
+        "analysis-refine",
+        "script-pattern-analysis",
+        "strategy-recommendations",
+        "script-draft",
+        "script-refine",
+      ],
       label: "대본",
     },
     { actionIds: ["storyboard-draft", "qa-draft"], label: "스토리보드" },
@@ -363,12 +380,18 @@ const pipelineStageTargets = [
   { href: "#next-action", label: "현재 작업" },
   { href: "#youtube-finder", label: "후보 검색" },
   { href: "#artifact-video-analysis", label: "분석 탭" },
+  { href: "#artifact-script-patterns", label: "유형 탭" },
   { href: "#artifact-claim-ledger", label: "클레임 탭" },
+  { href: "#artifact-strategy-recommendations", label: "추천 탭" },
   { href: "#artifact-script-plan", label: "대본 탭" },
   { href: "#artifact-storyboard", label: "씬 탭" },
   { href: "#artifact-media-prompts", label: "프롬프트 탭" },
   { href: "#artifact-publishing", label: "배포 탭" },
   { href: "#artifact-qa", label: "검수 탭" },
+  { href: "#artifact-render-edl", label: "렌더 EDL" },
+  { href: "#artifact-youtube-upload-job", label: "업로드 작업" },
+  { href: "#artifact-feedback-insights", label: "피드백" },
+  { href: "#artifact-channel-memory-update", label: "채널 메모리" },
 ];
 
 function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
@@ -1319,6 +1342,16 @@ const dashboardNoticeCopy: Record<
     title: "분석 초안을 만들었습니다.",
     tone: "success",
   },
+  "script-patterns": {
+    detail: "TOP10 소스의 훅, 첫 30초, 전개, retention, 신뢰 장치, CTA 패턴을 대본 전략으로 정리했습니다.",
+    title: "대본 유형 분석을 만들었습니다.",
+    tone: "success",
+  },
+  "strategy-recommendations": {
+    detail: "대상 시청자 5개, 톤 5개, 영상 각도 5개, 추천 대본 구조와 채널 필터를 생성했습니다.",
+    title: "LLM 전략 추천을 만들었습니다.",
+    tone: "success",
+  },
   "sources-checked": {
     detail: "소스 메타데이터를 확인했습니다. 자막/스크립트가 비어 있으면 아래 스크립트 슬롯에 붙여넣어야 합니다.",
     title: "소스 정보를 확인했습니다.",
@@ -1334,6 +1367,26 @@ const dashboardNoticeCopy: Record<
     title: "후보 영상을 소스로 추가했습니다.",
     tone: "success",
   },
+  "sources-deduped": {
+    detail: "중복 URL과 video ID를 기준으로 소스 목록을 정리했습니다.",
+    title: "중복 소스를 제거했습니다.",
+    tone: "success",
+  },
+  "sources-excluded": {
+    detail: "선택한 소스는 run에 보관되지만 분석 초안과 LLM 분석 입력에서는 제외됩니다.",
+    title: "선택 소스를 분석에서 제외했습니다.",
+    tone: "success",
+  },
+  "sources-included": {
+    detail: "선택한 소스를 다시 분석 입력에 포함했습니다.",
+    title: "선택 소스를 분석에 포함했습니다.",
+    tone: "success",
+  },
+  "sources-kept": {
+    detail: "선택한 영상만 남기고 나머지 소스는 목록에서 제거했습니다.",
+    title: "선택 영상만 유지했습니다.",
+    tone: "success",
+  },
   "sources-manual-imported": {
     detail: "입력한 URL이 소스 영상 목록에 추가됐습니다. 메타데이터 보강을 누르면 제목과 채널명을 확인합니다.",
     title: "수동 URL을 소스로 추가했습니다.",
@@ -1342,6 +1395,20 @@ const dashboardNoticeCopy: Record<
   "sources-partial": {
     detail: "일부 영상은 YouTube 메타데이터를 가져오지 못했습니다. 소스 목록을 보고 직접 보강해 주세요.",
     title: "소스 일부만 보강됐습니다.",
+  },
+  "transcript-fetched": {
+    detail: "선택한 소스의 공개 자막을 가져왔습니다. 스크립트 슬롯에서 내용을 확인하세요.",
+    title: "자막을 가져왔습니다.",
+    tone: "success",
+  },
+  "transcripts-batch-fetched": {
+    detail: "자막이 필요한 소스를 순차 처리했습니다. 실패 항목이 있으면 실패만 재시도할 수 있습니다.",
+    title: "배치 자막 수집을 완료했습니다.",
+    tone: "success",
+  },
+  "transcripts-batch-partial": {
+    detail: "일부 소스는 공개 자막이 없거나 provider 오류가 있어 실패했습니다. 실패만 재시도하거나 수동 입력/STT를 사용하세요.",
+    title: "일부 자막 수집이 실패했습니다.",
   },
 };
 
@@ -1424,6 +1491,10 @@ function WorkflowActionButton({
       return <AnalysisDraftButton runId={runId} />;
     case "analysis-refine":
       return <AnalysisRefineButton providerSettings={providerSettings} runId={runId} />;
+    case "script-pattern-analysis":
+      return <ScriptPatternAnalysisButton runId={runId} />;
+    case "strategy-recommendations":
+      return <StrategyRecommendationsButton providerSettings={providerSettings} runId={runId} />;
     case "script-draft":
       return <ScriptDraftButton runId={runId} />;
     case "script-refine":
@@ -1580,42 +1651,11 @@ function SourcesPanel({
       <div className="panel-body">
         {run.package.sources.length > 0 ? (
           <>
-            <table className="source-table">
-              <thead>
-                <tr>
-                  <th>순위</th>
-                  <th>소스</th>
-                  <th>자막/스크립트</th>
-                  <th>관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                {run.package.sources.map((source, index) => (
-                  <tr key={`${source.url}-${index}`}>
-                    <td>{source.rank ?? index + 1}</td>
-                    <td>
-                      <div className="source-title">{decodeHtmlEntities(source.title)}</div>
-                      <a className="source-url" href={source.url}>
-                        {source.url}
-                      </a>
-                    </td>
-                    <td>
-                      {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
-                        source.transcript_status ??
-                        "미확인"}
-                    </td>
-                    <td>
-                      <SourceDeleteButton
-                        label="삭제"
-                        mode="single"
-                        runId={run.id}
-                        sourceKey={sourceKey(source)}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <SourceReviewQueue
+              language={run.package.brief.language}
+              runId={run.id}
+              sources={run.package.sources}
+            />
             <SourceTranscriptPanel runId={run.id} sources={run.package.sources} />
           </>
         ) : (
@@ -1865,6 +1905,10 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.editing_handoff_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
+            <span>렌더 EDL</span>
+            <span>{run.package.render_manifest?.edl_path ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
             <span>최종 파일</span>
             <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
           </div>
@@ -1895,6 +1939,19 @@ function AssemblyPanel({
           <div className="detail-row">
             <span>업로드 작업</span>
             <span>{run.package.publishing_handoff?.upload_job_status ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>업로드 채널</span>
+            <span>{run.package.publishing_handoff?.upload_channel_name ?? "대기"}</span>
+          </div>
+          <div className="detail-row">
+            <span>공개/예약</span>
+            <span>
+              {run.package.publishing_handoff?.upload_privacy_status ?? "대기"}
+              {run.package.publishing_handoff?.upload_scheduled_at
+                ? ` / ${run.package.publishing_handoff.upload_scheduled_at}`
+                : ""}
+            </span>
           </div>
           <WorkerStatusPanel runId={run.id} status={workerStatus} />
           <EditingHandoffButton providerSettings={providerSettings} runId={run.id} />
@@ -1941,6 +1998,17 @@ function FeedbackPanel({ run }: { run: RunSummary }) {
           <div className="detail-row">
             <span>누적 스냅샷</span>
             <span>{run.package.feedback_loop?.snapshot_count ?? 0}</span>
+          </div>
+          <div className="detail-row">
+            <span>CTR / 평균시청</span>
+            <span>
+              {run.package.feedback_loop?.analytics_ctr ?? "n/a"}% /{" "}
+              {run.package.feedback_loop?.analytics_average_view_percentage ?? "n/a"}%
+            </span>
+          </div>
+          <div className="detail-row">
+            <span>주요 유입</span>
+            <span>{run.package.feedback_loop?.analytics_top_traffic_source ?? "n/a"}</span>
           </div>
           <PerformanceSnapshotButton
             runId={run.id}

@@ -33,12 +33,20 @@ export type PerformanceSnapshot = {
       average_view_percentage?: number;
       comments?: number;
       estimated_minutes_watched?: number;
+      impression_click_through_rate?: number;
+      impressions?: number;
       likes?: number;
       shares?: number;
       subscribers_gained?: number;
       subscribers_lost?: number;
       views?: number;
     };
+    traffic_sources?: Array<{
+      source_type: string;
+      views: number;
+      estimated_minutes_watched?: number;
+      average_view_duration_seconds?: number;
+    }>;
     raw_columns: string[];
     notes: string[];
   };
@@ -103,6 +111,8 @@ const analyticsMetricNames = [
   "comments",
   "shares",
   "estimatedMinutesWatched",
+  "impressions",
+  "impressionClickThroughRate",
   "averageViewDuration",
   "averageViewPercentage",
   "subscribersGained",
@@ -243,6 +253,8 @@ function analyticsMetricKey(name: string) {
     averageViewPercentage: "average_view_percentage",
     comments: "comments",
     estimatedMinutesWatched: "estimated_minutes_watched",
+    impressionClickThroughRate: "impression_click_through_rate",
+    impressions: "impressions",
     likes: "likes",
     shares: "shares",
     subscribersGained: "subscribers_gained",
@@ -281,6 +293,62 @@ function parseAnalyticsSnapshot(
   };
 }
 
+function parseTrafficSources(body: AnalyticsResponse) {
+  const headers = body.columnHeaders?.map((header) => header.name ?? "") ?? [];
+  const sourceIndex = headers.indexOf("insightTrafficSourceType");
+  const viewsIndex = headers.indexOf("views");
+  const minutesIndex = headers.indexOf("estimatedMinutesWatched");
+  const durationIndex = headers.indexOf("averageViewDuration");
+  return (body.rows ?? [])
+    .map((row) => ({
+      average_view_duration_seconds:
+        durationIndex >= 0 ? parseNumber(row[durationIndex]) : undefined,
+      estimated_minutes_watched: minutesIndex >= 0 ? parseNumber(row[minutesIndex]) : undefined,
+      source_type: String(row[sourceIndex] ?? "unknown"),
+      views: viewsIndex >= 0 ? parseNumber(row[viewsIndex]) : 0,
+    }))
+    .filter((item) => item.views > 0)
+    .slice(0, 8);
+}
+
+async function fetchTrafficSources({
+  accessToken,
+  endDate,
+  startDate,
+  videoId,
+}: {
+  accessToken: string;
+  endDate: string;
+  startDate: string;
+  videoId: string;
+}) {
+  const url = new URL(analyticsEndpoint);
+  url.searchParams.set("ids", "channel==MINE");
+  url.searchParams.set("startDate", startDate);
+  url.searchParams.set("endDate", endDate);
+  url.searchParams.set("metrics", "views,estimatedMinutesWatched,averageViewDuration");
+  url.searchParams.set("dimensions", "insightTrafficSourceType");
+  url.searchParams.set("filters", `video==${videoId}`);
+  url.searchParams.set("sort", "-views");
+  url.searchParams.set("maxResults", "8");
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "User-Agent": "youtube-idea-factory/0.1",
+    },
+  });
+  const body = (await response.json().catch(() => null)) as AnalyticsResponse | { error?: { message?: string } } | null;
+  if (!response.ok) {
+    const message =
+      body && "error" in body && body.error?.message
+        ? body.error.message
+        : `YouTube traffic source API ${response.status}`;
+    throw new Error(message);
+  }
+  return parseTrafficSources((body ?? {}) as AnalyticsResponse);
+}
+
 async function fetchYouTubeAnalytics({
   publishedAt,
   refreshToken,
@@ -313,7 +381,21 @@ async function fetchYouTubeAnalytics({
         : `YouTube Analytics API ${response.status}`;
     throw new Error(message);
   }
-  return parseAnalyticsSnapshot((body ?? {}) as AnalyticsResponse, startDate, endDate);
+  const snapshot = parseAnalyticsSnapshot((body ?? {}) as AnalyticsResponse, startDate, endDate);
+  try {
+    snapshot.traffic_sources = await fetchTrafficSources({
+      accessToken,
+      endDate,
+      startDate,
+      videoId,
+    });
+    snapshot.notes.push("Attached top traffic source rows from YouTube Analytics API.");
+  } catch (error) {
+    snapshot.notes.push(
+      `Traffic source rows were not attached: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+  return snapshot;
 }
 
 function thumbnailUrl(item: NonNullable<VideosResponse["items"]>[number]) {
@@ -382,8 +464,22 @@ function snapshotMarkdown(snapshot: PerformanceSnapshot) {
           `- Views: ${snapshot.analytics.metrics.views ?? "n/a"}`,
           `- Estimated minutes watched: ${snapshot.analytics.metrics.estimated_minutes_watched ?? "n/a"}`,
           `- Average view duration: ${snapshot.analytics.metrics.average_view_duration_seconds ?? "n/a"} seconds`,
+          `- Average view percentage: ${snapshot.analytics.metrics.average_view_percentage ?? "n/a"}%`,
+          `- Impressions: ${snapshot.analytics.metrics.impressions ?? "n/a"}`,
+          `- Impression CTR: ${snapshot.analytics.metrics.impression_click_through_rate ?? "n/a"}%`,
           `- Shares: ${snapshot.analytics.metrics.shares ?? "n/a"}`,
           `- Subscribers gained: ${snapshot.analytics.metrics.subscribers_gained ?? "n/a"}`,
+          ...(snapshot.analytics.traffic_sources?.length
+            ? [
+                "",
+                "### Traffic Sources",
+                "",
+                ...snapshot.analytics.traffic_sources.map(
+                  (source) =>
+                    `- ${source.source_type}: ${source.views} views, ${source.estimated_minutes_watched ?? "n/a"} min watched`,
+                ),
+              ]
+            : []),
           ...snapshot.analytics.notes.map((note) => `- ${note}`),
         ]
       : ["- Not available for this snapshot."]),
@@ -474,6 +570,9 @@ export async function createPerformanceSnapshot(
   const snapshotCount = await appendHistory(runId, snapshot);
 
   pkg.feedback_loop = {
+    analytics_average_view_percentage: analytics?.metrics.average_view_percentage,
+    analytics_ctr: analytics?.metrics.impression_click_through_rate,
+    analytics_top_traffic_source: analytics?.traffic_sources?.[0]?.source_type,
     comment_count: statistics.comment_count,
     fetched_at: now,
     like_count: statistics.like_count,

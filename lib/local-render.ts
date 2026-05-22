@@ -306,6 +306,7 @@ export async function renderLocalVideo(
 
   const now = new Date().toISOString();
   pkg.render_manifest = {
+    edl_path: manifest.edit_decision_list.path,
     path: "render-manifest.json",
     timeline_items: manifest.summary.timeline_items,
     ready_timeline_items: manifest.summary.ready_timeline_items,

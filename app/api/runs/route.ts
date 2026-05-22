@@ -2,6 +2,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { createRun, type CreateRunInput } from "@/lib/create-run";
 import { getRuns } from "@/lib/runs";
 import { searchYouTubeVideos, type YouTubeCandidate } from "@/lib/youtube-finder";
+import { selectYouTubeSourceCandidates } from "@/lib/youtube-candidate-selection";
 
 export const dynamic = "force-dynamic";
 
@@ -43,30 +44,20 @@ function publishedAfterDays(days: number) {
   return date.toISOString();
 }
 
-function selectFormatMatches(candidates: YouTubeCandidate[], format: string, targetSeconds: number) {
-  const normalized = format.toLowerCase();
-  let matches: YouTubeCandidate[];
-
-  if (normalized === "shorts") {
-    matches = candidates.filter((candidate) => candidate.durationSeconds > 0 && candidate.durationSeconds <= 75);
-  } else {
-    const target = Number.isFinite(targetSeconds) && targetSeconds > 0 ? targetSeconds : 480;
-    const lower = Math.max(240, Math.floor(target * 0.5));
-    const upper = Math.max(lower + 60, Math.ceil(target * 1.75));
-    const durationMatches = candidates.filter(
-      (candidate) => candidate.durationSeconds >= lower && candidate.durationSeconds <= upper,
-    );
-    matches =
-      durationMatches.length >= 5
-        ? durationMatches
-        : candidates.filter((candidate) => candidate.durationSeconds >= 240);
+function clampLookbackDays(value: unknown) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 7;
   }
+  return Math.max(1, Math.min(30, Math.floor(parsed)));
+}
 
-  const base = matches.length >= 5 ? matches : candidates;
-  return base
-    .slice()
-    .sort((a, b) => b.viewCount - a.viewCount)
-    .slice(0, 10);
+function clampCandidateLimit(value: unknown) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 10;
+  }
+  return Math.max(1, Math.min(10, Math.floor(parsed)));
 }
 
 export async function GET() {
@@ -92,6 +83,8 @@ export async function POST(request: Request) {
     const language = String(body.language ?? "ko");
     const regionCode = String(body.regionCode ?? "").trim().toUpperCase() || regionForLanguage(language);
     const durationSeconds = Number(body.durationSeconds ?? 60);
+    const lookbackDays = clampLookbackDays(body.lookbackDays);
+    const candidateLimit = clampCandidateLimit(body.candidateLimit);
     let sourceCandidates: YouTubeCandidate[] = [];
 
     if (sourceMode !== "manual") {
@@ -110,13 +103,18 @@ export async function POST(request: Request) {
         maxResults: 50,
         minResults: 10,
         order: "viewCount",
-        publishedAfter: publishedAfterDays(7),
+        publishedAfter: publishedAfterDays(lookbackDays),
         regionCode,
         relevanceLanguage: language,
         videoCategoryId: sourceMode === "categoryTop" ? categoryId : "",
         videoDuration: format === "shorts" ? "short" : durationSeconds > 1200 ? "long" : "medium",
       });
-      sourceCandidates = selectFormatMatches(candidates, format, durationSeconds);
+      sourceCandidates = selectYouTubeSourceCandidates(candidates, {
+        format,
+        maxPerChannel: 2,
+        maxResults: candidateLimit,
+        targetSeconds: durationSeconds,
+      });
 
       if (sourceCandidates.length === 0) {
         throw new Error("검색 조건을 완화해도 YouTube 후보 영상을 찾지 못했습니다. 검색어, 국가, 카테고리를 바꿔보세요.");
@@ -130,7 +128,9 @@ export async function POST(request: Request) {
       channelId: String(body.channelId ?? ""),
       format,
       language,
+      lookbackDays,
       regionCode,
+      candidateLimit,
       sourceCandidates,
       sourceMode,
       targetAudience: String(body.targetAudience ?? ""),

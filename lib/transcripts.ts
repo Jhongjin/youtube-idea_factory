@@ -21,6 +21,12 @@ export type SaveTranscriptOptions = {
   sourceUrl?: string;
 };
 
+export type MarkTranscriptStatusOptions = {
+  error?: string;
+  provider?: string;
+  status: "missing" | "not_checked";
+};
+
 const maxTranscriptBytes = 1_000_000;
 
 function assertSafe(value: string, label: string) {
@@ -120,5 +126,47 @@ export async function saveTranscript(
     content,
     updatedAt,
     status,
+  };
+}
+
+export async function markTranscriptStatus(
+  runId: string,
+  sourceKey: string,
+  options: MarkTranscriptStatusOptions,
+) {
+  assertSafe(runId, "run id");
+  assertSafe(sourceKey, "source key");
+  const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(
+    runId,
+    "sources.json",
+  );
+  const productionPackage = await readRunJson<ProductionPackage>(
+    runId,
+    "production-package.json",
+  );
+  const updatedAt = new Date().toISOString();
+  const updatedSources = sources.map((source) => {
+    if (!matchesSource(source, sourceKey)) {
+      return source;
+    }
+    return {
+      ...source,
+      transcript_error: options.error?.slice(0, 500) ?? "",
+      transcript_provider: options.provider ?? source.transcript_provider ?? "",
+      transcript_status: options.status,
+      transcript_updated_at: updatedAt,
+    };
+  });
+
+  productionPackage.sources = updatedSources;
+  await Promise.all([
+    writeRunJson(runId, "sources.json", updatedSources),
+    writeRunJson(runId, "production-package.json", productionPackage),
+  ]);
+
+  return {
+    sourceKey,
+    status: options.status,
+    updatedAt,
   };
 }

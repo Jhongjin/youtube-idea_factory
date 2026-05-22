@@ -64,6 +64,16 @@ export type DeploymentReadiness = {
       roleCount: number;
       savedKeyCount: number;
     };
+    subtitles: {
+      enabled: boolean;
+      envApiKey: boolean;
+      model: string;
+      provider: string;
+      settingsHasApiKey: boolean;
+      settingsSupadataEnabled: boolean;
+      supadataReady: boolean;
+      message: string;
+    };
     youtubeApiKey: boolean;
     youtubeProviderSettings: boolean;
   };
@@ -126,7 +136,11 @@ function roleReadiness(
 ): ProviderRoleReadiness {
   const provider = setting.provider.trim();
   const model = setting.model.trim();
-  const hasApiKey = Boolean(setting.apiKey?.trim());
+  const hasSettingApiKey = Boolean(setting.apiKey?.trim());
+  const hasRuntimeApiKey =
+    (role === "subtitles" && provider === "Supadata" && hasEnv("SUPADATA_API_KEY")) ||
+    (role === "youtube" && provider === "YouTube Data API" && hasEnv("YOUTUBE_API_KEY"));
+  const hasApiKey = hasSettingApiKey || hasRuntimeApiKey;
   const implementedAdapter = hasDirectAdapter(role, provider);
   const manualWorkflow = hasManualWorkflow(provider);
   const capability = getProviderCapability(role, provider);
@@ -185,6 +199,37 @@ function providerInventorySummary(providerSettings: StoredProviderSettings | nul
     savedKeyCount:
       roleSettings.filter((setting) => setting.apiKey?.trim()).length +
       providerSettings.profiles.filter((profile) => profile.apiKey?.trim()).length,
+  };
+}
+
+function subtitlesReadiness(providerSettings: StoredProviderSettings | null) {
+  const setting = providerSettings
+    ? resolvePreferredProviderSetting(providerSettings, "subtitles")
+    : null;
+  const provider = setting?.provider.trim() ?? "";
+  const model = setting?.model.trim() ?? "";
+  const envApiKey = hasEnv("SUPADATA_API_KEY");
+  const settingsSupadataEnabled =
+    Boolean(setting?.enabled) && provider.toLowerCase() === "supadata";
+  const settingsHasApiKey = Boolean(setting?.apiKey?.trim());
+  const supadataReady = envApiKey || (settingsSupadataEnabled && settingsHasApiKey);
+  const message = supadataReady
+    ? envApiKey
+      ? "SUPADATA_API_KEY 감지"
+      : "설정 저장 키 감지"
+    : settingsSupadataEnabled
+      ? "Supadata API 키 필요"
+      : "자막 역할에서 Supadata 선택 필요";
+
+  return {
+    enabled: Boolean(setting?.enabled),
+    envApiKey,
+    model,
+    provider,
+    settingsHasApiKey,
+    settingsSupadataEnabled,
+    supadataReady,
+    message,
   };
 }
 
@@ -310,6 +355,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       resolvePreferredProviderSetting(providerSettings, "youtube").enabled &&
       resolvePreferredProviderSetting(providerSettings, "youtube").apiKey?.trim(),
   );
+  const subtitles = subtitlesReadiness(providerSettings);
   const youtubeApiKey = hasEnv("YOUTUBE_API_KEY") || youtubeProviderSettings;
   if (!youtubeApiKey) {
     warnings.push("YOUTUBE_API_KEY is missing; YouTube Finder will need the dashboard provider settings or env var.");
@@ -371,6 +417,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     providers: {
       roles: providerRoleReadiness,
       summary: providerInventorySummary(providerSettings),
+      subtitles,
       youtubeApiKey,
       youtubeProviderSettings,
     },

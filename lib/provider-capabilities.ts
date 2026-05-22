@@ -13,7 +13,7 @@ export const directAdapterProviders: Record<ProviderRoleId, string[]> = {
   editing: ["FFmpeg Worker"],
   image: ["OpenAI", "fal.ai"],
   llm: ["OpenAI", "OpenRouter", "Custom"],
-  subtitles: ["OpenAI"],
+  subtitles: ["OpenAI", "Supadata"],
   tts: ["OpenAI", "Inworld"],
   video: ["fal.ai"],
   youtube: ["YouTube Data API"],
@@ -61,6 +61,9 @@ export function hasManualWorkflow(provider: string) {
 
 export function requiresProviderModel(role: ProviderRoleId, provider: string) {
   if (role === "youtube" || role === "bgm" || role === "editing") {
+    return false;
+  }
+  if (role === "subtitles" && provider === "Supadata") {
     return false;
   }
   return hasDirectAdapter(role, provider);

@@ -5,6 +5,7 @@ import { AlertTriangle, Copy, Loader2, Plus, RefreshCw, Search } from "lucide-re
 import type { SourceVideo } from "@/lib/runs";
 import type { YouTubeCandidate } from "@/lib/youtube-finder";
 import { decodeHtmlEntities } from "@/lib/html-text";
+import { selectYouTubeSourceCandidates } from "@/lib/youtube-candidate-selection";
 import { sourceDedupKey } from "@/lib/youtube-url";
 
 type LoadingMode = "idle" | "category" | "search" | "import" | "manual";
@@ -69,22 +70,6 @@ function videoDurationForFormat(format: string, targetSeconds: number) {
     return "short";
   }
   return targetSeconds > 1200 ? "long" : "medium";
-}
-
-function selectFormatMatches(candidates: YouTubeCandidate[], format: string, targetSeconds: number) {
-  if (format === "shorts") {
-    const shorts = candidates.filter((candidate) => candidate.durationSeconds > 0 && candidate.durationSeconds <= 75);
-    return (shorts.length >= 5 ? shorts : candidates).slice(0, 10);
-  }
-
-  const target = Number.isFinite(targetSeconds) && targetSeconds > 0 ? targetSeconds : 480;
-  const lower = Math.max(240, Math.floor(target * 0.5));
-  const upper = Math.max(lower + 60, Math.ceil(target * 1.75));
-  const durationMatches = candidates.filter(
-    (candidate) => candidate.durationSeconds >= lower && candidate.durationSeconds <= upper,
-  );
-  const longform = durationMatches.length >= 5 ? durationMatches : candidates.filter((candidate) => candidate.durationSeconds >= 240);
-  return (longform.length >= 5 ? longform : candidates).slice(0, 10);
 }
 
 function splitManualUrls(value: string) {
@@ -171,15 +156,23 @@ export function YouTubeFinderPanel({
     const body = (await response.json()) as { candidates: YouTubeCandidate[] };
     const sortedCandidates = body.candidates.slice().sort((a, b) => b.viewCount - a.viewCount);
     applyCandidateResults(
-      filterByFormat ? selectFormatMatches(sortedCandidates, format, targetDurationSeconds) : sortedCandidates,
+      filterByFormat
+        ? selectYouTubeSourceCandidates(sortedCandidates, {
+            format,
+            maxPerChannel: 2,
+            maxResults: 10,
+            targetSeconds: targetDurationSeconds,
+          })
+        : sortedCandidates,
       label,
     );
     setLoadingMode("idle");
   }
 
-  async function loadCategoryTop() {
-    if (!defaultCategoryId) {
-      setError("이 run에는 YouTube 카테고리가 없어 카테고리 후보를 더 가져올 수 없습니다.");
+  async function loadMoreCandidates() {
+    const query = defaultCategoryId ? "" : defaultQuery.trim();
+    if (!defaultCategoryId && !query) {
+      setError("이 run에는 카테고리나 기본 검색어가 없어 후보를 더 가져올 수 없습니다.");
       return;
     }
 
@@ -190,13 +183,13 @@ export function YouTubeFinderPanel({
         minResults: 10,
         order: "viewCount",
         publishedAfter: publishedAfterDays(7),
-        query: "",
+        query,
         regionCode,
         relevanceLanguage: language,
         videoCategoryId: defaultCategoryId,
         videoDuration: videoDurationForFormat(format, targetDurationSeconds),
       },
-      "카테고리 TOP 후보",
+      "추가 후보",
       "category",
       true,
     );
@@ -293,7 +286,7 @@ export function YouTubeFinderPanel({
       <div className="panel-header">
         <div>
           <h3 className="panel-title">소스 찾기와 추가</h3>
-          <p className="panel-subtitle">누르는 버튼마다 run의 소스 영상 목록에 들어갈 후보가 만들어집니다.</p>
+          <p className="panel-subtitle">후보 더 가져오기, 유사 영상 추가, 수동 URL 추가를 분리해서 소스 큐를 보강합니다.</p>
         </div>
         {candidates.length > 0 ? (
           <div className="toolbar">
@@ -314,17 +307,22 @@ export function YouTubeFinderPanel({
             <div className="source-review-card-heading">
               <RefreshCw size={16} />
               <div>
-                <h4>카테고리 TOP 후보 더 가져오기</h4>
+                <h4>후보 더 가져오기</h4>
                 <p>1단계와 같은 기준으로 최근 7일 후보를 다시 찾고, 이미 있는 소스는 제외합니다.</p>
               </div>
             </div>
             <div className="source-review-meta">
-              <span>{defaultCategoryId ? defaultCategoryTitle || defaultCategoryId : "카테고리 ID 없음"}</span>
+              <span>{defaultCategoryId ? defaultCategoryTitle || defaultCategoryId : defaultQuery || "기본 조건 없음"}</span>
               <span>{regionCode} / {formatLabel}</span>
             </div>
-            <button className="text-button primary" disabled={loading || !defaultCategoryId} onClick={loadCategoryTop} type="button">
+            <button
+              className="text-button primary"
+              disabled={loading || (!defaultCategoryId && !defaultQuery.trim())}
+              onClick={loadMoreCandidates}
+              type="button"
+            >
               {loadingMode === "category" ? <Loader2 className="spin" size={15} /> : <Search size={15} />}
-              카테고리 후보 찾기
+              후보 더 가져오기
             </button>
           </section>
 
@@ -332,7 +330,7 @@ export function YouTubeFinderPanel({
             <div className="source-review-card-heading">
               <Search size={16} />
               <div>
-                <h4>유사 영상 검색</h4>
+                <h4>유사 영상 추가</h4>
                 <p>주제나 키워드를 바꿔 관련 영상을 찾습니다. 결과는 확인 후 소스로 추가됩니다.</p>
               </div>
             </div>

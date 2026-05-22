@@ -1,5 +1,6 @@
 import { readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
+import type { PerformanceSnapshot } from "@/lib/youtube-performance";
 
 export type AbLearningVariant = {
   id: string;
@@ -22,6 +23,8 @@ export type AbLearningLog = {
   run_id: string;
   topic: string;
   baseline: {
+    average_view_percentage?: number;
+    ctr?: number;
     feedback_status?: string;
     latest_views?: number;
     recommendations?: number;
@@ -33,6 +36,7 @@ export type AbLearningLog = {
 
 const logPath = "11-ab-learning-log.json";
 const logMarkdownPath = "11-ab-learning-log.md";
+const snapshotPath = "09-performance-snapshot.json";
 
 function slugPart(value: string, fallback: string) {
   return (
@@ -102,6 +106,8 @@ function markdownFor(log: AbLearningLog) {
     `- Created at: ${log.created_at}`,
     `- Latest views: ${log.baseline.latest_views ?? "n/a"}`,
     `- Feedback status: ${log.baseline.feedback_status ?? "n/a"}`,
+    `- CTR: ${log.baseline.ctr ?? "n/a"}%`,
+    `- Average viewed: ${log.baseline.average_view_percentage ?? "n/a"}%`,
     "",
     "## Variants",
     "",
@@ -126,19 +132,27 @@ function markdownFor(log: AbLearningLog) {
 }
 
 export async function createAbLearningLog(runId: string) {
-  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
+  const [pkg, snapshot] = await Promise.all([
+    readRunJson<ProductionPackage>(runId, "production-package.json"),
+    readRunJson<PerformanceSnapshot>(runId, snapshotPath).catch(() => null),
+  ]);
   const now = new Date().toISOString();
   const variants = [...titleVariants(pkg), ...thumbnailVariant(pkg), ...hookVariant(pkg)];
+  const hasAnalytics = Boolean(snapshot?.analytics);
   const log: AbLearningLog = {
     baseline: {
+      average_view_percentage: snapshot?.analytics?.metrics.average_view_percentage,
+      ctr: snapshot?.analytics?.metrics.impression_click_through_rate,
       feedback_status: pkg.feedback_insights?.status,
       latest_views: pkg.feedback_loop?.view_count,
       recommendations: pkg.feedback_insights?.recommendations,
     },
     created_at: now,
     measurement_plan: [
-      "Use YouTube Analytics CTR and average view duration once the analytics OAuth adapter exists.",
-      "Until then, compare public view velocity and engagement rate from repeated performance snapshots.",
+      hasAnalytics
+        ? "Use YouTube Analytics CTR, average viewed percentage, and traffic sources as primary learning metrics."
+        : "Add channel Analytics OAuth to use CTR, average viewed percentage, and traffic sources.",
+      "Compare public view velocity and engagement rate from repeated performance snapshots.",
       "Keep variants mutually exclusive: change title, thumbnail, or hook one at a time.",
     ],
     next_actions: [
@@ -147,7 +161,7 @@ export async function createAbLearningLog(runId: string) {
       "Promote only variants with better click intent and no drop in engagement quality.",
     ],
     run_id: runId,
-    status: variants.length > 0 ? "needs_metrics" : "draft",
+    status: hasAnalytics && variants.length > 0 ? "ready_for_comparison" : variants.length > 0 ? "needs_metrics" : "draft",
     topic: pkg.brief.topic,
     variants,
   };

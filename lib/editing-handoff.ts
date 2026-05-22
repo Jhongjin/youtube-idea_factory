@@ -26,6 +26,11 @@ export type EditingHandoff = {
     export_expectation: string;
     tool_notes: string[];
   };
+  edit_decision_list: {
+    path: string;
+    engine: string;
+    optional_motion_engines: string[];
+  };
   output: RenderManifest["output"];
   timeline: Array<{
     scene_id: string;
@@ -148,6 +153,11 @@ export async function createEditingHandoff(
       notes: editingProvider.notes,
     },
     workflow: workflowForProvider(editingProvider.provider),
+    edit_decision_list: {
+      path: manifest.edit_decision_list.path,
+      engine: manifest.edit_decision_list.engine,
+      optional_motion_engines: ["HyperFrames", "Remotion", "OpenCut"],
+    },
     output: manifest.output,
     timeline: manifest.timeline.map((item) => ({
       scene_id: item.scene_id,
@@ -183,6 +193,7 @@ export async function createEditingHandoff(
     editing_handoff_path: "editing-handoff.json",
     editing_provider: editingProvider.provider,
     editing_provider_status: capability.status,
+    edl_path: manifest.edit_decision_list.path,
     updated_at: now,
   };
 

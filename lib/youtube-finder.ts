@@ -344,7 +344,8 @@ function dedupeAttempts(attempts: YouTubeSearchAttempt[]) {
 function buildSearchAttempts(input: YouTubeSearchInput) {
   const userQuery = input.query?.trim() ?? "";
   const videoCategoryId = input.videoCategoryId?.trim() ?? "";
-  const query = userQuery || categoryFallbackQuery(input);
+  const fallbackQuery = categoryFallbackQuery(input);
+  const query = userQuery || (videoCategoryId ? "" : fallbackQuery);
   const relaxedQuery = userQuery ? relaxedUserQuery(userQuery) : query;
   if (!query && !videoCategoryId) {
     throw new Error("Search query or YouTube category is required.");
@@ -359,7 +360,7 @@ function buildSearchAttempts(input: YouTubeSearchInput) {
     safeSearch: input.safeSearch ?? "moderate",
     videoCategoryId,
     videoDuration: input.videoDuration ?? "any",
-    searchScope: userQuery ? "기본 조건" : "카테고리 키워드 보강",
+    searchScope: userQuery ? "기본 조건" : videoCategoryId ? "카테고리만" : "카테고리 키워드 보강",
   };
 
   const attempts: YouTubeSearchAttempt[] = [base];
@@ -410,6 +411,18 @@ function buildSearchAttempts(input: YouTubeSearchInput) {
       ...base,
       publishedAfter: "",
       searchScope: `${base.searchScope} + 최근 날짜 필터 완화`,
+    });
+  }
+
+  if (!userQuery && videoCategoryId && fallbackQuery) {
+    attempts.push({
+      ...base,
+      query: fallbackQuery,
+      regionCode: input.regionCode?.trim().toUpperCase(),
+      relevanceLanguage: input.relevanceLanguage?.trim(),
+      safeSearch: input.safeSearch ?? "moderate",
+      videoCategoryId: "",
+      searchScope: "카테고리 키워드 fallback",
     });
   }
 

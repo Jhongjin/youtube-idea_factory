@@ -11,6 +11,8 @@ export type RunPrimaryActionId =
   | "draft-flow"
   | "analysis-draft"
   | "analysis-refine"
+  | "script-pattern-analysis"
+  | "strategy-recommendations"
   | "script-draft"
   | "script-refine"
   | "storyboard-draft"
@@ -62,7 +64,12 @@ function promptCount(pkg: ProductionPackage) {
 }
 
 function hasTranscript(source: ProductionPackage["sources"][number]) {
-  return source.transcript_status === "manual_transcript" || source.transcript_status === "available";
+  return (
+    source.transcript_status === "manual_transcript" ||
+    source.transcript_status === "external_transcript" ||
+    source.transcript_status === "stt_transcript" ||
+    source.transcript_status === "available"
+  );
 }
 
 function step({

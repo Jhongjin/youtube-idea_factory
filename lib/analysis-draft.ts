@@ -117,7 +117,8 @@ function claimLedgerRows(claimsBySource: Array<{ source: SourceVideo; claims: st
 
 export async function createAnalysisDraft(runId: string): Promise<AnalysisDraftResult> {
   assertSafeRunId(runId);
-  const sources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
+  const allSources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
+  const sources = allSources.filter((source) => !source.analysis_excluded);
 
   const transcriptPairs = await Promise.all(
     sources.map(async (source) => ({
@@ -129,6 +130,8 @@ export async function createAnalysisDraft(runId: string): Promise<AnalysisDraftR
   const analysisMarkdown = `# 02 Video Analysis
 
 Generated deterministic draft from source metadata and available manual transcripts.
+
+Analysis source count: ${sources.length}/${allSources.length}. Sources marked "analysis excluded" in source review are kept in the run but skipped here.
 
 ${transcriptPairs.map((item) => sourceAnalysisCard(item.source, item.transcript)).join("\n")}
 

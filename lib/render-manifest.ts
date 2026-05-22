@@ -28,6 +28,58 @@ export type RenderTimelineItem = {
   blockers: string[];
 };
 
+export type RenderEditDecisionList = {
+  version: 1;
+  run_id: string;
+  created_at: string;
+  engine: "ffmpeg";
+  format: string;
+  resolution: RenderManifest["resolution"];
+  fps: number;
+  tracks: {
+    video: Array<{
+      scene_id: string;
+      start_seconds: number;
+      duration_seconds: number;
+      asset_id: string;
+      asset_kind: string;
+      asset_path: string;
+      fit: "cover";
+      blockers: string[];
+    }>;
+    overlays: Array<{
+      scene_id: string;
+      start_seconds: number;
+      duration_seconds: number;
+      text: string;
+      purpose: "on_screen_text";
+      renderer_hint: "ffmpeg-drawtext" | "motion-provider";
+    }>;
+    audio: Array<{
+      id: string;
+      role: "voice" | "bgm";
+      path: string;
+      start_seconds: number;
+      volume: number;
+      required: boolean;
+      blockers: string[];
+    }>;
+    subtitles: Array<{
+      id: string;
+      path: string;
+      format: "srt";
+      required: boolean;
+      blockers: string[];
+    }>;
+  };
+  assembly: {
+    output_path: string;
+    steps: string[];
+    optional_motion_engines: string[];
+    limitations: string[];
+  };
+};
+
 export type RenderManifest = {
   version: 1;
   run_id: string;
@@ -43,6 +95,14 @@ export type RenderManifest = {
   output: {
     draft_path: string;
     final_path: string;
+  };
+  edit_decision_list: {
+    path: "render-edl.json";
+    engine: "ffmpeg";
+    video_items: number;
+    overlay_items: number;
+    audio_items: number;
+    blockers: number;
   };
   timeline: RenderTimelineItem[];
   audio: {
@@ -160,6 +220,88 @@ function sceneDuration(
   return Math.max(1, scene?.duration_seconds ?? asset?.duration_seconds ?? fallback);
 }
 
+function createRenderEdl(manifest: RenderManifest): RenderEditDecisionList {
+  const video = manifest.timeline.map((item) => ({
+    scene_id: item.scene_id,
+    start_seconds: item.start_seconds,
+    duration_seconds: item.duration_seconds,
+    asset_id: item.primary_asset_id,
+    asset_kind: item.primary_asset_kind,
+    asset_path: item.primary_asset_path,
+    fit: "cover" as const,
+    blockers: item.blockers,
+  }));
+  const overlays = manifest.timeline
+    .filter((item) => item.on_screen_text.trim())
+    .map((item) => ({
+      scene_id: item.scene_id,
+      start_seconds: item.start_seconds,
+      duration_seconds: item.duration_seconds,
+      text: item.on_screen_text.trim(),
+      purpose: "on_screen_text" as const,
+      renderer_hint: "motion-provider" as const,
+    }));
+  const audio = [
+    {
+      id: manifest.audio.voice_asset_id || "voice-narration",
+      role: "voice" as const,
+      path: manifest.audio.voice_path,
+      start_seconds: 0,
+      volume: 1,
+      required: true,
+      blockers: manifest.audio.blockers.filter((blocker) => blocker.startsWith("voice")),
+    },
+    {
+      id: manifest.audio.bgm_asset_id || "bgm-primary",
+      role: "bgm" as const,
+      path: manifest.audio.bgm_path,
+      start_seconds: 0,
+      volume: 0.18,
+      required: false,
+      blockers: manifest.audio.blockers.filter((blocker) => blocker.startsWith("bgm")),
+    },
+  ].filter((item) => item.required || item.path || item.blockers.length > 0);
+
+  return {
+    version: 1,
+    run_id: manifest.run_id,
+    created_at: manifest.created_at,
+    engine: "ffmpeg",
+    format: manifest.format,
+    resolution: manifest.resolution,
+    fps: manifest.fps,
+    tracks: {
+      video,
+      overlays,
+      audio,
+      subtitles: [
+        {
+          id: manifest.subtitles.asset_id || "subtitles-primary",
+          path: manifest.subtitles.path,
+          format: "srt",
+          required: true,
+          blockers: manifest.subtitles.blockers,
+        },
+      ],
+    },
+    assembly: {
+      output_path: manifest.output.final_path,
+      steps: [
+        "Normalize each video/image scene to the target resolution and fps.",
+        "Concatenate scene segments in timeline order.",
+        "Mix narration with optional BGM.",
+        "Embed reviewed subtitles before final export.",
+        "Use overlay track text in motion providers, or add ffmpeg drawtext support before hard-burned text.",
+      ],
+      optional_motion_engines: ["HyperFrames", "Remotion", "OpenCut"],
+      limitations: [
+        "The current FFmpeg worker concatenates visual assets, mixes audio, and embeds subtitles.",
+        "On-screen text is preserved as an overlay track for motion/editing providers before hard-burn support is added.",
+      ],
+    },
+  };
+}
+
 export async function createRenderManifest(runId: string): Promise<RenderManifestResult> {
   assertSafeRunId(runId);
   const [pkg, manifest, approvals] = await Promise.all([
@@ -220,6 +362,8 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
     approvalBlockers.length +
     qaBlockers.length;
   const renderReady = totalBlockers === 0;
+  const overlayItems = timeline.filter((item) => item.on_screen_text.trim()).length;
+  const audioItems = 1 + Number(bgm?.status === "generated" || Boolean(assetPath(bgm)));
   const renderManifest: RenderManifest = {
     version: 1,
     run_id: runId,
@@ -232,6 +376,14 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
     output: {
       draft_path: path.join("artifacts", runId, "renders", "draft.mp4").replace(/\\/g, "/"),
       final_path: path.join("artifacts", runId, "renders", "final.mp4").replace(/\\/g, "/"),
+    },
+    edit_decision_list: {
+      path: "render-edl.json",
+      engine: "ffmpeg",
+      video_items: timeline.length,
+      overlay_items: overlayItems,
+      audio_items: audioItems,
+      blockers: totalBlockers,
     },
     timeline,
     audio: {
@@ -267,8 +419,12 @@ export async function createRenderManifest(runId: string): Promise<RenderManifes
   if (getAppStorageMode() === "local") {
     await fs.mkdir(path.join(artifactsDir, runId, "renders"), { recursive: true });
   }
-  await writeRunJson(runId, "render-manifest.json", renderManifest);
+  await Promise.all([
+    writeRunJson(runId, "render-manifest.json", renderManifest),
+    writeRunJson(runId, "render-edl.json", createRenderEdl(renderManifest)),
+  ]);
   pkg.render_manifest = {
+    edl_path: "render-edl.json",
     path: "render-manifest.json",
     timeline_items: renderManifest.summary.timeline_items,
     ready_timeline_items: renderManifest.summary.ready_timeline_items,

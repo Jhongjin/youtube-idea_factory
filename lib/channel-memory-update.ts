@@ -2,6 +2,14 @@ import { readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage } from "@/lib/runs";
 
 type FeedbackInsightsArtifact = {
+  analytics?: {
+    average_view_percentage?: number | null;
+    impression_click_through_rate?: number | null;
+    top_traffic_sources?: Array<{
+      source_type?: string;
+      views?: number;
+    }>;
+  };
   recommendations?: string[];
   signals?: string[];
   status?: string;
@@ -111,6 +119,17 @@ export async function createChannelMemoryUpdate(runId: string) {
   const hookItems = hookPatterns(pkg, learningLog);
   const carryForward = unique([
     ...(insights?.signals ?? []),
+    insights?.analytics?.impression_click_through_rate !== null &&
+    insights?.analytics?.impression_click_through_rate !== undefined
+      ? `CTR benchmark: ${insights.analytics.impression_click_through_rate}%`
+      : "",
+    insights?.analytics?.average_view_percentage !== null &&
+    insights?.analytics?.average_view_percentage !== undefined
+      ? `Retention benchmark: ${insights.analytics.average_view_percentage}% average viewed`
+      : "",
+    ...(insights?.analytics?.top_traffic_sources ?? [])
+      .slice(0, 2)
+      .map((source) => `Traffic source: ${source.source_type ?? "unknown"} (${source.views ?? 0} views)`),
     ...(pkg.feedback_loop?.view_count ? [`Latest public view count: ${pkg.feedback_loop.view_count}`] : []),
     ...(pkg.brief.category ? [`Category: ${pkg.brief.category}`] : []),
   ]);
@@ -123,6 +142,14 @@ export async function createChannelMemoryUpdate(runId: string) {
     titleItems.length > 1 ? "Compare the strongest two title promises in the next upload." : "",
     thumbnailItems.length > 0 ? "Create one thumbnail variant with clearer focal contrast." : "",
     hookItems.length > 0 ? "Test a tighter first-sentence hook before the next storyboard draft." : "",
+    insights?.analytics?.impression_click_through_rate !== null &&
+    insights?.analytics?.impression_click_through_rate !== undefined
+      ? "Use CTR as the primary title/thumbnail acceptance metric for the next variant."
+      : "",
+    insights?.analytics?.average_view_percentage !== null &&
+    insights?.analytics?.average_view_percentage !== undefined
+      ? "Use average viewed percentage as the primary hook/pacing acceptance metric."
+      : "",
     "Collect at least two performance snapshots before promoting a pattern into global channel memory.",
   ]);
   const update: ChannelMemoryUpdate = {

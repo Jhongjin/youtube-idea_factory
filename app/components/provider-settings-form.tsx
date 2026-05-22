@@ -34,6 +34,10 @@ function looksLikeAutofilledAccount(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value.trim());
 }
 
+function requiresSavedKeyForModelRefresh(provider: string) {
+  return ["anthropic", "google", "openai"].includes(provider.trim().toLowerCase());
+}
+
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
   const router = useRouter();
   const [settings, setSettings] = useState(initialSettings);
@@ -146,25 +150,32 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     setLoadingModelCatalog(key);
     setModelCatalogErrors((current) => ({ ...current, [key]: "" }));
 
-    const response = await fetch("/api/settings/provider-models", {
-      body: JSON.stringify({ profileId, provider, role }),
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-    });
-    const body = (await response.json().catch(() => null)) as
-      | { error?: string; models?: ProviderModelOption[] }
-      | null;
-    if (!response.ok || !body?.models) {
+    try {
+      const response = await fetch("/api/settings/provider-models", {
+        body: JSON.stringify({ profileId, provider, role }),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
+      const body = (await response.json().catch(() => null)) as
+        | { error?: string; models?: ProviderModelOption[] }
+        | null;
+      if (!response.ok || !body?.models) {
+        setModelCatalogErrors((current) => ({
+          ...current,
+          [key]: body?.error ?? "모델 목록을 가져오지 못했습니다. 설정을 저장한 뒤 다시 시도하세요.",
+        }));
+        return;
+      }
+
+      setModelCatalogs((current) => ({ ...current, [key]: body.models ?? [] }));
+    } catch (error) {
       setModelCatalogErrors((current) => ({
         ...current,
-        [key]: body?.error ?? "모델 목록을 가져오지 못했습니다. 설정을 저장한 뒤 다시 시도하세요.",
+        [key]: error instanceof Error ? error.message : "모델 목록 새로고침에 실패했습니다.",
       }));
+    } finally {
       setLoadingModelCatalog("");
-      return;
     }
-
-    setModelCatalogs((current) => ({ ...current, [key]: body.models ?? [] }));
-    setLoadingModelCatalog("");
   }
 
   function ModelField({
@@ -173,9 +184,11 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     placeholder,
     profileId,
     provider,
+    hasSavedApiKey,
     role,
     value,
   }: {
+    hasSavedApiKey: boolean;
     name: string;
     onChange: (value: string) => void;
     placeholder: string;
@@ -189,6 +202,8 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     const supportsLiveRefresh = supportsLiveProviderModelRefresh(provider);
     const canRefresh = supportsLiveRefresh || getStaticProviderModels(role, provider).length > 0;
     const loading = loadingModelCatalog === key;
+    const missingSavedKey =
+      supportsLiveRefresh && requiresSavedKeyForModelRefresh(provider) && !hasSavedApiKey;
     const normalizedValue = looksLikeAutofilledAccount(value) ? "" : value;
     const hasCurrentModel = Boolean(
       normalizedValue && !options.some((model) => model.id === normalizedValue),
@@ -229,9 +244,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
           {canRefresh ? (
             <button
               className="icon-button"
-              disabled={loading}
+              disabled={loading || missingSavedKey}
               onClick={() => refreshModelCatalog(role, provider, profileId)}
-              title={supportsLiveRefresh ? "저장된 API 키로 모델 목록 새로고침" : "내장 모델 목록 다시 불러오기"}
+              title={
+                missingSavedKey
+                  ? "API 키를 저장한 뒤 모델 목록을 새로고침할 수 있습니다"
+                  : supportsLiveRefresh
+                    ? "저장된 API 키로 역할별 모델 목록 새로고침"
+                    : "내장 모델 목록 다시 불러오기"
+              }
               type="button"
             >
               {loading ? <Loader2 className="spin" size={14} /> : <RefreshCw size={14} />}
@@ -239,7 +260,9 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
           ) : null}
         </div>
         <small>
-          {supportsLiveRefresh
+          {missingSavedKey
+            ? "API 키를 먼저 저장하면 이 역할에 맞는 모델만 새로고침합니다."
+            : supportsLiveRefresh
             ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
             : options.length > 0
               ? "제공자별 권장 모델 목록입니다."
@@ -407,6 +430,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       name={`${id}.model`}
                       onChange={(value) => updateRole(id, { model: value })}
                       placeholder="모델명, 음성, 프리셋, 워크플로 ID"
+                      hasSavedApiKey={setting.hasApiKey}
                       provider={setting.provider}
                       role={id}
                       value={setting.model}
@@ -516,6 +540,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               name={`profile.${profile.id}.model`}
                               onChange={(value) => updateProfile(profile.id, { model: value })}
                               placeholder="예: gpt-5.2, kling-2.1, render preset"
+                              hasSavedApiKey={profile.hasApiKey}
                               profileId={profile.id}
                               provider={profile.provider}
                               role={profile.role}

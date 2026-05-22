@@ -110,6 +110,17 @@ function DeploymentStatusPanel({
               <span>{readiness.supabase.providerSettingsEnabled ? "준비됨" : "스키마 필요"}</span>
             </div>
           </div>
+          <div className="deployment-status-card">
+            <RadioTower size={18} />
+            <div>
+              <strong>Supadata 자막</strong>
+              <span>
+                {readiness.providers.subtitles.supadataReady
+                  ? "가져오기 가능"
+                  : readiness.providers.subtitles.message}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="schema-grid" aria-label="Supabase schema tables">
@@ -204,6 +215,16 @@ function DeploymentStatusPanel({
             <ServerCog size={18} />
           </div>
           <div className="worker-readiness-grid">
+            <div className="worker-readiness-card">
+              <div className="worker-readiness-title">
+                <strong>워커 사전 점검</strong>
+                <span className="readiness-chip manual">CLI</span>
+              </div>
+              <code>
+                npm run ops:worker-doctor -- --storage {readiness.runtime.appStorageMode}
+              </code>
+              <p>ffmpeg, Supabase 큐, YouTube OAuth, 채널 업로드 토큰을 한 번에 확인합니다.</p>
+            </div>
             <div className="worker-readiness-card">
               <div className="worker-readiness-title">
                 <strong>ffmpeg 렌더 워커</strong>

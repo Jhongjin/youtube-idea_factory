@@ -595,7 +595,7 @@ function uploadMetadata(job) {
       title: job.metadata.title,
       description: job.metadata.description,
       tags: job.metadata.tags,
-      categoryId: categoryId(job.metadata.category),
+      categoryId: categoryId(job.metadata.category_id || job.metadata.category),
       defaultLanguage: job.metadata.language || undefined,
     },
     status: {

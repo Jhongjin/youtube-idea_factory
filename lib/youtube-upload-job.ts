@@ -3,6 +3,7 @@ import { getYouTubeChannel } from "@/lib/channels";
 import { createPublishingHandoff, type PublishingHandoff } from "@/lib/publishing-handoff";
 import type { ProductionPackage } from "@/lib/runs";
 import { readRunJson, writeRunJson } from "@/lib/run-store";
+import { getAppStorageMode } from "@/lib/storage-mode";
 import { upsertWorkerJobRecord } from "@/lib/worker-job-records";
 
 export type CreateYouTubeUploadJobRequest = {
@@ -44,9 +45,24 @@ export type YouTubeUploadJob = {
     tags: string[];
     language: string;
     category: string;
+    category_id: string;
     privacy_status: "private" | "unlisted" | "public";
     scheduled_at: string;
     made_for_kids: boolean;
+  };
+  preflight: {
+    channel_token_source: "youtube_channels" | "env:YOUTUBE_OAUTH_REFRESH_TOKEN";
+    dry_run_command: string;
+    upload_command: string;
+    checks: {
+      publish_handoff_ready: boolean;
+      publish_approval_recorded: boolean;
+      selected_channel_active: boolean;
+      selected_channel_upload_token: boolean;
+      final_video_path: string;
+      thumbnail_path: string;
+    };
+    notes: string[];
   };
 };
 
@@ -86,6 +102,15 @@ function normalizeScheduledAt(value?: string) {
   return scheduled.toISOString();
 }
 
+function workerCommands(runId: string) {
+  const storageMode = getAppStorageMode();
+  const base = `npm run youtube:upload-worker -- --run-id ${runId} --confirm RUN_YOUTUBE_UPLOAD --storage ${storageMode}`;
+  return {
+    dryRun: `${base} --dry-run`,
+    upload: base,
+  };
+}
+
 export async function createYouTubeUploadJob(
   runId: string,
   request: CreateYouTubeUploadJobRequest,
@@ -107,6 +132,7 @@ export async function createYouTubeUploadJob(
   const now = new Date().toISOString();
   const scheduledAt = normalizeScheduledAt(request.scheduledAt);
   const effectivePrivacyStatus = scheduledAt ? "private" : privacyStatus(request.privacyStatus);
+  const commands = workerCommands(runId);
   const packageChannel = pkg.brief.channel;
   const uploadChannel = packageChannel?.id ? await getYouTubeChannel(packageChannel.id) : null;
   if (packageChannel?.id && !uploadChannel) {
@@ -160,10 +186,30 @@ export async function createYouTubeUploadJob(
       description: handoff.metadata.description,
       tags: handoff.metadata.tags,
       language: handoff.metadata.language,
-      category: handoff.metadata.category,
+      category: handoff.metadata.category_id || handoff.metadata.category,
+      category_id: handoff.metadata.category_id,
       privacy_status: effectivePrivacyStatus,
       scheduled_at: scheduledAt,
       made_for_kids: request.madeForKids ?? false,
+    },
+    preflight: {
+      channel_token_source: uploadChannel ? "youtube_channels" : "env:YOUTUBE_OAUTH_REFRESH_TOKEN",
+      dry_run_command: commands.dryRun,
+      upload_command: commands.upload,
+      checks: {
+        publish_handoff_ready: handoff.summary.ready,
+        publish_approval_recorded: handoff.approvals.publish.approved,
+        selected_channel_active: uploadChannel ? uploadChannel.status === "active" : true,
+        selected_channel_upload_token: uploadChannel ? uploadChannel.has_upload_refresh_token : true,
+        final_video_path: handoff.video.path,
+        thumbnail_path: handoff.thumbnail.path,
+      },
+      notes: [
+        "Run the dry-run command on the worker host before real upload.",
+        scheduledAt
+          ? "Scheduled uploads are sent to YouTube as private first."
+          : "Privacy status is applied exactly as queued.",
+      ],
     },
   };
 
@@ -175,6 +221,9 @@ export async function createYouTubeUploadJob(
     upload_job_path: "youtube-upload-job.json",
     upload_job_status: "queued",
     upload_job_id: job.job_id,
+    upload_channel_name: job.channel?.channel_name ?? "환경변수 fallback",
+    upload_privacy_status: job.metadata.privacy_status,
+    upload_scheduled_at: job.metadata.scheduled_at,
     updated_at: now,
   };
 
@@ -192,10 +241,14 @@ export async function createYouTubeUploadJob(
         channel_name: job.channel?.channel_name ?? "",
         channel_record_id: job.channel?.id ?? "",
         youtube_channel_id: job.channel?.youtube_channel_id ?? "",
+        category_id: job.metadata.category_id,
         made_for_kids: job.metadata.made_for_kids,
         privacy_status: job.metadata.privacy_status,
         scheduled_at: job.metadata.scheduled_at,
+        thumbnail_path: job.thumbnail.path,
         title: job.metadata.title,
+        token_source: job.preflight.channel_token_source,
+        video_path: job.video.path,
       },
       providerRole: "youtube",
       queuedAt: now,

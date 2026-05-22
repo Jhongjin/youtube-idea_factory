@@ -19,6 +19,8 @@ export type SourceVideo = {
   thumbnail_url?: string;
   view_count?: number;
   published_at?: string;
+  analysis_excluded?: boolean;
+  analysis_exclusion_reason?: string;
   inclusion_reason: string;
   transcript_status?: string;
   video_id?: string;
@@ -47,6 +49,8 @@ export type ProductionPackage = {
     language: string;
     region_code?: string;
     source_mode?: string;
+    source_candidate_limit?: number;
+    source_lookback_days?: number;
     tone?: string;
   };
   sources: SourceVideo[];
@@ -76,12 +80,18 @@ export type ProductionPackage = {
     upload_job_path?: string;
     upload_job_status?: "queued" | "running" | "completed" | "failed" | string;
     upload_job_id?: string;
+    upload_channel_name?: string;
+    upload_privacy_status?: string;
+    upload_scheduled_at?: string;
     uploaded_at?: string;
     uploaded_video_id?: string;
     uploaded_video_url?: string;
     updated_at: string;
   };
   feedback_loop?: {
+    analytics_average_view_percentage?: number;
+    analytics_ctr?: number;
+    analytics_top_traffic_source?: string;
     comment_count: number;
     fetched_at: string;
     like_count: number;
@@ -119,6 +129,7 @@ export type ProductionPackage = {
   };
   render_manifest?: {
     path: string;
+    edl_path?: string;
     timeline_items: number;
     ready_timeline_items: number;
     blockers: number;
