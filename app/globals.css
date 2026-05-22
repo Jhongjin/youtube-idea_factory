@@ -3725,6 +3725,48 @@ button:disabled,
   font-weight: 750;
 }
 
+.approval-card-header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.approval-card-header > span {
+  border-radius: 999px;
+  background: rgba(155, 215, 167, 0.14);
+  color: var(--green);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.approval-gate-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.approval-fields {
+  display: grid;
+  gap: 8px;
+}
+
+.approval-fields label {
+  display: grid;
+  gap: 5px;
+}
+
+.approval-fields span {
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .asset-console {
   display: grid;
   gap: 10px;
@@ -8147,6 +8189,49 @@ body {
   border: 1px solid rgba(244, 239, 227, 0.13);
   background: rgba(5, 10, 10, 0.64);
   color: #fbf6e8;
+}
+
+.shell .approval-card {
+  border-color: rgba(244, 239, 227, 0.16);
+  background:
+    linear-gradient(180deg, rgba(244, 239, 227, 0.06), rgba(244, 239, 227, 0.025)),
+    rgba(9, 15, 15, 0.88);
+  color: #fff8ea;
+}
+
+.shell .approval-card .provider-toggle {
+  color: #fff8ea;
+  font-size: 13px;
+}
+
+.shell .approval-card-header > span {
+  background: rgba(155, 215, 167, 0.14);
+  color: #9bd7a7;
+}
+
+.shell .approval-gate-help {
+  color: rgba(244, 239, 227, 0.72);
+}
+
+.shell .approval-fields span,
+.shell .approval-card small {
+  color: #f0c174;
+}
+
+.shell .approval-card input,
+.shell .approval-card textarea {
+  min-width: 0;
+  border-color: rgba(244, 239, 227, 0.18);
+  background: rgba(5, 10, 10, 0.72);
+  color: #fff8ea;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.shell .approval-card input::placeholder,
+.shell .approval-card textarea::placeholder {
+  color: rgba(244, 239, 227, 0.42);
 }
 
 .auth-page .auth-submit {

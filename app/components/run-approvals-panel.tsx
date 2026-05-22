@@ -4,10 +4,22 @@ import { useState } from "react";
 import { CheckCircle2, Loader2, Save, ShieldCheck } from "lucide-react";
 import type { ApprovalGate, RunApprovals } from "@/lib/approvals";
 
-const gates: Array<{ id: ApprovalGate; label: string }> = [
-  { id: "generation", label: "생성" },
-  { id: "render", label: "렌더" },
-  { id: "publish", label: "배포" },
+const gates: Array<{ description: string; id: ApprovalGate; label: string }> = [
+  {
+    description: "이미지, 영상, 음성, 자막, BGM 생성 전에 필요한 승인입니다.",
+    id: "generation",
+    label: "생성",
+  },
+  {
+    description: "최종 영상 조립이나 렌더 비용이 발생하기 전에 필요한 승인입니다.",
+    id: "render",
+    label: "렌더",
+  },
+  {
+    description: "YouTube 업로드, 예약, 공개 전 마지막으로 필요한 승인입니다.",
+    id: "publish",
+    label: "배포",
+  },
 ];
 
 export function RunApprovalsPanel({
@@ -77,25 +89,45 @@ export function RunApprovalsPanel({
             const approval = approvals[gate.id];
             return (
               <div className="approval-card" key={gate.id}>
-                <label className="provider-toggle">
-                  <input
-                    checked={approval.approved}
-                    onChange={(event) => updateGate(gate.id, { approved: event.target.checked })}
-                    type="checkbox"
-                  />
-                  {gate.label}
-                </label>
-                <input
-                  disabled={!approval.approved}
-                  onChange={(event) => updateGate(gate.id, { approved_by: event.target.value })}
-                  placeholder="승인자"
-                  value={approval.approved_by}
-                />
-                <textarea
-                  onChange={(event) => updateGate(gate.id, { notes: event.target.value })}
-                  rows={2}
-                  value={approval.notes}
-                />
+                <div className="approval-card-header">
+                  <label className="provider-toggle">
+                    <input
+                      checked={approval.approved}
+                      onChange={(event) =>
+                        updateGate(gate.id, { approved: event.target.checked })
+                      }
+                      type="checkbox"
+                    />
+                    {gate.label}
+                  </label>
+                  <span>{approval.approved ? "승인됨" : "승인 전"}</span>
+                </div>
+                <p className="approval-gate-help">{gate.description}</p>
+                {approval.approved ? (
+                  <div className="approval-fields">
+                    <label>
+                      <span>승인자</span>
+                      <input
+                        aria-label={`${gate.label} 승인자`}
+                        onChange={(event) =>
+                          updateGate(gate.id, { approved_by: event.target.value })
+                        }
+                        placeholder="이름 또는 이니셜"
+                        value={approval.approved_by}
+                      />
+                    </label>
+                    <label>
+                      <span>승인 메모</span>
+                      <textarea
+                        aria-label={`${gate.label} 승인 메모`}
+                        onChange={(event) => updateGate(gate.id, { notes: event.target.value })}
+                        placeholder="승인 범위, 조건, 주의사항"
+                        rows={3}
+                        value={approval.notes}
+                      />
+                    </label>
+                  </div>
+                ) : null}
                 {approval.approved_at ? <small>{approval.approved_at}</small> : null}
               </div>
             );
