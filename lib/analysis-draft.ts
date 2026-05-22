@@ -1,5 +1,5 @@
-import { readRunFileIfExists, readRunJson, writeRunFile } from "@/lib/run-store";
-import type { SourceVideo } from "@/lib/runs";
+import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
+import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
 export type AnalysisDraftResult = {
   sources: number;
@@ -115,8 +115,21 @@ function claimLedgerRows(claimsBySource: Array<{ source: SourceVideo; claims: st
   return rows.join("\n");
 }
 
+function claimLedgerRecords(claimsBySource: Array<{ source: SourceVideo; claims: string[] }>) {
+  return claimsBySource.flatMap((item) =>
+    item.claims.map((claim) => ({
+      claim,
+      confidence: 0,
+      evidence_url: "",
+      notes: `Verify before script use. Source: ${item.source.url}`,
+      status: "needs_evidence",
+    })),
+  );
+}
+
 export async function createAnalysisDraft(runId: string): Promise<AnalysisDraftResult> {
   assertSafeRunId(runId);
+  const pkg = await readRunJson<ProductionPackage>(runId, "production-package.json");
   const allSources = await readRunJson<Array<SourceVideo & Record<string, unknown>>>(runId, "sources.json");
   const sources = allSources.filter((source) => !source.analysis_excluded);
 
@@ -153,6 +166,7 @@ ${transcriptPairs.map((item) => sourceAnalysisCard(item.source, item.transcript)
     claims: extractClaimCandidates(item.transcript),
   }));
   const claimCount = claimsBySource.reduce((total, item) => total + item.claims.length, 0);
+  const generatedAt = new Date().toISOString();
   const claimMarkdown = `# 03 Claim Ledger
 
 Generated deterministic draft from transcript sentences that look fact-checkable.
@@ -163,10 +177,16 @@ ${claimLedgerRows(claimsBySource)}
 
 Allowed statuses: \`supported\`, \`needs_evidence\`, \`opinion\`, \`high_risk\`, \`do_not_use\`.
 `;
+  pkg.claim_ledger = claimLedgerRecords(claimsBySource);
+  pkg.script_plan = {
+    ...pkg.script_plan,
+    notes: `${pkg.script_plan.notes ?? ""}\nAnalysis draft generated at ${generatedAt} from ${sources.length} included sources and ${transcriptPairs.filter((item) => item.transcript.trim()).length} transcripts. Human review required before using claims in a script.`.trim(),
+  };
 
   await Promise.all([
     writeRunFile(runId, "02-video-analysis.md", analysisMarkdown),
     writeRunFile(runId, "03-claim-ledger.md", claimMarkdown),
+    writeRunJson(runId, "production-package.json", pkg),
   ]);
 
   return {

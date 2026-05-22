@@ -148,8 +148,10 @@ export function getRunNextActionPlan({
     });
   }
 
-  const missingTranscripts = pkg.sources.filter((source) => !hasTranscript(source)).length;
-  if (missingTranscripts > 0 && pkg.claim_ledger.length === 0) {
+  const includedSources = pkg.sources.filter((source) => !source.analysis_excluded);
+  const missingTranscripts = includedSources.filter((source) => !hasTranscript(source)).length;
+  const analysisDraftGenerated = (pkg.script_plan.notes ?? "").includes("Analysis draft generated at");
+  if (missingTranscripts > 0 && pkg.claim_ledger.length === 0 && !analysisDraftGenerated) {
     return step({
       detail: `${missingTranscripts}개 소스의 자막/스크립트가 미확인입니다. 분석 전에 소스 근거를 먼저 보강하세요.`,
       headline: "소스 보강",
