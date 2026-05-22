@@ -1553,6 +1553,15 @@ function WorkflowActionButton({
   }
 }
 
+function sourceHasTranscript(source: RunSummary["package"]["sources"][number]) {
+  return (
+    source.transcript_status === "manual_transcript" ||
+    source.transcript_status === "external_transcript" ||
+    source.transcript_status === "stt_transcript" ||
+    source.transcript_status === "available"
+  );
+}
+
 function AdvancedActionMenu({
   activeStep,
   providerSettings,
@@ -2078,7 +2087,7 @@ function StageFocusPanel({
 }) {
   const sourceCount = run.package.sources.length;
   const missingTranscripts = run.package.sources.filter(
-    (source) => source.transcript_status !== "manual_transcript" && source.transcript_status !== "available",
+    (source) => !source.analysis_excluded && !sourceHasTranscript(source),
   ).length;
   const secondaryActionCount = plan.secondaryActionIds?.length ?? 0;
   const decision = inspectorDecision({ plan, run, validation });

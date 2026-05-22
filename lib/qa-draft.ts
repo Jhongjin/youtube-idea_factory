@@ -57,6 +57,15 @@ function hasText(value: unknown) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function hasTranscript(source: ProductionPackage["sources"][number]) {
+  return (
+    source.transcript_status === "manual_transcript" ||
+    source.transcript_status === "external_transcript" ||
+    source.transcript_status === "stt_transcript" ||
+    source.transcript_status === "available"
+  );
+}
+
 function bulletList(items: string[]) {
   return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : "- None";
 }
@@ -82,7 +91,7 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   const assetManifestItems = pkg.asset_manifest?.items ?? 0;
   const titleCount = pkg.publishing_package.title_candidates?.length ?? 0;
   const missingTranscriptCount = pkg.sources.filter(
-    (source) => source.transcript_status !== "manual_transcript",
+    (source) => !source.analysis_excluded && !hasTranscript(source),
   ).length;
 
   const blockers: string[] = [];
