@@ -518,14 +518,6 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
   return "setup";
 }
 
-function resolveGuidedStep(value: string | undefined, currentStep: GuidedStepKey): GuidedStepKey {
-  const requested = guidedStepDefinitions.find((step) => step.key === value)?.key;
-  if (!requested) {
-    return currentStep;
-  }
-  return guidedStepIndex(requested) <= guidedStepIndex(currentStep) ? requested : currentStep;
-}
-
 const learningStatusCopy: Record<string, string> = {
   draft: "초안",
   needs_metrics: "지표 필요",
@@ -833,14 +825,10 @@ function OperatingChannelBar({
 
 function GuidedStepNav({
   activeStep,
-  channelId,
   currentStep,
-  runId,
 }: {
   activeStep: GuidedStepKey;
-  channelId: string;
   currentStep: GuidedStepKey;
-  runId: string;
 }) {
   const activeIndex = guidedStepIndex(activeStep);
   const currentIndex = guidedStepIndex(currentStep);
@@ -864,20 +852,16 @@ function GuidedStepNav({
                   ? "available"
                   : "pending";
           const label = `${index + 1}단계 ${step.label}`;
-          return state === "pending" ? (
-            <span aria-disabled="true" className={`guided-step-dot ${state}`} key={step.key} title={label}>
-              {index + 1}
-            </span>
-          ) : (
-            <Link
+          return (
+            <span
               aria-current={state === "current" ? "step" : undefined}
+              aria-disabled={state !== "current" ? "true" : undefined}
               className={`guided-step-dot ${state}`}
-              href={dashboardHref({ channelId, runId, step: step.key })}
               key={step.key}
               title={label}
             >
               {index + 1}
-            </Link>
+            </span>
           );
         })}
       </div>
@@ -986,48 +970,10 @@ function GuidedRunWorkspace({
   run: RunSummary;
 }) {
   const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
-  const activeStepIndex = guidedStepDefinitions.findIndex((step) => step.key === activeStep) + 1;
-  const isCurrentStep = activeStep === currentStep;
   return (
     <div className="guided-workspace">
-      <GuidedStepNav
-        activeStep={activeStep}
-        channelId={channelId}
-        currentStep={currentStep}
-        runId={run.id}
-      />
-      {!isCurrentStep ? (
-        <section className="guided-step-intro">
-          <div>
-            <p className="eyebrow">이전 단계</p>
-            <h3>{activeStepIndex}단계: {activeStepCopy.label}</h3>
-            <p>이전 단계의 결과를 보는 화면입니다. 계속 진행하려면 현재 단계로 돌아가세요.</p>
-          </div>
-          <Link
-            className="text-button primary"
-            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
-          >
-            현재 단계로 돌아가기
-          </Link>
-        </section>
-      ) : null}
-      {isCurrentStep ? (
-        <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
-      ) : (
-        <section className="panel guided-step-review">
-          <div>
-            <p className="eyebrow">진행 상태</p>
-            <h3>현재 해야 할 일은 {nextActionPlan.headline}입니다.</h3>
-            <p>{nextActionPlan.detail}</p>
-          </div>
-          <Link
-            className="text-button primary"
-            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
-          >
-            현재 단계 열기
-          </Link>
-        </section>
-      )}
+      <GuidedStepNav activeStep={activeStep} currentStep={currentStep} />
+      <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
 
       {activeStep === "setup" ? (
         <>
@@ -2267,7 +2213,7 @@ export default async function Home({
       : null;
   const selectedChannelId = activeChannelId || runChannelId(activeRun);
   const currentStep = defaultGuidedStep(nextActionPlan);
-  const activeStep = resolveGuidedStep(params.step, currentStep);
+  const activeStep = currentStep;
 
   return (
     <div className="shell">
