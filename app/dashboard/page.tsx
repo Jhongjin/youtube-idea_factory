@@ -2189,26 +2189,50 @@ function Inspector({
           <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
         ) : null}
 
-        {showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
+        {showProviderReadiness ? (
+          <details className="inspector-more">
+            <summary>API 상태 보기</summary>
+            <div className="detail-stack">
+              <ProviderReadinessPanel providerSettings={providerSettings} />
+            </div>
+          </details>
+        ) : null}
 
         {showGeneration ? (
-          <GenerationConsolePanel
-            generationState={generationState}
-            providerSettings={providerSettings}
-            run={run}
-          />
+          <details className="inspector-more">
+            <summary>생성 버튼과 API 설정</summary>
+            <div className="detail-stack">
+              <GenerationConsolePanel
+                generationState={generationState}
+                providerSettings={providerSettings}
+                run={run}
+              />
+            </div>
+          </details>
         ) : null}
 
         {showAssembly ? (
-          <AssemblyPanel
-            providerSettings={providerSettings}
-            run={run}
-            storageMode={storageMode}
-            workerStatus={workerStatus}
-          />
+          <details className="inspector-more">
+            <summary>영상 조립 상태 보기</summary>
+            <div className="detail-stack">
+              <AssemblyPanel
+                providerSettings={providerSettings}
+                run={run}
+                storageMode={storageMode}
+                workerStatus={workerStatus}
+              />
+            </div>
+          </details>
         ) : null}
 
-        {showFeedback ? <FeedbackPanel run={run} /> : null}
+        {showFeedback ? (
+          <details className="inspector-more">
+            <summary>성과 확인 도구 보기</summary>
+            <div className="detail-stack">
+              <FeedbackPanel run={run} />
+            </div>
+          </details>
+        ) : null}
 
         <details className="inspector-more">
           <summary>고급 정보</summary>
