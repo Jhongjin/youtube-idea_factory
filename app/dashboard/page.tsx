@@ -100,9 +100,9 @@ const skillLabels: Record<string, string> = {
 
 const statusCopy = {
   done: "완료",
-  review: "검토",
-  blocked: "차단",
-  pending: "대기",
+  review: "확인",
+  blocked: "막힘",
+  pending: "할 일",
 };
 
 const qaStatusCopy: Record<string, string> = {
@@ -212,8 +212,8 @@ const actionGuides: Partial<
     title: "LLM 전략 추천",
   },
   "asset-manifest": {
-    goal: "장면별 이미지, 영상, 음성, 자막, 썸네일 자산 목록을 잠급니다.",
-    output: "미디어 만들기 단계의 자산 매니페스트와 생성 큐가 열립니다.",
+    goal: "장면별로 필요한 이미지, 영상, 음성, 자막, 썸네일 목록을 만듭니다.",
+    output: "미디어 만들기 단계에서 만들 자산 목록을 확인할 수 있습니다.",
     title: "자산 목록 만들기",
   },
   "channel-memory": {
@@ -237,9 +237,9 @@ const actionGuides: Partial<
     title: "성과 인사이트",
   },
   "generation-queue": {
-    goal: "승인과 provider 설정을 기준으로 생성 가능한 항목을 나눕니다.",
-    output: "직접 생성, 수동 전달, 차단 항목이 생성 콘솔에 표시됩니다.",
-    title: "생성 큐 준비",
+    goal: "승인과 API 설정을 확인해 바로 만들 수 있는 자산을 나눕니다.",
+    output: "만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
+    title: "만들 자산 정리",
   },
   "learning-log": {
     goal: "A/B 결과와 운영 판단을 다음 run에 재사용할 로그로 남깁니다.",
@@ -302,7 +302,7 @@ const actionGuides: Partial<
     title: "대본 고도화",
   },
   "source-enrich": {
-    caution: "자막은 자동 확보가 되지 않을 수 있어 아래 스크립트 슬롯에 직접 붙여넣어야 합니다.",
+    caution: "자막을 못 가져오면 아래 스크립트 슬롯에 직접 붙여넣으면 됩니다.",
     goal: "YouTube 후보 영상의 제목, 채널, 썸네일 같은 기본 정보를 다시 확인합니다.",
     output: "소스 영상 표와 01-research.md가 갱신됩니다.",
     title: "소스 정보 보강",
@@ -413,6 +413,9 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
   if (
     plan.primaryActionId === "script-draft" ||
     plan.primaryActionId === "script-refine" ||
+    plan.primaryActionId === "script-pattern-analysis" ||
+    plan.primaryActionId === "strategy-recommendations" ||
+    plan.stageLabel === "대본 전략" ||
     plan.stageLabel === "대본"
   ) {
     return 4;
@@ -426,6 +429,7 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
     plan.primaryActionId === "generation-queue" ||
     plan.primaryActionId === "subtitle-draft" ||
     plan.stageLabel === "미디어 설계" ||
+    plan.stageLabel === "미디어 준비" ||
     plan.stageLabel === "자산 구성" ||
     plan.stageLabel === "자산 생성" ||
     plan.stageLabel === "생성 승인"
@@ -470,10 +474,13 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.primaryActionId === "analysis-draft" ||
     plan.primaryActionId === "analysis-refine" ||
     plan.primaryActionId === "draft-flow" ||
+    plan.primaryActionId === "script-pattern-analysis" ||
+    plan.primaryActionId === "strategy-recommendations" ||
     plan.primaryActionId === "script-draft" ||
     plan.primaryActionId === "script-refine" ||
     plan.primaryActionId === "storyboard-draft" ||
     plan.stageLabel === "영상 분석" ||
+    plan.stageLabel === "대본 전략" ||
     plan.stageLabel === "대본" ||
     plan.stageLabel === "스토리보드"
   ) {
@@ -485,6 +492,7 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.primaryActionId === "generation-queue" ||
     plan.primaryActionId === "subtitle-draft" ||
     plan.stageLabel === "미디어 설계" ||
+    plan.stageLabel === "미디어 준비" ||
     plan.stageLabel === "자산 구성" ||
     plan.stageLabel === "자산 생성" ||
     plan.stageLabel === "생성 승인"
@@ -836,46 +844,43 @@ function GuidedStepNav({
 }) {
   const activeIndex = guidedStepIndex(activeStep);
   const currentIndex = guidedStepIndex(currentStep);
+  const activeStepCopy = guidedStepDefinitions[activeIndex] ?? guidedStepDefinitions[0];
   return (
     <nav className="guided-step-nav" aria-label="제작 단계">
-      {guidedStepDefinitions.map((step, index) => {
-        const state =
-          index === activeIndex
-            ? "current"
-            : index < currentIndex
-              ? "done"
-              : index === currentIndex
-                ? "available"
-                : "pending";
-        const stepBody = (
-          <>
-            <span>{String(index + 1).padStart(2, "0")}</span>
-            <strong>{step.label}</strong>
-            {state === "current" ? <em>지금</em> : null}
-            {state === "available" ? <em>다음</em> : null}
-            {state === "pending" ? <em>잠김</em> : null}
-            <small>{step.description}</small>
-          </>
-        );
-        return state === "pending" ? (
-          <span
-            aria-disabled="true"
-            className={`guided-step ${state}`}
-            key={step.key}
-          >
-            {stepBody}
-          </span>
-        ) : (
-          <Link
-            aria-current={state === "current" ? "step" : undefined}
-            className={`guided-step ${state}`}
-            href={dashboardHref({ channelId, runId, step: step.key })}
-            key={step.key}
-          >
-            {stepBody}
-          </Link>
-        );
-      })}
+      <div className="guided-step-current">
+        <span>현재 단계</span>
+        <strong>
+          {activeIndex + 1}단계 · {activeStepCopy.label}
+        </strong>
+      </div>
+      <div className="guided-step-dots" aria-label="전체 단계">
+        {guidedStepDefinitions.map((step, index) => {
+          const state =
+            index === activeIndex
+              ? "current"
+              : index < currentIndex
+                ? "done"
+                : index === currentIndex
+                  ? "available"
+                  : "pending";
+          const label = `${index + 1}단계 ${step.label}`;
+          return state === "pending" ? (
+            <span aria-disabled="true" className={`guided-step-dot ${state}`} key={step.key} title={label}>
+              {index + 1}
+            </span>
+          ) : (
+            <Link
+              aria-current={state === "current" ? "step" : undefined}
+              className={`guided-step-dot ${state}`}
+              href={dashboardHref({ channelId, runId, step: step.key })}
+              key={step.key}
+              title={label}
+            >
+              {index + 1}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
@@ -892,25 +897,26 @@ function GuidedActionPanel({
   const visibleActions = Array.from(
     new Set([plan.primaryActionId, ...(plan.secondaryActionIds ?? [])].filter(Boolean)),
   ) as RunPrimaryActionId[];
+  const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
   return (
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
         <div>
-          <p className="eyebrow">지금 누를 버튼</p>
+          <p className="eyebrow">이번 단계</p>
           <h3>{plan.headline}</h3>
-          <p>{plan.detail}</p>
+          <p>{currentGuide?.goal ?? plan.detail}</p>
         </div>
         <StatusPill status={plan.status} />
       </div>
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>지금 할 일</span>
-            <strong>{plan.headline}</strong>
+            <span>{plan.primaryActionId ? "누르면 생기는 것" : "먼저 확인할 것"}</span>
+            <strong>{currentGuide?.output ?? "확인이 끝나면 다음 버튼이 열립니다."}</strong>
             <small>
               {plan.primaryActionId
-                ? "이 화면에서는 이 큰 버튼 하나만 먼저 보면 됩니다."
-                : "승인 또는 확인이 끝나야 다음 버튼이 열립니다."}
+                ? "아래 버튼 하나만 누르면 됩니다."
+                : "승인이나 수동 확인이 필요한 단계입니다."}
             </small>
           </div>
           {plan.primaryActionId ? (
@@ -922,56 +928,29 @@ function GuidedActionPanel({
               />
             </div>
           ) : (
-          <p className="next-action-note">승인 게이트 확인 필요</p>
-        )}
-      </div>
-      </div>
-      {visibleActions.length > 0 ? (
-        <div className="guided-tool-map" aria-label="현재 단계 기능 안내">
-          <div className="guided-tool-map-header">
-            <div>
-              <p className="eyebrow">단계 안의 기능</p>
-              <strong>버튼을 누르면 무엇이 바뀌는지 먼저 보여줍니다.</strong>
-            </div>
-            <span>{visibleActions.length}개 기능</span>
-          </div>
-          <div className="guided-tool-grid">
-            {visibleActions.map((actionId, index) => {
-              const guide = actionGuides[actionId] ?? {
-                goal: "현재 제작 패키지의 다음 산출물을 준비합니다.",
-                output: "완료 후 해당 단계의 산출물 패널에서 확인합니다.",
-                title: plan.headline,
-              };
-              const isPrimary = actionId === plan.primaryActionId;
-              return (
-                <article
-                  className={`guided-tool-card ${isPrimary ? "primary" : ""}`}
-                  key={actionId}
-                >
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <strong>{guide.title}</strong>
-                    <p>{guide.goal}</p>
-                    <small>{guide.output}</small>
-                    {guide.caution ? <small className="warning">{guide.caution}</small> : null}
-                  </div>
-                  {isPrimary ? (
-                    <em>위의 큰 버튼</em>
-                  ) : (
-                    <WorkflowActionButton
-                      actionId={actionId}
-                      providerSettings={providerSettings}
-                      run={run}
-                    />
-                  )}
-                </article>
-              );
-            })}
-          </div>
+            <p className="next-action-note">오른쪽 승인 카드에서 확인을 저장하세요.</p>
+          )}
         </div>
+      </div>
+      {visibleActions.length > 1 ? (
+        <details className="guided-checklist">
+          <summary>다른 도구 보기</summary>
+          <div className="guided-secondary-tool-list">
+            {visibleActions
+              .filter((actionId) => actionId !== plan.primaryActionId)
+              .map((actionId) => (
+                <WorkflowActionButton
+                  actionId={actionId}
+                  providerSettings={providerSettings}
+                  run={run}
+                  key={actionId}
+                />
+              ))}
+          </div>
+        </details>
       ) : null}
       <details className="guided-checklist">
-        <summary>왜 이 버튼을 눌러야 하나요?</summary>
+        <summary>작업 기준 보기</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -985,9 +964,6 @@ function GuidedActionPanel({
           ))}
         </div>
       </details>
-      <p className="guided-location-note">
-        편집 provider, 이미지/영상/TTS 생성 메뉴는 해당 단계가 열릴 때만 표시됩니다. 지금 단계에서는 숨겨두고 현재 버튼만 보여줍니다.
-      </p>
     </section>
   );
 }
@@ -1020,27 +996,21 @@ function GuidedRunWorkspace({
         currentStep={currentStep}
         runId={run.id}
       />
-      <section className="guided-step-intro">
-        <div>
-          <p className="eyebrow">{isCurrentStep ? "처음이면 여기부터" : "이전 단계 다시 보기"}</p>
-          <h3>{activeStepIndex}단계: {activeStepCopy.label}</h3>
-          <p>
-            {isCurrentStep
-              ? "아래의 큰 버튼이 이 제작 실행에서 지금 눌러야 할 작업입니다. 다른 메뉴는 이 단계가 끝난 뒤 필요할 때만 열립니다."
-              : "이전 단계의 입력값과 산출물을 확인하는 화면입니다. 수정이 필요하면 이곳에서 확인하고, 진행은 현재 단계로 돌아가면 됩니다."}
-          </p>
-        </div>
-        {isCurrentStep ? (
-          <a className="text-button primary" href="#next-action">지금 할 일 보기</a>
-        ) : (
+      {!isCurrentStep ? (
+        <section className="guided-step-intro">
+          <div>
+            <p className="eyebrow">이전 단계</p>
+            <h3>{activeStepIndex}단계: {activeStepCopy.label}</h3>
+            <p>이전 단계의 결과를 보는 화면입니다. 계속 진행하려면 현재 단계로 돌아가세요.</p>
+          </div>
           <Link
             className="text-button primary"
             href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
           >
             현재 단계로 돌아가기
           </Link>
-        )}
-      </section>
+        </section>
+      ) : null}
       {isCurrentStep ? (
         <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
       ) : (
@@ -2085,14 +2055,11 @@ function StageFocusPanel({
   const missingTranscripts = run.package.sources.filter(
     (source) => !source.analysis_excluded && !sourceHasTranscript(source),
   ).length;
-  const secondaryActionCount = plan.secondaryActionIds?.length ?? 0;
   const decision = inspectorDecision({ plan, run, validation });
   const gate = activeApprovalGate(plan);
   const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
     (approvalGate) => !approvalReady(approvals[approvalGate]),
   ).length;
-  const visibleItems = plan.items.slice(0, 2);
-  const hiddenItemCount = Math.max(0, plan.items.length - visibleItems.length);
   return (
     <section className={`panel focus-inspector-panel ${decision.tone}`}>
       <div className="panel-header">
@@ -2106,12 +2073,12 @@ function StageFocusPanel({
       </div>
       <div className="panel-body">
         <div className="inspector-decision">
-          <span>진행 판단</span>
+          <span>상태</span>
           <strong>{decision.label}</strong>
           <p>{decision.detail}</p>
         </div>
         <div className="stage-focus-summary">
-          <span>다음 작업</span>
+          <span>지금 할 일</span>
           <strong>{plan.headline}</strong>
           <p>{plan.detail}</p>
         </div>
@@ -2122,54 +2089,48 @@ function StageFocusPanel({
             <p>{openApprovalCount}개 게이트가 아직 열려 있습니다.</p>
           </div>
         ) : null}
-        <div className="stage-focus-actions read-only">
-          {plan.primaryActionId ? (
-            <div className="stage-focus-guidance">
-              <strong>실행은 중앙 단계 카드에서 진행하세요.</strong>
-              <p>오른쪽 패널은 현재 판단, 승인 상태, 필요한 확인만 보여줍니다.</p>
-              {secondaryActionCount > 0 ? <span>보조 도구 {secondaryActionCount}개는 중앙 카드에 있습니다.</span> : null}
+        <details className="stage-focus-details">
+          <summary>세부 확인</summary>
+          <div className="stage-focus-inputs compact">
+            <div className="stage-focus-inputs-header">
+              <p>확인할 항목</p>
+              <span>{plan.items.length}개</span>
             </div>
-          ) : (
-            <p className="stage-focus-note">승인, 수동 등록, 또는 워커 실행처럼 버튼 밖의 확인이 필요한 단계입니다.</p>
-          )}
-        </div>
-        <div className="stage-focus-inputs">
-          <div className="stage-focus-inputs-header">
-            <p>필요한 확인</p>
-            <span>{plan.items.length}개</span>
-          </div>
-          {visibleItems.map((item) => (
-            <div className="stage-focus-input" key={`${item.title}-${item.detail}`}>
-              <div>
-                <strong>{item.title}</strong>
-                <span>{item.detail}</span>
-                {item.command ? <code>{item.command}</code> : null}
+            {plan.items.map((item) => (
+              <div className="stage-focus-input" key={`${item.title}-${item.detail}`}>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                  {item.command ? <code>{item.command}</code> : null}
+                </div>
+                <StatusPill status={item.status} />
               </div>
-              <StatusPill status={item.status} />
+            ))}
+          </div>
+          <div className="stage-focus-checks compact">
+            <div>
+              <span>소스</span>
+              <strong>{sourceCount}</strong>
             </div>
-          ))}
-          {hiddenItemCount > 0 ? (
-            <span className="stage-focus-hidden-count">추가 확인 {hiddenItemCount}개는 중앙 다음 작업 카드에서 확인하세요.</span>
-          ) : null}
-        </div>
-        <div className="stage-focus-checks">
-          <div>
-            <span>소스</span>
-            <strong>{sourceCount}</strong>
+            <div>
+              <span>미확인 스크립트</span>
+              <strong>{missingTranscripts}</strong>
+            </div>
+            <div>
+              <span>클레임</span>
+              <strong>{run.package.claim_ledger.length}</strong>
+            </div>
+            <div>
+              <span>씬</span>
+              <strong>{run.package.storyboard.length}</strong>
+            </div>
           </div>
-          <div>
-            <span>미확인 스크립트</span>
-            <strong>{missingTranscripts}</strong>
-          </div>
-          <div>
-            <span>클레임</span>
-            <strong>{run.package.claim_ledger.length}</strong>
-          </div>
-          <div>
-            <span>씬</span>
-            <strong>{run.package.storyboard.length}</strong>
-          </div>
-        </div>
+        </details>
+        {plan.primaryActionId ? (
+          <p className="stage-focus-note">실행 버튼은 중앙 카드에 있습니다.</p>
+        ) : (
+          <p className="stage-focus-note">승인이나 수동 확인이 필요한 단계입니다.</p>
+        )}
       </div>
     </section>
   );
@@ -2200,8 +2161,7 @@ function Inspector({
 }) {
   const stage = nextActionPlan.stageLabel;
   const showApprovals = nextActionPlan.headline.includes("승인");
-  const showGeneration =
-    stage === "생성 승인" || stage === "자산 구성" || stage === "자산 생성";
+  const showGeneration = stage === "자산 생성";
   const showAssembly = stage === "렌더" || stage === "배포";
   const showFeedback = stage === "피드백";
   const showProviderReadiness = showGeneration || nextActionPlan.primaryActionId === "open-settings";

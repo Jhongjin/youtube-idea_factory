@@ -684,10 +684,69 @@ button:disabled,
 }
 
 .guided-step-nav {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(244, 239, 227, 0.04);
+  padding: 10px 12px;
   margin-bottom: 2px;
+}
+
+.guided-step-current {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.guided-step-current span {
+  color: var(--amber);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.guided-step-current strong {
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.guided-step-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.guided-step-dot {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(244, 239, 227, 0.07);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.guided-step-dot.current {
+  border-color: rgba(155, 215, 167, 0.58);
+  background: rgba(155, 215, 167, 0.16);
+  color: #172019;
+}
+
+.guided-step-dot.done,
+.guided-step-dot.available {
+  color: var(--ink);
+}
+
+.guided-step-dot.pending {
+  opacity: 0.45;
 }
 
 .guided-step {
@@ -1078,6 +1137,7 @@ button:disabled,
 
 .guided-secondary-actions > div,
 .guided-checklist > .next-action-list,
+.guided-checklist > .guided-secondary-tool-list,
 .guided-secondary-panel > div,
 .guided-secondary-panel > .workspace-grid,
 .guided-secondary-panel > .panel {
@@ -1089,6 +1149,16 @@ button:disabled,
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.guided-secondary-tool-list {
+  display: grid;
+  gap: 8px;
+}
+
+.guided-secondary-tool-list .text-button {
+  width: 100%;
+  justify-content: center;
 }
 
 .next-action-item {
@@ -2437,6 +2507,36 @@ button:disabled,
   color: #182235;
   font-size: 17px;
   font-variant-numeric: tabular-nums;
+}
+
+.stage-focus-details {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+
+.stage-focus-details summary {
+  cursor: pointer;
+  list-style: none;
+  color: #455366;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.stage-focus-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.stage-focus-details[open] summary {
+  margin-bottom: 8px;
+}
+
+.stage-focus-inputs.compact {
+  border-bottom: 0;
+  padding: 0;
+}
+
+.stage-focus-checks.compact {
+  padding-top: 8px;
 }
 
 .inspector-more {
@@ -4799,11 +4899,13 @@ button:disabled,
   }
 
   .guided-step-nav {
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(170px, 1fr);
-    grid-template-columns: none;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    align-items: stretch;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .guided-step-dots {
+    justify-content: flex-start;
   }
 
   .advanced-action-menu {
@@ -7927,6 +8029,7 @@ body {
 .panel-header,
 .guided-secondary-actions > div,
 .guided-checklist > .next-action-list,
+.guided-checklist > .guided-secondary-tool-list,
 .guided-secondary-panel > div,
 .guided-secondary-panel > .workspace-grid,
 .guided-secondary-panel > .panel,
@@ -7947,6 +8050,7 @@ body {
 .operating-channel-switcher,
 .operating-channel-option,
 .operating-focus-step,
+.guided-step-nav,
 .guided-step,
 .stage-row,
 .inspector-decision,
@@ -7977,6 +8081,7 @@ body {
 .operating-channel-switcher summary span,
 .operating-channel-option strong,
 .operating-focus-step strong,
+.guided-step-current strong,
 .guided-step strong,
 .stage-row-action > span,
 .provider-config-details summary span,
@@ -8000,6 +8105,7 @@ body {
 
 .operating-channel-option:hover,
 .operating-focus-step:hover,
+.guided-step-dot:hover,
 .guided-step:hover,
 .stage-row:hover {
   border-color: rgba(155, 215, 167, 0.42);
@@ -8008,6 +8114,7 @@ body {
 
 .operating-channel-option.active,
 .operating-focus-step.current,
+.guided-step-dot.current,
 .guided-step.current,
 .stage-row.current {
   border-color: rgba(155, 215, 167, 0.58);
@@ -9038,6 +9145,7 @@ body {
 
 .inspector-decision span,
 .stage-focus-summary > span,
+.stage-focus-details summary,
 .stage-focus-inputs-header p,
 .stage-focus-inputs-header span,
 .stage-focus-checks span {

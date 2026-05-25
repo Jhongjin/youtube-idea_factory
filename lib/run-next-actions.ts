@@ -348,31 +348,31 @@ export function getRunNextActionPlan({
 
   if (!generationState.manifestExists || !pkg.asset_manifest) {
     return step({
-      detail: "스토리보드와 미디어 프롬프트를 생성 가능한 자산 목록으로 변환합니다.",
-      headline: "자산 매니페스트 생성",
+      detail: "스토리보드와 프롬프트를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
+      headline: "자산 목록 만들기",
       items: [
         {
-          detail: "상단의 자산 버튼으로 image, video, voice, subtitle, thumbnail 항목을 정리하세요.",
+          detail: "버튼을 누르면 장면별로 필요한 자산이 정리됩니다.",
           status: "pending",
-          title: "자산 목록",
+          title: "필요한 자산",
         },
       ],
       primaryActionId: "asset-manifest",
       stageIndex: 9,
-      stageLabel: "자산 구성",
+      stageLabel: "미디어 준비",
       status: "pending",
     });
   }
 
   if (!approvalReady(approvals.generation)) {
     return step({
-      detail: "이미지, 영상, TTS, 자막, BGM 생성 전에 generation 승인이 필요합니다.",
+      detail: "이미지, 영상, 음성을 만들기 전에 사람의 승인이 필요합니다.",
       headline: "생성 승인",
       items: [
         {
-          detail: "오른쪽 승인 게이트에서 generation을 승인하고 승인자를 남기세요.",
+          detail: "오른쪽 승인 카드에서 생성 승인을 저장하세요.",
           status: "review",
-          title: "승인 게이트",
+          title: "생성 승인",
         },
       ],
       primaryActionId: undefined,
@@ -384,26 +384,26 @@ export function getRunNextActionPlan({
 
   if (!generationState.queueExists) {
     return step({
-      detail: "승인, 제공자 설정, 프롬프트 상태를 반영해 실제 생성 가능한 항목을 나눕니다.",
-      headline: "생성 대기열 준비",
+      detail: "승인과 API 설정을 확인해서 바로 만들 수 있는 자산과 막힌 자산을 나눕니다.",
+      headline: "만들 자산 정리하기",
       items: [
         {
-          detail: "상단의 생성 대기열 버튼으로 ready, blocked, skipped 항목을 확정하세요.",
+          detail: "버튼을 누르면 만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
           status: "pending",
-          title: "대기열 프리플라이트",
+          title: "생성 목록",
         },
       ],
       primaryActionId: "generation-queue",
       stageIndex: 9,
-      stageLabel: "자산 구성",
+      stageLabel: "미디어 준비",
       status: "pending",
     });
   }
 
   if ((generationState.summary?.blocked ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.blocked ?? 0}개 생성 항목이 제공자 설정, 승인, 프롬프트 문제로 막혀 있습니다.`,
-      headline: "생성 대기열 차단 해소",
+      detail: `${generationState.summary?.blocked ?? 0}개 자산이 API 설정이나 프롬프트 문제로 막혀 있습니다.`,
+      headline: "막힌 자산 확인하기",
       items: generationState.items
         .filter((item) => item.blockers.length > 0)
         .slice(0, 3)
@@ -414,18 +414,18 @@ export function getRunNextActionPlan({
         })),
       primaryActionId: "open-settings",
       stageIndex: 9,
-      stageLabel: "자산 구성",
+      stageLabel: "미디어 준비",
       status: "blocked",
     });
   }
 
   if ((generationState.summary?.ready ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.ready ?? 0}개 자산이 생성 또는 수동 등록을 기다립니다.`,
-      headline: "자산 생성",
+      detail: `${generationState.summary?.ready ?? 0}개 자산을 만들거나 수동으로 등록할 수 있습니다.`,
+      headline: "자산 만들기",
       items: [
         {
-          detail: "생성 콘솔에서 직접 생성하거나 수동 핸드오프 후 결과 파일을 등록하세요.",
+          detail: "오른쪽 생성 콘솔에서 직접 만들거나, 수동으로 만든 파일을 등록하세요.",
           status: "pending",
           title: "미디어 자산",
         },
