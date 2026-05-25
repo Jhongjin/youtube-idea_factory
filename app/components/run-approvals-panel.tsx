@@ -6,17 +6,17 @@ import type { ApprovalGate, RunApprovals } from "@/lib/approvals";
 
 const gates: Array<{ description: string; id: ApprovalGate; label: string }> = [
   {
-    description: "이미지, 영상, 음성, 자막, BGM 생성 전에 필요한 승인입니다.",
+    description: "이미지, 영상, 음성 등을 만들기 전에 확인합니다.",
     id: "generation",
     label: "생성",
   },
   {
-    description: "최종 영상 조립이나 렌더 비용이 발생하기 전에 필요한 승인입니다.",
+    description: "최종 영상 조립이나 렌더 비용 전에 확인합니다.",
     id: "render",
     label: "렌더",
   },
   {
-    description: "YouTube 업로드, 예약, 공개 전 마지막으로 필요한 승인입니다.",
+    description: "YouTube 업로드, 예약, 공개 전에 확인합니다.",
     id: "publish",
     label: "배포",
   },
@@ -88,9 +88,9 @@ export function RunApprovalsPanel({
           {gates.map((gate) => {
             const approval = approvals[gate.id];
             return (
-              <div className="approval-card" key={gate.id}>
+              <div className={`approval-card ${approval.approved ? "approved" : "pending"}`} key={gate.id}>
                 <div className="approval-card-header">
-                  <label className="provider-toggle">
+                  <label className="approval-toggle">
                     <input
                       checked={approval.approved}
                       onChange={(event) =>
@@ -98,11 +98,13 @@ export function RunApprovalsPanel({
                       }
                       type="checkbox"
                     />
-                    {gate.label}
+                    <span>
+                      <strong>{gate.label}</strong>
+                      <small>{gate.description}</small>
+                    </span>
                   </label>
-                  <span>{approval.approved ? "승인됨" : "승인 전"}</span>
+                  <span>{approval.approved ? "승인됨" : "대기"}</span>
                 </div>
-                <p className="approval-gate-help">{gate.description}</p>
                 {approval.approved ? (
                   <div className="approval-fields">
                     <label>
@@ -112,7 +114,7 @@ export function RunApprovalsPanel({
                         onChange={(event) =>
                           updateGate(gate.id, { approved_by: event.target.value })
                         }
-                        placeholder="이름 또는 이니셜"
+                        placeholder="예: JJ"
                         value={approval.approved_by}
                       />
                     </label>
@@ -121,14 +123,14 @@ export function RunApprovalsPanel({
                       <textarea
                         aria-label={`${gate.label} 승인 메모`}
                         onChange={(event) => updateGate(gate.id, { notes: event.target.value })}
-                        placeholder="승인 범위, 조건, 주의사항"
+                        placeholder="승인 범위나 조건을 짧게 적어주세요."
                         rows={3}
                         value={approval.notes}
                       />
                     </label>
                   </div>
                 ) : null}
-                {approval.approved_at ? <small>{approval.approved_at}</small> : null}
+                {approval.approved_at ? <small className="approval-timestamp">{approval.approved_at}</small> : null}
               </div>
             );
           })}
