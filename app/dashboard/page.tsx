@@ -756,7 +756,7 @@ function OperatingChannelBar({
   return (
     <section className="operating-channel-bar" aria-label="운영 채널 선택">
       <div className="operating-channel-primary">
-        <p className="eyebrow">작업 기준</p>
+        <p className="eyebrow">운영 채널</p>
         <h2>{selectedChannel ? selectedChannel.brand_name : "전체 실행"}</h2>
         <span>{selectedChannelLabel}</span>
       </div>
@@ -836,9 +836,11 @@ function GuidedStepNav({
   return (
     <nav className="guided-step-nav" aria-label="제작 단계">
       <div className="guided-step-current">
-        <span>현재 단계</span>
+        <span>
+          {activeIndex + 1}/{guidedStepDefinitions.length}
+        </span>
         <strong>
-          {activeIndex + 1}단계 · {activeStepCopy.label}
+          지금은 {activeStepCopy.label} 단계입니다.
         </strong>
       </div>
       <div className="guided-step-dots" aria-label="전체 단계">
@@ -886,7 +888,7 @@ function GuidedActionPanel({
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
         <div>
-          <p className="eyebrow">이번 단계</p>
+          <p className="eyebrow">지금 할 일</p>
           <h3>{plan.headline}</h3>
           <p>{currentGuide?.goal ?? plan.detail}</p>
         </div>
@@ -895,11 +897,11 @@ function GuidedActionPanel({
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "누르면 생기는 것" : "먼저 확인할 것"}</span>
+            <span>{plan.primaryActionId ? "완료되면" : "먼저 확인할 것"}</span>
             <strong>{currentGuide?.output ?? "확인이 끝나면 다음 버튼이 열립니다."}</strong>
             <small>
               {plan.primaryActionId
-                ? "아래 버튼 하나만 누르면 됩니다."
+                ? "오른쪽 버튼 하나만 누르면 됩니다."
                 : "승인이나 수동 확인이 필요한 단계입니다."}
             </small>
           </div>
