@@ -22,6 +22,27 @@ const gates: Array<{ description: string; id: ApprovalGate; label: string }> = [
   },
 ];
 
+const legacyApprovalNotes: Record<string, string> = {
+  "Required before paid image, video, TTS, subtitle, or BGM generation.":
+    "이미지, 영상, 음성, 자막, BGM을 만들기 전에 필요한 승인입니다.",
+  "Required before final video assembly or render spend.":
+    "최종 영상 조립이나 렌더 비용을 쓰기 전에 필요한 승인입니다.",
+  "Required before YouTube upload, scheduling, or public publishing.":
+    "YouTube 업로드, 예약 공개, 게시 전에 필요한 승인입니다.",
+};
+
+function normalizeApprovalCopy(approvals: RunApprovals): RunApprovals {
+  return Object.fromEntries(
+    Object.entries(approvals).map(([gate, approval]) => [
+      gate,
+      {
+        ...approval,
+        notes: legacyApprovalNotes[approval.notes] ?? approval.notes,
+      },
+    ]),
+  ) as RunApprovals;
+}
+
 function formatApprovedAt(value: string) {
   if (!value) {
     return "";
@@ -43,7 +64,7 @@ export function RunApprovalsPanel({
   initialApprovals: RunApprovals;
   runId: string;
 }) {
-  const [approvals, setApprovals] = useState(initialApprovals);
+  const [approvals, setApprovals] = useState(() => normalizeApprovalCopy(initialApprovals));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -86,7 +107,7 @@ export function RunApprovalsPanel({
     }
 
     const body = (await response.json()) as { approvals: RunApprovals };
-    setApprovals(body.approvals);
+    setApprovals(normalizeApprovalCopy(body.approvals));
     setSaving(false);
     setSaved(true);
   }

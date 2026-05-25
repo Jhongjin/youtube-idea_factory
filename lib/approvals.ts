@@ -33,19 +33,19 @@ const approvalDefaults: RunApprovals = {
     approved: false,
     approved_by: "",
     approved_at: "",
-    notes: "Required before paid image, video, TTS, subtitle, or BGM generation.",
+    notes: "이미지, 영상, 음성, 자막, BGM을 만들기 전에 필요한 승인입니다.",
   },
   render: {
     approved: false,
     approved_by: "",
     approved_at: "",
-    notes: "Required before final video assembly or render spend.",
+    notes: "최종 영상 조립이나 렌더 비용을 쓰기 전에 필요한 승인입니다.",
   },
   publish: {
     approved: false,
     approved_by: "",
     approved_at: "",
-    notes: "Required before YouTube upload, scheduling, or public publishing.",
+    notes: "YouTube 업로드, 예약 공개, 게시 전에 필요한 승인입니다.",
   },
 };
 

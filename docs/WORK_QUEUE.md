@@ -64,6 +64,7 @@ This queue keeps the build loop explicit:
 | artifact-current-step-filter | Phase 7 | done | codex | no | Artifact preview ignores stale URL hashes from earlier stages so the main workspace stays focused on the current step by default. |
 | source-transcript-panel-readability | Phase 7 | done | codex | no | Source transcript editing now keeps STT options folded and uses dashboard-matching dark controls for long transcript review. |
 | inspector-five-step-focus | Phase 7 | done | codex | no | The right inspector now uses the same 5-step language as the main flow and folds validation, blockers, and run facts into one advanced section. |
+| approval-default-copy-localization | Phase 7 | done | codex | no | Approval defaults and legacy saved approval notes now render as plain Korean operator copy instead of English template text. |
 | channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |
 | new-run-form-simplification | Phase 7 | done | codex | no | New production creation now shows only channel, topic, source URL, and format presets first; detailed knobs are collapsed. |
