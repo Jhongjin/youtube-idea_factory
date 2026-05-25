@@ -94,8 +94,8 @@ const skillLabels: Record<string, string> = {
   "youtube-fact-check": "팩트체크",
   "youtube-script-architect": "대본 설계",
   "youtube-storyboard": "스토리보드",
-  "youtube-media-prompts": "미디어 프롬프트",
-  "youtube-production-qa": "제작 검수",
+  "youtube-media-prompts": "미디어 요청서",
+  "youtube-production-qa": "최종 확인",
 };
 
 const statusCopy = {
@@ -146,9 +146,9 @@ const guidedStepDefinitions = [
     label: "미디어 만들기",
   },
   {
-    description: "검수, 편집, 영상 조립, 업로드를 진행합니다.",
+    description: "최종 확인, 편집, 영상 조립, 업로드를 진행합니다.",
     key: "review",
-    label: "검수/업로드",
+    label: "확인/업로드",
   },
 ] as const;
 
@@ -234,7 +234,7 @@ function getArtifactWorkspaceCopy(plan: RunNextActionPlan, step: GuidedStepKey) 
   if (step === "review") {
     return {
       description: "최종 확인에 필요한 결과만 먼저 보여줍니다.",
-      title: "검수와 업로드 결과",
+      title: "최종 확인과 업로드 결과",
     };
   }
   return {
@@ -315,9 +315,9 @@ const actionGuides: Partial<
     title: "로컬 조립",
   },
   "media-draft": {
-    goal: "스토리보드를 이미지와 영상 생성 프롬프트로 바꿉니다.",
+    goal: "스토리보드를 이미지와 영상 제작 요청으로 바꿉니다.",
     output: "이미지와 영상 생성 요청서가 저장됩니다.",
-    title: "미디어 프롬프트",
+    title: "미디어 요청서",
   },
   "open-settings": {
     goal: "AI, 이미지, 영상, TTS, 편집 API 키와 모델을 점검합니다.",
@@ -332,17 +332,17 @@ const actionGuides: Partial<
   "publishing-draft": {
     goal: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 만듭니다.",
     output: "업로드 전에 확인할 제목, 설명, 태그가 정리됩니다.",
-    title: "배포 초안",
+    title: "업로드 글 초안",
   },
   "publishing-handoff": {
     goal: "최종 파일과 업로드 정보를 업로드 준비 목록으로 묶습니다.",
     output: "YouTube 업로드 작업 생성 전 체크리스트가 만들어집니다.",
-    title: "업로드 준비",
+    title: "업로드 전 확인",
   },
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
     output: "남은 확인 항목이 정리됩니다.",
-    title: "제작 검수",
+    title: "최종 확인",
   },
   "render-job": {
     goal: "외부 작업자가 처리할 영상 조립 작업을 등록합니다.",
@@ -421,7 +421,7 @@ const advancedActionGroupsByStep: Record<
   review: [
     {
       actionIds: ["qa-draft", "render-manifest", "render-job", "local-render"],
-      label: "검수/조립",
+      label: "확인/조립",
     },
     {
       actionIds: [
@@ -434,7 +434,7 @@ const advancedActionGroupsByStep: Record<
         "learning-log",
         "channel-memory",
       ],
-      label: "배포/피드백",
+      label: "업로드/피드백",
     },
   ],
 };
@@ -448,9 +448,9 @@ const pipelineStageTargets = [
   { href: "#artifact-strategy-recommendations", label: "추천 탭" },
   { href: "#artifact-script-plan", label: "대본 탭" },
   { href: "#artifact-storyboard", label: "씬 탭" },
-  { href: "#artifact-media-prompts", label: "프롬프트 탭" },
-  { href: "#artifact-publishing", label: "배포 탭" },
-  { href: "#artifact-qa", label: "검수 탭" },
+  { href: "#artifact-media-prompts", label: "요청서 탭" },
+  { href: "#artifact-publishing", label: "업로드 탭" },
+  { href: "#artifact-qa", label: "확인 탭" },
   { href: "#artifact-render-edl", label: "조립 계획" },
   { href: "#artifact-youtube-upload-job", label: "업로드 작업" },
   { href: "#artifact-feedback-insights", label: "피드백" },
@@ -506,11 +506,18 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
     plan.primaryActionId === "youtube-upload-job" ||
     plan.stageLabel === "배포 초안" ||
     plan.stageLabel === "배포" ||
+    plan.stageLabel === "업로드 준비" ||
+    plan.stageLabel === "업로드" ||
     plan.stageLabel === "피드백"
   ) {
     return 7;
   }
-  if (plan.primaryActionId === "qa-draft" || plan.stageLabel === "검수" || plan.stageLabel === "패키지 보정") {
+  if (
+    plan.primaryActionId === "qa-draft" ||
+    plan.stageLabel === "검수" ||
+    plan.stageLabel === "최종 확인" ||
+    plan.stageLabel === "패키지 보정"
+  ) {
     return 8;
   }
   if (
@@ -574,8 +581,11 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.primaryActionId === "local-render" ||
     plan.stageLabel === "배포 초안" ||
     plan.stageLabel === "배포" ||
+    plan.stageLabel === "업로드 준비" ||
+    plan.stageLabel === "업로드" ||
     plan.stageLabel === "피드백" ||
     plan.stageLabel === "검수" ||
+    plan.stageLabel === "최종 확인" ||
     plan.stageLabel === "패키지 보정"
   ) {
     return "review";
@@ -1416,7 +1426,7 @@ function SummaryGrid({ run }: { run: RunSummary }) {
         </p>
       </div>
       <div className="stat">
-        <p className="stat-label">프롬프트</p>
+        <p className="stat-label">요청서</p>
         <p className="stat-value">
           <Image size={19} />
           {promptCount}
@@ -2141,12 +2151,15 @@ function Inspector({
   const showApprovals = nextActionPlan.headline.includes("승인");
   const waitingForMainButton = Boolean(nextActionPlan.primaryActionId);
   const showGeneration = (stage === "자산 생성" || stage === "미디어 만들기") && !waitingForMainButton;
-  const showAssembly = (stage === "영상 조립" || stage === "렌더" || stage === "배포") && !waitingForMainButton;
+  const showAssembly =
+    (stage === "영상 조립" || stage === "렌더" || stage === "배포" || stage === "업로드") &&
+    !waitingForMainButton;
   const showFeedback = stage === "피드백" && !waitingForMainButton;
   const showProviderReadiness = nextActionPlan.primaryActionId === "open-settings";
   const showValidationImmediate = validation.status === "fail";
   const showBlockersImmediate =
-    run.package.qa.blockers.length > 0 && (stage === "검수" || nextActionPlan.status === "blocked");
+    run.package.qa.blockers.length > 0 &&
+    (stage === "검수" || stage === "최종 확인" || nextActionPlan.status === "blocked");
 
   return (
     <aside className="inspector">

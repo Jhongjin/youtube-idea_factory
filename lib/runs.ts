@@ -199,7 +199,7 @@ export function getStageState(pkg: ProductionPackage) {
       status: pkg.storyboard.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "미디어 프롬프트",
+      name: "미디어 요청서",
       meta: `이미지 ${pkg.media_prompts.image_prompts?.length ?? 0}개, 영상 ${
         pkg.media_prompts.video_prompts?.length ?? 0
       }개`,
@@ -211,7 +211,7 @@ export function getStageState(pkg: ProductionPackage) {
           : ("pending" as const),
     },
     {
-      name: "배포 패키지",
+      name: "업로드 글",
       meta: `제목 후보 ${pkg.publishing_package.title_candidates?.length ?? 0}개`,
       status:
         (pkg.publishing_package.title_candidates?.length ?? 0) > 0
@@ -219,8 +219,8 @@ export function getStageState(pkg: ProductionPackage) {
           : ("pending" as const),
     },
     {
-      name: "검수",
-      meta: `차단 항목 ${pkg.qa.blockers.length}개`,
+      name: "최종 확인",
+      meta: `확인 항목 ${pkg.qa.blockers.length}개`,
       status:
         pkg.qa.status === "pass"
           ? ("done" as const)

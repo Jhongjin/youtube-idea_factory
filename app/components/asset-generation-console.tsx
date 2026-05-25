@@ -471,7 +471,7 @@ export function AssetGenerationConsole({
         <div className="asset-console-worklist-body">
           <div className="asset-action-list">
             {state.items.length === 0 ? (
-              <p className="asset-console-empty">아직 생성할 항목이 없습니다. 먼저 미디어 프롬프트를 만들어 주세요.</p>
+              <p className="asset-console-empty">아직 만들 항목이 없습니다. 먼저 미디어 요청서를 만들어 주세요.</p>
             ) : null}
 
             {imageItems.length > 0 ? (

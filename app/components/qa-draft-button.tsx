@@ -13,7 +13,7 @@ export function QaDraftButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/qa/draft`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "검수 초안 생성에 실패했습니다.");
+      setError(body?.error ?? "최종 확인 목록을 만들지 못했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function QaDraftButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button primary" disabled={loading} onClick={draft} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <ShieldCheck size={15} />}
-        검수 게이트
+        최종 확인
       </button>
       {error ? <span>{error}</span> : null}
     </div>

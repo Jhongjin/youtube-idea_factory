@@ -81,16 +81,16 @@ export const artifactDefinitions: ArtifactDefinition[] = [
   {
     id: "publishing",
     filename: "07-publishing-package.md",
-    label: "업로드 준비",
+    label: "업로드 글",
     skill: "youtube-production-qa",
     description: "제목 후보, 설명문, 태그, 썸네일, 업로드 체크리스트입니다.",
   },
   {
     id: "qa",
     filename: "08-qa.md",
-    label: "검수",
+    label: "최종 확인",
     skill: "youtube-production-qa",
-    description: "차단 항목, 경고, 승인 체크리스트, 배포 준비 상태입니다.",
+    description: "남은 확인 항목, 주의할 점, 승인 체크리스트, 업로드 준비 상태입니다.",
   },
   {
     id: "render-edl",

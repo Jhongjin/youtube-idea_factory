@@ -6,7 +6,7 @@ import type { PackageValidationResult } from "@/lib/package-validation";
 
 const qaStatusCopy: Record<string, string> = {
   pass: "통과",
-  blocked: "차단",
+  blocked: "확인 필요",
   needs_review: "검토 필요",
 };
 
@@ -27,7 +27,7 @@ export function PackageValidationPanel({
     const response = await fetch(`/api/runs/${runId}/validate`);
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "패키지 검증에 실패했습니다.");
+      setError(body?.error ?? "제작 기록 확인에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -39,24 +39,24 @@ export function PackageValidationPanel({
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">패키지 검증</h3>
-        <button className="icon-button" onClick={refresh} title="검증 새로고침" type="button">
+        <h3 className="panel-title">제작 기록 확인</h3>
+        <button className="icon-button" onClick={refresh} title="다시 확인" type="button">
           <RefreshCw className={loading ? "spin" : ""} size={15} />
         </button>
       </div>
       <div className="panel-body">
         <div className={`validation-banner ${result.status}`}>
           {result.status === "pass" ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
-          <span>{result.status === "pass" ? "구조 통과" : "구조 실패"}</span>
+          <span>{result.status === "pass" ? "구조 통과" : "확인 필요"}</span>
         </div>
         <div className="validation-grid">
           <span>소스</span>
           <strong>{result.summary.sources}</strong>
-          <span>클레임</span>
+          <span>주장</span>
           <strong>{result.summary.claims}</strong>
           <span>씬</span>
           <strong>{result.summary.scenes}</strong>
-          <span>검수</span>
+          <span>최종 확인</span>
           <strong>{qaStatusCopy[result.summary.qaStatus] ?? result.summary.qaStatus}</strong>
         </div>
         {result.failures.length > 0 ? (

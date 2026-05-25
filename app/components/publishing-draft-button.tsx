@@ -13,7 +13,7 @@ export function PublishingDraftButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/publishing/draft`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "배포 초안 생성에 실패했습니다.");
+      setError(body?.error ?? "업로드 글 초안 작성에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function PublishingDraftButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={draft} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Upload size={15} />}
-        배포 초안
+        업로드 글 초안
       </button>
       {error ? <span>{error}</span> : null}
     </div>

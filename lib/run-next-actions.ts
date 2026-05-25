@@ -281,7 +281,7 @@ export function getRunNextActionPlan({
       headline: "스토리보드 생성",
       items: [
         {
-          detail: "스토리보드가 있어야 장면별 이미지/영상 프롬프트와 편집 타임라인이 정리됩니다.",
+          detail: "스토리보드가 있어야 장면별 이미지, 영상, 편집 순서를 정리할 수 있습니다.",
           status: "pending",
           title: "씬 카드",
         },
@@ -295,13 +295,13 @@ export function getRunNextActionPlan({
 
   if (promptCount(pkg) === 0) {
     return step({
-      detail: "스토리보드를 이미지/영상 생성 프롬프트와 스타일 지침으로 변환합니다.",
-      headline: "미디어 프롬프트 생성",
+      detail: "스토리보드를 이미지와 영상 제작 요청으로 바꿉니다.",
+      headline: "미디어 요청서 만들기",
       items: [
         {
-          detail: "생성 비용이 발생하기 전 프롬프트만 먼저 검토 가능한 상태로 만듭니다.",
+          detail: "생성 비용이 발생하기 전 만들 내용을 먼저 확인할 수 있게 정리합니다.",
           status: "pending",
-          title: "프롬프트 초안",
+          title: "미디어 요청서",
         },
       ],
       primaryActionId: "media-draft",
@@ -313,42 +313,42 @@ export function getRunNextActionPlan({
 
   if ((pkg.publishing_package.title_candidates?.length ?? 0) === 0) {
     return step({
-      detail: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 초안화합니다.",
-      headline: "배포 패키지 초안 생성",
+      detail: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 작성합니다.",
+      headline: "업로드 글 초안 만들기",
       items: [
         {
-          detail: "최종 업로드 전 QA에서 다시 막히므로 지금은 초안만 만듭니다.",
+          detail: "최종 업로드 전에 다시 확인하므로 지금은 초안만 만듭니다.",
           status: "pending",
-          title: "메타데이터",
+          title: "업로드 글",
         },
       ],
       primaryActionId: "publishing-draft",
       stageIndex: 7,
-      stageLabel: "배포 초안",
+      stageLabel: "업로드 준비",
       status: "pending",
     });
   }
 
   if (pkg.qa.status === "blocked" || pkg.qa.blockers.length > 0) {
     return step({
-      detail: `${pkg.qa.blockers.length}개 검수 차단 항목이 남아 있습니다.`,
-      headline: "검수 차단 항목 해결",
+      detail: `${pkg.qa.blockers.length}개 확인할 항목이 남아 있습니다.`,
+      headline: "남은 확인 항목 해결",
       items: pkg.qa.blockers.slice(0, 3).map((blocker) => ({
         detail: blocker,
         status: "blocked",
-        title: "차단 항목",
+        title: "확인 항목",
       })),
       primaryActionId: "qa-draft",
       secondaryActionIds: ["analysis-refine", "script-refine"],
       stageIndex: 8,
-      stageLabel: "검수",
+      stageLabel: "최종 확인",
       status: "blocked",
     });
   }
 
   if (!generationState.manifestExists || !pkg.asset_manifest) {
     return step({
-      detail: "스토리보드와 프롬프트를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
+      detail: "스토리보드와 미디어 요청서를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
       headline: "필요한 자료 정리",
       items: [
         {
@@ -402,7 +402,7 @@ export function getRunNextActionPlan({
 
   if ((generationState.summary?.blocked ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.blocked ?? 0}개 항목이 API 설정이나 프롬프트 문제로 막혀 있습니다.`,
+      detail: `${generationState.summary?.blocked ?? 0}개 항목이 API 설정이나 요청서 문제로 막혀 있습니다.`,
       headline: "막힌 항목 확인하기",
       items: generationState.items
         .filter((item) => item.blockers.length > 0)
@@ -474,8 +474,8 @@ export function getRunNextActionPlan({
 
   if (pkg.render_manifest.blockers > 0 || !pkg.render_manifest.render_ready) {
     return step({
-      detail: `${pkg.render_manifest.blockers}개 영상 조립 차단 항목이 남아 있습니다.`,
-      headline: "영상 조립 차단 해소",
+      detail: `${pkg.render_manifest.blockers}개 영상 조립에 필요한 항목이 남아 있습니다.`,
+      headline: "영상 조립에 빠진 항목 확인",
       items: [
         {
           detail: "누락된 영상, 음성, 자막, BGM을 등록한 뒤 영상 조립 계획을 다시 만드세요.",
@@ -540,7 +540,7 @@ export function getRunNextActionPlan({
       ],
       primaryActionId: "publishing-handoff",
       stageIndex: 10,
-      stageLabel: "배포",
+      stageLabel: "업로드",
       status: "pending",
     });
   }
@@ -557,7 +557,7 @@ export function getRunNextActionPlan({
         },
       ],
       stageIndex: 10,
-      stageLabel: "배포",
+      stageLabel: "업로드",
       status: "review",
     });
   }
@@ -565,7 +565,7 @@ export function getRunNextActionPlan({
   if (workerStatus.upload.status === "queued") {
     return step({
       detail: "업로드 작업이 등록되어 외부 작업자 실행을 기다립니다.",
-      headline: "YouTube 업로드 워커 실행",
+      headline: "YouTube 업로드 작업자 실행",
       items: [
         {
           command: `npm run youtube:upload-worker -- --next --confirm RUN_YOUTUBE_UPLOAD --storage ${storageMode}`,
@@ -575,7 +575,7 @@ export function getRunNextActionPlan({
         },
       ],
       stageIndex: 10,
-      stageLabel: "배포",
+      stageLabel: "업로드",
       status: "pending",
     });
   }
@@ -593,7 +593,7 @@ export function getRunNextActionPlan({
       ],
       primaryActionId: "youtube-upload-job",
       stageIndex: 10,
-      stageLabel: "배포",
+      stageLabel: "업로드",
       status: "pending",
     });
   }
