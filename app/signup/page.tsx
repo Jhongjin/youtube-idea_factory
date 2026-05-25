@@ -19,7 +19,7 @@ export default function SignupPage() {
           <p className="hero-kicker">Member request</p>
           <h1>제작 운영 계정 요청</h1>
           <p>
-            가입 요청은 승인 대기열에 저장됩니다. 관리자가 회원관리에서 활성화하면 제작 run과 채널
+            가입 요청은 승인 대기 목록에 저장됩니다. 관리자가 회원관리에서 활성화하면 제작 기록과 채널
             운영 화면에 접근할 수 있습니다.
           </p>
           <SignupForm />

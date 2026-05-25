@@ -91,6 +91,7 @@ This queue keeps the build loop explicit:
 | pipeline-current-stage-highlight | Phase 5 | done | codex | no | Highlight the pipeline row that matches the computed next action. |
 | pipeline-stage-navigation | Phase 5 | done | codex | no | Make pipeline rows jump to the relevant search or artifact workspace and auto-select artifact tabs. |
 | guided-stage-rail | Phase 5 | done | codex | no | Show the 1-10 production sequence inside the next-action panel so operators can follow the click order. |
+| operator-copy-internal-term-cleanup | Phase 7 | done | codex | no | Replaced remaining visible internal terms such as gate, queue, production package, slot, asset, and EDL with plainer operator-facing Korean copy. |
 | taste-skill-guided-inspector | Phase 5 | done | codex | no | Apply TasteSkill-style guided UX: current-stage inspector first, advanced controls folded. |
 | guided-dashboard-ux | Phase 5 | done | codex | no | Default dashboard path shows one next action and hides advanced tools behind disclosure. |
 | run-next-action-panel | Phase 5 | done | codex | no | Dashboard shows the next actionable step for the active run. |

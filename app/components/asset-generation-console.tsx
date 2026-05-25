@@ -243,7 +243,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "자산 등록에 실패했습니다.");
+      setMessage(body?.error ?? "미디어 파일 등록에 실패했습니다.");
       setLoadingId("");
       return;
     }
@@ -416,7 +416,7 @@ export function AssetGenerationConsole({
 
           <div className="asset-register">
             <label>
-              <span>자산</span>
+              <span>미디어</span>
               <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
                 {state.items.map((item) => (
                   <option key={item.id} value={item.id}>
@@ -579,7 +579,7 @@ export function AssetGenerationConsole({
       </details>
 
       {message ? <p className="form-error">{message}</p> : null}
-      {!state.manifestExists ? <p className="form-error">필요 자산 목록이 아직 없습니다.</p> : null}
+      {!state.manifestExists ? <p className="form-error">필요한 미디어 목록이 아직 없습니다.</p> : null}
     </div>
   );
 }

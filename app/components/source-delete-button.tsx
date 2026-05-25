@@ -22,7 +22,7 @@ export function SourceDeleteButton({
   async function removeSource() {
     const confirmed = window.confirm(
       mode === "all"
-        ? "이 run의 소스 영상을 모두 삭제할까요? 저장된 스크립트 슬롯은 남지만 소스 목록에서는 제거됩니다."
+      ? "이 제작 기록의 소스 영상을 모두 삭제할까요? 저장된 스크립트는 남지만 소스 목록에서는 제거됩니다."
         : "이 소스 영상을 목록에서 삭제할까요?",
     );
     if (!confirmed) {

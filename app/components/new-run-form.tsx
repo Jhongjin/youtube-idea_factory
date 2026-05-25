@@ -507,7 +507,7 @@ export function NewRunForm({
         </div>
       </section>
 
-      <section className="new-run-output-summary" aria-label="생성될 후보 산출물">
+      <section className="new-run-output-summary" aria-label="가져올 후보 영상">
         <div>
           <CalendarDays size={16} />
           <div>
@@ -523,7 +523,7 @@ export function NewRunForm({
           <div>
             <span>생성되는 것</span>
             <strong>검토용 소스 후보 최대 {candidateLimit}개</strong>
-            <small>sources.json과 production package에 기록됩니다.</small>
+            <small>소스 목록과 제작 패키지에 기록됩니다.</small>
           </div>
         </div>
       </section>

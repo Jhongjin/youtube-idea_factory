@@ -188,7 +188,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
 
   async function deleteChannel(channel: SafeYouTubeChannel) {
     const confirmed = window.confirm(
-      `${channel.brand_name} / ${channel.channel_name} 채널을 삭제할까요? 이미 생성된 run 기록은 지워지지 않습니다.`,
+      `${channel.brand_name} / ${channel.channel_name} 채널을 삭제할까요? 이미 생성된 제작 기록은 지워지지 않습니다.`,
     );
     if (!confirmed) {
       return;

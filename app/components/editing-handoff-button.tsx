@@ -57,7 +57,7 @@ export function EditingHandoffButton({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "편집 전달 파일을 만들지 못했습니다.");
+      setError(body?.error ?? "편집 준비 파일을 만들지 못했습니다.");
       setLoading(false);
       return;
     }
@@ -67,7 +67,7 @@ export function EditingHandoffButton({
   return (
     <div className="draft-action">
       <label className="editing-provider-picker">
-        <span>편집/렌더 방식</span>
+        <span>편집/영상 조립 방식</span>
         <select
           disabled={loading}
           onChange={(event) => setProviderOptionId(event.target.value)}
@@ -79,11 +79,11 @@ export function EditingHandoffButton({
             </option>
           ))}
         </select>
-        <small>{selectedOption?.capability.label ?? "설정 페이지에서 편집/렌더 API를 등록하세요."}</small>
+        <small>{selectedOption?.capability.label ?? "설정 페이지에서 편집/영상 조립 API를 등록하세요."}</small>
       </label>
       <button className="text-button" disabled={loading} onClick={createHandoff} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
-        편집 전달 파일
+        편집 준비 파일
       </button>
       {error ? <span>{error}</span> : null}
     </div>

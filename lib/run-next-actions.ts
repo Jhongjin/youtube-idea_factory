@@ -188,7 +188,7 @@ export function getRunNextActionPlan({
         {
           detail: "소스 보강을 실행하거나 소스 영상 패널에서 스크립트를 붙여넣고 저장하세요.",
           status: "review",
-          title: "스크립트 슬롯",
+          title: "스크립트",
         },
       ],
       primaryActionId: "source-enrich",
@@ -352,7 +352,7 @@ export function getRunNextActionPlan({
       headline: "필요한 자료 정리",
       items: [
         {
-          detail: "버튼을 누르면 장면별로 필요한 자산이 정리됩니다.",
+          detail: "버튼을 누르면 장면별로 필요한 미디어가 정리됩니다.",
           status: "pending",
           title: "필요한 자료",
         },
@@ -432,7 +432,7 @@ export function getRunNextActionPlan({
       ],
       primaryActionId: undefined,
       stageIndex: 9,
-      stageLabel: "자산 생성",
+      stageLabel: "미디어 만들기",
       status: "pending",
     });
   }
@@ -445,7 +445,7 @@ export function getRunNextActionPlan({
         {
           detail: "오른쪽 승인 카드에서 영상 조립 승인을 저장하세요.",
           status: "review",
-          title: "승인 게이트",
+          title: "승인",
         },
       ],
       stageIndex: 10,
@@ -529,13 +529,13 @@ export function getRunNextActionPlan({
 
   if (!pkg.publishing_handoff?.ready) {
     return step({
-      detail: "최종 파일, 썸네일, 제목, 설명, 태그를 업로드 패키지로 잠급니다.",
-      headline: "업로드 패키지 만들기",
+      detail: "최종 파일, 썸네일, 제목, 설명, 태그를 업로드 준비 목록으로 묶습니다.",
+      headline: "업로드 준비 목록 만들기",
       items: [
         {
-          detail: "업로드 패키지 버튼으로 업로드 전 체크리스트를 생성하세요.",
+          detail: "업로드 준비 버튼으로 업로드 전 체크리스트를 만드세요.",
           status: "pending",
-          title: "배포 패키지",
+          title: "업로드 준비",
         },
       ],
       primaryActionId: "publishing-handoff",
@@ -553,7 +553,7 @@ export function getRunNextActionPlan({
         {
           detail: "오른쪽 승인 카드에서 게시 승인을 저장하세요.",
           status: "review",
-          title: "승인 게이트",
+          title: "승인",
         },
       ],
       stageIndex: 10,
@@ -564,7 +564,7 @@ export function getRunNextActionPlan({
 
   if (workerStatus.upload.status === "queued") {
     return step({
-      detail: "업로드 작업이 큐에 등록되어 외부 워커 실행을 기다립니다.",
+      detail: "업로드 작업이 등록되어 외부 작업자 실행을 기다립니다.",
       headline: "YouTube 업로드 워커 실행",
       items: [
         {
@@ -582,13 +582,13 @@ export function getRunNextActionPlan({
 
   if (workerStatus.upload.status !== "completed") {
     return step({
-      detail: "업로드 전 패키지가 준비됐습니다. 업로드 작업 큐를 만들 수 있습니다.",
+      detail: "업로드 전 준비가 끝났습니다. 업로드 작업을 만들 수 있습니다.",
       headline: "YouTube 업로드 작업 생성",
       items: [
         {
-          detail: "상단의 YouTube 업로드 작업 버튼으로 큐를 등록하세요.",
+          detail: "상단의 YouTube 업로드 작업 버튼으로 작업을 등록하세요.",
           status: "pending",
-          title: "업로드 큐",
+          title: "업로드 작업",
         },
       ],
       primaryActionId: "youtube-upload-job",

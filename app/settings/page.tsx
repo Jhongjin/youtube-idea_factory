@@ -86,7 +86,7 @@ function DeploymentStatusPanel({
           <div className="deployment-status-card">
             <ShieldCheck size={18} />
             <div>
-              <strong>관리자 게이트</strong>
+              <strong>관리자 확인</strong>
               <span>
                 {readiness.security.mutationGate === "session-protected"
                   ? "세션 보호"
@@ -209,27 +209,27 @@ function DeploymentStatusPanel({
         <div className="readiness-section">
           <div className="readiness-section-header">
             <div>
-              <h3>외부 워커 준비도</h3>
-              <p>Vercel 밖에서 렌더링과 YouTube 업로드 큐를 처리할 워커 요구사항입니다.</p>
+              <h3>외부 작업자 준비도</h3>
+              <p>Vercel 밖에서 영상 조립과 YouTube 업로드 작업을 처리할 환경 요구사항입니다.</p>
             </div>
             <ServerCog size={18} />
           </div>
           <div className="worker-readiness-grid">
             <div className="worker-readiness-card">
               <div className="worker-readiness-title">
-                <strong>워커 사전 점검</strong>
+                <strong>작업자 사전 점검</strong>
                 <span className="readiness-chip manual">CLI</span>
               </div>
               <code>
                 npm run ops:worker-doctor -- --storage {readiness.runtime.appStorageMode}
               </code>
-              <p>ffmpeg, Supabase 큐, YouTube OAuth, 채널 업로드 토큰을 한 번에 확인합니다.</p>
+              <p>ffmpeg, Supabase 작업 목록, YouTube OAuth, 채널 업로드 토큰을 한 번에 확인합니다.</p>
             </div>
             <div className="worker-readiness-card">
               <div className="worker-readiness-title">
-                <strong>ffmpeg 렌더 워커</strong>
+                <strong>ffmpeg 영상 조립 작업자</strong>
                 <span className={`readiness-chip ${readiness.workers.render.ready ? "ready" : "missing-key"}`}>
-                  {readiness.workers.render.ready ? "큐 처리 가능" : "환경 확인 필요"}
+                  {readiness.workers.render.ready ? "작업 처리 가능" : "환경 확인 필요"}
                 </span>
               </div>
               <code>{readiness.workers.render.command}</code>
@@ -237,13 +237,13 @@ function DeploymentStatusPanel({
             </div>
             <div className="worker-readiness-card">
               <div className="worker-readiness-title">
-                <strong>YouTube 업로드 워커</strong>
+                <strong>YouTube 업로드 작업자</strong>
                 <span
                   className={`readiness-chip ${
                     readiness.workers.youtubeUpload.ready ? "ready" : "missing-key"
                   }`}
                 >
-                  {readiness.workers.youtubeUpload.ready ? "OAuth 준비됨" : "OAuth/큐 확인 필요"}
+                  {readiness.workers.youtubeUpload.ready ? "OAuth 준비됨" : "OAuth/작업 목록 확인 필요"}
                 </span>
               </div>
               <code>{readiness.workers.youtubeUpload.command}</code>

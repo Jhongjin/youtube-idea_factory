@@ -272,9 +272,9 @@ const actionGuides: Partial<
     title: "배포 초안",
   },
   "publishing-handoff": {
-    goal: "최종 파일과 업로드 메타데이터를 업로드 가능한 패킷으로 묶습니다.",
+    goal: "최종 파일과 업로드 정보를 업로드 준비 목록으로 묶습니다.",
     output: "YouTube 업로드 작업 생성 전 체크리스트가 만들어집니다.",
-    title: "업로드 패키지",
+    title: "업로드 준비",
   },
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
@@ -288,7 +288,7 @@ const actionGuides: Partial<
   },
   "render-manifest": {
     goal: "자료를 타임라인으로 묶고 영상 조립에 빠진 항목을 확인합니다.",
-    output: "영상 조립 계획, EDL, 검수 상태가 갱신됩니다.",
+    output: "영상 조립 계획과 빠진 항목이 갱신됩니다.",
     title: "영상 조립 계획",
   },
   "script-draft": {
@@ -302,7 +302,7 @@ const actionGuides: Partial<
     title: "대본 고도화",
   },
   "source-enrich": {
-    caution: "자막을 못 가져오면 아래 스크립트 슬롯에 직접 붙여넣으면 됩니다.",
+    caution: "자막을 못 가져오면 아래 스크립트 입력칸에 직접 붙여넣으면 됩니다.",
     goal: "YouTube 후보 영상의 제목, 채널, 썸네일 같은 기본 정보를 다시 확인합니다.",
     output: "소스 영상 표와 01-research.md가 갱신됩니다.",
     title: "소스 정보 보강",
@@ -318,8 +318,8 @@ const actionGuides: Partial<
     title: "자막 초안",
   },
   "youtube-upload-job": {
-    goal: "승인된 배포 패키지를 YouTube 업로드 워커 큐에 등록합니다.",
-    output: "업로드 워커 패널에서 큐 상태를 확인합니다.",
+    goal: "승인된 업로드 준비 목록을 YouTube 업로드 작업으로 등록합니다.",
+    output: "업로드 작업 패널에서 상태를 확인합니다.",
     title: "YouTube 업로드 작업",
   },
 };
@@ -388,7 +388,7 @@ const pipelineStageTargets = [
   { href: "#artifact-media-prompts", label: "프롬프트 탭" },
   { href: "#artifact-publishing", label: "배포 탭" },
   { href: "#artifact-qa", label: "검수 탭" },
-  { href: "#artifact-render-edl", label: "조립 EDL" },
+  { href: "#artifact-render-edl", label: "조립 계획" },
   { href: "#artifact-youtube-upload-job", label: "업로드 작업" },
   { href: "#artifact-feedback-insights", label: "피드백" },
   { href: "#artifact-channel-memory-update", label: "채널 메모리" },
@@ -432,6 +432,7 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
     plan.stageLabel === "미디어 준비" ||
     plan.stageLabel === "자산 구성" ||
     plan.stageLabel === "자산 생성" ||
+    plan.stageLabel === "미디어 만들기" ||
     plan.stageLabel === "생성 승인"
   ) {
     return 6;
@@ -495,6 +496,7 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.stageLabel === "미디어 준비" ||
     plan.stageLabel === "자산 구성" ||
     plan.stageLabel === "자산 생성" ||
+    plan.stageLabel === "미디어 만들기" ||
     plan.stageLabel === "생성 승인"
   ) {
     return "production";
@@ -1271,7 +1273,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "sources-checked": {
-    detail: "소스 메타데이터를 확인했습니다. 자막/스크립트가 비어 있으면 아래 스크립트 슬롯에 붙여넣어야 합니다.",
+    detail: "소스 정보를 확인했습니다. 자막/스크립트가 비어 있으면 아래 스크립트 입력칸에 붙여넣어야 합니다.",
     title: "소스 정보를 확인했습니다.",
     tone: "success",
   },
@@ -1281,7 +1283,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "sources-imported": {
-    detail: "검색 후보가 소스 영상 목록에 추가됐습니다. 다음으로 제목/채널 보강과 스크립트 슬롯을 확인하세요.",
+    detail: "검색 후보가 소스 영상 목록에 추가됐습니다. 다음으로 제목/채널 보강과 스크립트 입력칸을 확인하세요.",
     title: "후보 영상을 소스로 추가했습니다.",
     tone: "success",
   },
@@ -1315,7 +1317,7 @@ const dashboardNoticeCopy: Record<
     title: "소스 일부만 보강됐습니다.",
   },
   "transcript-fetched": {
-    detail: "선택한 소스의 공개 자막을 가져왔습니다. 스크립트 슬롯에서 내용을 확인하세요.",
+    detail: "선택한 소스의 공개 자막을 가져왔습니다. 스크립트 입력칸에서 내용을 확인하세요.",
     title: "자막을 가져왔습니다.",
     tone: "success",
   },
@@ -1828,7 +1830,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.editing_handoff_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>조립 EDL</span>
+            <span>조립 계획</span>
             <span>{run.package.render_manifest?.edl_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
@@ -1840,7 +1842,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>필요 자산</span>
+            <span>필요한 미디어</span>
             <span>{run.package.asset_manifest ? `${run.package.asset_manifest.items}개` : "대기"}</span>
           </div>
           <div className="detail-row">
@@ -1856,7 +1858,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.blockers ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>업로드 패키지</span>
+            <span>업로드 준비</span>
             <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
           </div>
           <div className="detail-row">
@@ -2104,7 +2106,7 @@ function Inspector({
   const stage = nextActionPlan.stageLabel;
   const showApprovals = nextActionPlan.headline.includes("승인");
   const waitingForMainButton = Boolean(nextActionPlan.primaryActionId);
-  const showGeneration = stage === "자산 생성" && !waitingForMainButton;
+  const showGeneration = (stage === "자산 생성" || stage === "미디어 만들기") && !waitingForMainButton;
   const showAssembly = (stage === "영상 조립" || stage === "렌더" || stage === "배포") && !waitingForMainButton;
   const showFeedback = stage === "피드백" && !waitingForMainButton;
   const showProviderReadiness = nextActionPlan.primaryActionId === "open-settings";
