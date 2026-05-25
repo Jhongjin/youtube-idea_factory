@@ -92,6 +92,23 @@ function assetDisplayName(item: AssetGenerationStateItem) {
   return item.scene_id ? `${item.scene_id} ${kind}` : `${kind} ${item.id}`;
 }
 
+function blockerCopy(value: string) {
+  const text = value.trim();
+  if (text.includes("Required before paid image, video, TTS, subtitle, or BGM generation")) {
+    return "이미지, 영상, 음성 제작 전 사람이 먼저 승인해야 합니다.";
+  }
+  if (text.includes("Required before final video assembly or render spend")) {
+    return "최종 영상 조립 전 사람이 먼저 승인해야 합니다.";
+  }
+  if (text.includes("Required before YouTube upload, scheduling, or publishing")) {
+    return "YouTube 업로드 전 사람이 먼저 승인해야 합니다.";
+  }
+  if (text.toLowerCase().includes("approval")) {
+    return "승인이 끝나면 진행할 수 있습니다.";
+  }
+  return text;
+}
+
 function sortedAssetPreview(items: AssetGenerationStateItem[], limit: number) {
   const order: Record<AssetGenerationStateItem["status"], number> = {
     pending_generation: 0,
@@ -109,11 +126,11 @@ function AssetStatus({ item }: { item: AssetGenerationStateItem }) {
     <span className={`asset-status ${ready ? "ready" : "blocked"}`}>
       {ready ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
       {item.status === "pending_generation"
-        ? "생성 대기"
+        ? "준비됨"
         : item.status === "generated"
-          ? "생성 완료"
+          ? "완료"
           : item.status === "pending_approval"
-            ? "승인 대기"
+            ? "승인 필요"
             : item.status === "failed"
               ? "실패"
               : "건너뜀"}
@@ -308,13 +325,13 @@ export function AssetGenerationConsole({
   const directGenerationBlocker = (role: "image" | "video" | "tts") => {
     const option = selectedProviderOption(role);
     if (!option) {
-      return `${roleLabel(role)} API가 아직 설정되지 않았습니다. API 설정에서 직접 실행 가능한 항목을 먼저 저장하세요.`;
+      return `${roleLabel(role)} 제작 방식이 아직 준비되지 않았습니다. 설정에서 사용할 API를 저장하세요.`;
     }
     if (option.capability.status !== "direct") {
-      return `${option.provider}는 지금 바로 생성할 수 없는 방식입니다. 수동 파일로 진행한 뒤 완료 파일을 등록하세요.`;
+      return `${option.provider}는 여기서 바로 만들 수 없습니다. 직접 만든 파일을 등록해서 이어가세요.`;
     }
     if (!option.hasApiKey) {
-      return `${option.provider} API 키가 저장되어 있지 않습니다. API 등록에서 키를 저장한 뒤 다시 시도하세요.`;
+      return `${option.provider} 키가 저장되어 있지 않습니다. 설정에서 키를 저장한 뒤 다시 시도하세요.`;
     }
     return "";
   };
@@ -343,18 +360,18 @@ export function AssetGenerationConsole({
 
       <details className="asset-console-settings">
         <summary>
-          <span>API와 수동 등록</span>
-          <small>필요할 때만 열어 수정합니다.</small>
+          <span>설정과 파일 등록</span>
+          <small>목소리, 품질, 직접 만든 파일을 바꿀 때만 엽니다.</small>
         </summary>
         <div className="asset-console-settings-body">
           <div className="generation-provider-selector">
             <div className="generation-provider-selector-head">
               <div>
-                <strong>사용할 API</strong>
-                <span>이미지, 영상, 음성 생성에 사용할 API를 고릅니다.</span>
+                <strong>제작 방식</strong>
+                <span>이미지, 영상, 음성을 만들 도구를 고릅니다.</span>
               </div>
               <a className="text-button" href="/settings">
-                API 설정
+                설정 열기
               </a>
             </div>
             <div className="generation-provider-grid">
@@ -380,8 +397,8 @@ export function AssetGenerationConsole({
                     </select>
                     <small>
                       {selectedOption
-                        ? `${selectedOption.hasApiKey ? "키 있음" : "키 없음"} · ${selectedOption.capability.label}`
-                        : "설정 페이지에서 API를 등록하세요."}
+                        ? `${selectedOption.hasApiKey ? "키 저장됨" : "키 필요"} · ${selectedOption.capability.label}`
+                        : "설정에서 사용할 도구를 등록하세요."}
                     </small>
                   </label>
                 );
@@ -420,7 +437,7 @@ export function AssetGenerationConsole({
               <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
                 {state.items.map((item) => (
                   <option key={item.id} value={item.id}>
-                    {item.id} / {assetKindCopy[item.kind] ?? item.kind}
+                    {assetDisplayName(item)}
                   </option>
                 ))}
               </select>
@@ -455,14 +472,14 @@ export function AssetGenerationConsole({
             type="button"
           >
             {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
-            수동 파일로 진행
+            직접 만든 파일로 진행
           </button>
         </div>
       </details>
 
       <details className="asset-console-worklist">
         <summary>
-          <span>생성할 항목</span>
+          <span>만들 항목 확인</span>
           <small>
             전체 {state.items.length}개 · 이미지 {imageItems.length}개 · 영상 {videoItems.length}개 · 음성{" "}
             {voiceItem ? 1 : 0}개
@@ -488,7 +505,9 @@ export function AssetGenerationConsole({
                     <div className="asset-action-row" key={item.id}>
                       <div>
                         <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
-                        {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
+                        {item.blockers.length > 0 ? (
+                          <small title={item.blockers[0]}>{blockerCopy(item.blockers[0])}</small>
+                        ) : null}
                       </div>
                       <AssetStatus item={item} />
                       <button
@@ -523,7 +542,9 @@ export function AssetGenerationConsole({
                     <div className="asset-action-row" key={item.id}>
                       <div>
                         <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
-                        {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
+                        {item.blockers.length > 0 ? (
+                          <small title={item.blockers[0]}>{blockerCopy(item.blockers[0])}</small>
+                        ) : null}
                       </div>
                       <AssetStatus item={item} />
                       <button
@@ -555,7 +576,7 @@ export function AssetGenerationConsole({
                   <div>
                     <strong title={`${voiceItem.id} · ${compactPath(voiceItem.expected_path)}`}>내레이션</strong>
                     {voiceItem.blockers.length > 0 ? (
-                      <small title={voiceItem.blockers[0]}>{voiceItem.blockers[0]}</small>
+                      <small title={voiceItem.blockers[0]}>{blockerCopy(voiceItem.blockers[0])}</small>
                     ) : null}
                   </div>
                   <AssetStatus item={voiceItem} />
