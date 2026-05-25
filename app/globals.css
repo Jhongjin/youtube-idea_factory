@@ -3938,50 +3938,61 @@ button:disabled,
 
 .approval-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .approval-card {
   display: grid;
-  gap: 10px;
-  border: 1px solid var(--line);
+  gap: 9px;
+  border: 1px solid rgba(244, 239, 227, 0.16);
   border-radius: 8px;
-  background: #f8fafc;
-  padding: 11px;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 227, 0.06), rgba(244, 239, 227, 0.025)),
+    rgba(9, 15, 15, 0.88);
+  color: #fff8ea;
+  padding: 10px;
 }
 
 .approval-card.approved {
-  border-color: rgba(47, 111, 78, 0.36);
-  background: #f4faf5;
+  border-color: rgba(155, 215, 167, 0.42);
+  background:
+    linear-gradient(180deg, rgba(155, 215, 167, 0.12), rgba(244, 239, 227, 0.025)),
+    rgba(9, 15, 15, 0.9);
 }
 
 .approval-card input[type="text"],
 .approval-card input:not([type]),
 .approval-card textarea {
   width: 100%;
-  min-height: 38px;
-  border: 1px solid var(--line);
+  min-height: 36px;
+  border: 1px solid rgba(244, 239, 227, 0.18);
   border-radius: 8px;
-  background: #ffffff;
-  color: var(--ink);
+  background: rgba(5, 10, 10, 0.72);
+  color: #fff8ea;
   padding: 8px 10px;
   outline: none;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 760;
   line-height: 1.45;
 }
 
 .approval-card input:disabled {
-  background: #eef2f6;
-  color: var(--muted);
+  background: rgba(244, 239, 227, 0.06);
+  color: rgba(244, 239, 227, 0.5);
 }
 
 .approval-card textarea {
-  min-height: 74px;
+  min-height: 68px;
   resize: vertical;
 }
 
+.approval-card input::placeholder,
+.approval-card textarea::placeholder {
+  color: rgba(244, 239, 227, 0.42);
+}
+
 .approval-card small {
-  color: var(--muted);
+  color: rgba(244, 239, 227, 0.7);
   font-size: 11px;
   font-weight: 750;
 }
@@ -3997,7 +4008,7 @@ button:disabled,
 .approval-card-header > span {
   border-radius: 999px;
   background: rgba(155, 215, 167, 0.14);
-  color: var(--green);
+  color: #9bd7a7;
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 850;
@@ -4006,7 +4017,7 @@ button:disabled,
 
 .approval-card.pending .approval-card-header > span {
   background: rgba(214, 164, 92, 0.14);
-  color: #8a650f;
+  color: #f0c174;
 }
 
 .approval-toggle {
@@ -4015,7 +4026,7 @@ button:disabled,
   gap: 8px;
   align-items: start;
   min-width: 0;
-  color: var(--ink);
+  color: #fff8ea;
   font-size: 13px;
   font-weight: 850;
 }
@@ -4037,7 +4048,7 @@ button:disabled,
 }
 
 .approval-toggle small {
-  color: var(--muted);
+  color: rgba(244, 239, 227, 0.68);
   font-size: 11px;
   font-weight: 720;
   line-height: 1.35;
@@ -4054,7 +4065,7 @@ button:disabled,
 .approval-fields {
   display: grid;
   gap: 8px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(244, 239, 227, 0.14);
   padding-top: 10px;
 }
 
@@ -4064,7 +4075,7 @@ button:disabled,
 }
 
 .approval-fields span {
-  color: var(--amber);
+  color: #f0c174;
   font-size: 11px;
   font-weight: 850;
 }
@@ -8637,7 +8648,7 @@ body {
 }
 
 .shell .approval-fields span,
-.shell .approval-card small {
+.shell .approval-timestamp {
   color: #f0c174;
 }
 

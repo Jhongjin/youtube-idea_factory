@@ -6,21 +6,35 @@ import type { ApprovalGate, RunApprovals } from "@/lib/approvals";
 
 const gates: Array<{ description: string; id: ApprovalGate; label: string }> = [
   {
-    description: "이미지, 영상, 음성 등을 만들기 전에 확인합니다.",
+    description: "이미지, 영상, 음성 생성 비용을 허용합니다.",
     id: "generation",
     label: "생성",
   },
   {
-    description: "최종 영상 조립이나 렌더 비용 전에 확인합니다.",
+    description: "최종 영상 조립과 렌더 비용을 허용합니다.",
     id: "render",
-    label: "렌더",
+    label: "영상 조립",
   },
   {
-    description: "YouTube 업로드, 예약, 공개 전에 확인합니다.",
+    description: "YouTube 업로드와 예약 공개를 허용합니다.",
     id: "publish",
-    label: "배포",
+    label: "업로드",
   },
 ];
+
+function formatApprovedAt(value: string) {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat("ko", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
 
 export function RunApprovalsPanel({
   initialApprovals,
@@ -80,7 +94,7 @@ export function RunApprovalsPanel({
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">승인 게이트</h3>
+        <h3 className="panel-title">승인</h3>
         <ShieldCheck size={16} />
       </div>
       <div className="panel-body">
@@ -103,7 +117,7 @@ export function RunApprovalsPanel({
                       <small>{gate.description}</small>
                     </span>
                   </label>
-                  <span>{approval.approved ? "승인됨" : "대기"}</span>
+                  <span>{approval.approved ? "완료" : "대기"}</span>
                 </div>
                 {approval.approved ? (
                   <div className="approval-fields">
@@ -119,18 +133,20 @@ export function RunApprovalsPanel({
                       />
                     </label>
                     <label>
-                      <span>승인 메모</span>
+                      <span>메모</span>
                       <textarea
                         aria-label={`${gate.label} 승인 메모`}
                         onChange={(event) => updateGate(gate.id, { notes: event.target.value })}
-                        placeholder="승인 범위나 조건을 짧게 적어주세요."
+                        placeholder="승인한 범위나 조건을 짧게 남겨주세요."
                         rows={3}
                         value={approval.notes}
                       />
                     </label>
                   </div>
                 ) : null}
-                {approval.approved_at ? <small className="approval-timestamp">{approval.approved_at}</small> : null}
+                {approval.approved_at ? (
+                  <small className="approval-timestamp">{formatApprovedAt(approval.approved_at)}</small>
+                ) : null}
               </div>
             );
           })}
@@ -144,7 +160,7 @@ export function RunApprovalsPanel({
         ) : null}
         <button className="text-button form-submit" disabled={saving} onClick={save} type="button">
           {saving ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-          승인 저장
+          승인 내용 저장
         </button>
       </div>
     </section>

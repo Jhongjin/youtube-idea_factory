@@ -59,6 +59,7 @@ This queue keeps the build loop explicit:
 | dashboard-top-chrome-compression | Phase 7 | done | codex | no | Dashboard channel and step headers are more compact so the current action card appears sooner on screen. |
 | dashboard-current-step-copy-cleanup | Phase 7 | done | codex | no | Dashboard next-action copy now uses plain operator language instead of internal terms like claim ledger, LLM strategy, render manifest, or handoff. |
 | source-review-action-density | Phase 7 | done | codex | no | Source review keeps transcript fetch and selection visible while retry, cleanup, analysis exclusion, and deletion actions sit behind additional action drawers. |
+| approval-panel-readability | Phase 7 | done | codex | no | Approval cards now use shorter operator copy, readable timestamps, and dark input surfaces that match the dashboard inspector. |
 | channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |
 | new-run-form-simplification | Phase 7 | done | codex | no | New production creation now shows only channel, topic, source URL, and format presets first; detailed knobs are collapsed. |
