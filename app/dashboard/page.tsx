@@ -120,7 +120,7 @@ const feedbackStatusCopy: Record<string, string> = {
 
 const approvalGateLabels: Record<ApprovalGate, string> = {
   generation: "생성 승인",
-  render: "렌더 승인",
+  render: "영상 조립 승인",
   publish: "게시 승인",
 };
 
@@ -146,7 +146,7 @@ const guidedStepDefinitions = [
     label: "미디어 만들기",
   },
   {
-    description: "검수, 편집, 렌더, 업로드를 진행합니다.",
+    description: "검수, 편집, 영상 조립, 업로드를 진행합니다.",
     key: "review",
     label: "검수/업로드",
   },
@@ -193,63 +193,63 @@ const actionGuides: Partial<
 > = {
   "analysis-draft": {
     goal: "소스 영상의 훅, 구조, 주장 후보를 분석 초안으로 정리합니다.",
-    output: "결과는 대본 만들기 단계의 영상 분석, 클레임 장부에서 확인합니다.",
+    output: "결과는 영상 분석과 근거 목록 탭에서 확인합니다.",
     title: "분석 초안",
   },
   "analysis-refine": {
-    goal: "등록한 LLM으로 분석 품질을 높이고 빈 주장 후보를 보강합니다.",
-    output: "영상 분석과 클레임 장부가 갱신됩니다.",
+    goal: "AI로 분석 내용을 다듬고 비어 있는 주장 후보를 보강합니다.",
+    output: "영상 분석과 근거 목록이 갱신됩니다.",
     title: "분석 고도화",
   },
   "script-pattern-analysis": {
-    goal: "TOP10 소스의 훅, 첫 30초, 전개, 시청 유지, CTA 패턴을 대본 전략으로 요약합니다.",
-    output: "대본 만들기 단계의 대본 유형 탭에 저장됩니다.",
-    title: "TOP10 대본 유형",
+    goal: "상위 소스의 훅, 첫 30초, 전개, 시청 유지, CTA 패턴을 요약합니다.",
+    output: "대본 유형 탭에 저장됩니다.",
+    title: "대본 유형 분석",
   },
   "strategy-recommendations": {
-    goal: "TOP10 소스와 분석 산출물을 바탕으로 대상 시청자, 톤, 각도, 대본 구조를 추천합니다.",
-    output: "대본 만들기 단계의 전략 추천 탭에 저장됩니다.",
-    title: "LLM 전략 추천",
+    goal: "소스 분석을 바탕으로 대상 시청자, 톤, 각도, 대본 구조를 추천합니다.",
+    output: "전략 추천 탭에 저장됩니다.",
+    title: "전략 추천",
   },
   "asset-manifest": {
     goal: "장면별로 필요한 이미지, 영상, 음성, 자막, 썸네일 목록을 만듭니다.",
-    output: "미디어 만들기 단계에서 만들 자산 목록을 확인할 수 있습니다.",
-    title: "자산 목록 만들기",
+    output: "미디어 만들기 단계에서 만들 항목을 확인할 수 있습니다.",
+    title: "필요한 자료 정리",
   },
   "channel-memory": {
     goal: "성과와 운영 메모를 다음 기획에 쓸 채널 기억으로 저장합니다.",
-    output: "좌측 채널 메모리와 피드백 산출물에 반영됩니다.",
+    output: "채널 메모리에 반영됩니다.",
     title: "채널 메모리",
   },
   "draft-flow": {
-    goal: "분석, 클레임, 대본 자리표시자를 한 번에 준비합니다.",
-    output: "대본 만들기 단계의 산출물 탭이 채워집니다.",
+    goal: "분석, 근거 목록, 대본 초안 틀을 한 번에 준비합니다.",
+    output: "대본 만들기 단계의 기본 탭이 채워집니다.",
     title: "초안 흐름 만들기",
   },
   "feedback-flow": {
     goal: "업로드 뒤 성과를 모아 다음 기획에 반영할 흐름을 만듭니다.",
-    output: "피드백 산출물이 저장됩니다.",
+    output: "피드백 기록이 저장됩니다.",
     title: "피드백 흐름",
   },
   "feedback-insights": {
     goal: "성과 신호를 다음 제목, 훅, 포맷 의사결정으로 요약합니다.",
-    output: "피드백 인사이트 산출물이 저장됩니다.",
+    output: "성과 인사이트가 저장됩니다.",
     title: "성과 인사이트",
   },
   "generation-queue": {
-    goal: "승인과 API 설정을 확인해 바로 만들 수 있는 자산을 나눕니다.",
+    goal: "승인과 API 설정을 확인해 바로 만들 수 있는 항목을 나눕니다.",
     output: "만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
-    title: "만들 자산 정리",
+    title: "만들 항목 정리",
   },
   "learning-log": {
-    goal: "A/B 결과와 운영 판단을 다음 run에 재사용할 로그로 남깁니다.",
-    output: "학습 로그 산출물이 저장됩니다.",
+    goal: "A/B 결과와 운영 판단을 다음 제작에 재사용할 기록으로 남깁니다.",
+    output: "학습 로그가 저장됩니다.",
     title: "학습 로그",
   },
   "local-render": {
-    goal: "로컬 ffmpeg 렌더로 MVP 영상을 조립합니다.",
-    output: "렌더 결과와 로그가 run 산출물에 남습니다.",
-    title: "로컬 렌더",
+    goal: "로컬 ffmpeg로 테스트 영상을 조립합니다.",
+    output: "조립 결과와 로그가 실행 기록에 남습니다.",
+    title: "로컬 조립",
   },
   "media-draft": {
     goal: "스토리보드를 이미지와 영상 생성 프롬프트로 바꿉니다.",
@@ -257,13 +257,13 @@ const actionGuides: Partial<
     title: "미디어 프롬프트",
   },
   "open-settings": {
-    goal: "LLM, 이미지, 영상, TTS, 편집 API 키와 모델을 점검합니다.",
+    goal: "AI, 이미지, 영상, TTS, 편집 API 키와 모델을 점검합니다.",
     output: "API가 준비되면 생성 버튼과 워커 작업이 열립니다.",
     title: "API 설정 확인",
   },
   "performance-snapshot": {
     goal: "업로드된 영상의 성과 스냅샷을 수집할 준비를 합니다.",
-    output: "성과 스냅샷 산출물이 저장됩니다.",
+    output: "성과 스냅샷이 저장됩니다.",
     title: "성과 스냅샷",
   },
   "publishing-draft": {
@@ -278,26 +278,26 @@ const actionGuides: Partial<
   },
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
-    output: "검수 산출물과 오른쪽 차단 항목이 갱신됩니다.",
+    output: "검수 탭과 오른쪽 차단 항목이 갱신됩니다.",
     title: "제작 검수",
   },
   "render-job": {
-    goal: "외부 렌더 워커가 처리할 작업을 큐에 등록합니다.",
-    output: "워커 큐와 렌더 상태 패널에 작업이 표시됩니다.",
-    title: "렌더 작업 등록",
+    goal: "외부 작업자가 처리할 영상 조립 작업을 등록합니다.",
+    output: "작업 큐와 영상 조립 상태에 표시됩니다.",
+    title: "영상 조립 등록",
   },
   "render-manifest": {
-    goal: "자산을 타임라인으로 묶고 렌더 차단 항목을 확인합니다.",
-    output: "렌더 계획서, EDL, 검수 상태가 갱신됩니다.",
-    title: "렌더 계획",
+    goal: "자료를 타임라인으로 묶고 영상 조립에 빠진 항목을 확인합니다.",
+    output: "영상 조립 계획, EDL, 검수 상태가 갱신됩니다.",
+    title: "영상 조립 계획",
   },
   "script-draft": {
-    goal: "분석과 클레임 장부를 바탕으로 대본 구조를 만듭니다.",
+    goal: "분석과 근거 목록을 바탕으로 대본 구조를 만듭니다.",
     output: "대본 만들기 단계의 대본 탭에 저장됩니다.",
     title: "대본 초안",
   },
   "script-refine": {
-    goal: "등록한 LLM으로 훅, 전개, 내레이션을 고도화합니다.",
+    goal: "AI로 훅, 전개, 내레이션을 더 자연스럽게 다듬습니다.",
     output: "대본 탭이 새 버전으로 갱신됩니다.",
     title: "대본 고도화",
   },
@@ -308,13 +308,13 @@ const actionGuides: Partial<
     title: "소스 정보 보강",
   },
   "storyboard-draft": {
-    goal: "대본을 장면, 내레이션, 화면 문구, 자산 요구사항으로 나눕니다.",
-    output: "스토리보드 산출물이 저장되고 미디어 만들기 단계가 준비됩니다.",
+    goal: "대본을 장면, 내레이션, 화면 문구, 필요한 자료로 나눕니다.",
+    output: "스토리보드가 저장되고 미디어 만들기 단계가 준비됩니다.",
     title: "스토리보드",
   },
   "subtitle-draft": {
     goal: "내레이션 초안을 자막 초안으로 바꿉니다.",
-    output: "자막 산출물이 저장됩니다.",
+    output: "자막 초안이 저장됩니다.",
     title: "자막 초안",
   },
   "youtube-upload-job": {
@@ -358,7 +358,7 @@ const advancedActionGroupsByStep: Record<
   review: [
     {
       actionIds: ["qa-draft", "render-manifest", "render-job", "local-render"],
-      label: "검수/렌더",
+      label: "검수/조립",
     },
     {
       actionIds: [
@@ -381,14 +381,14 @@ const pipelineStageTargets = [
   { href: "#youtube-finder", label: "후보 검색" },
   { href: "#artifact-video-analysis", label: "분석 탭" },
   { href: "#artifact-script-patterns", label: "유형 탭" },
-  { href: "#artifact-claim-ledger", label: "클레임 탭" },
+  { href: "#artifact-claim-ledger", label: "근거 탭" },
   { href: "#artifact-strategy-recommendations", label: "추천 탭" },
   { href: "#artifact-script-plan", label: "대본 탭" },
   { href: "#artifact-storyboard", label: "씬 탭" },
   { href: "#artifact-media-prompts", label: "프롬프트 탭" },
   { href: "#artifact-publishing", label: "배포 탭" },
   { href: "#artifact-qa", label: "검수 탭" },
-  { href: "#artifact-render-edl", label: "렌더 EDL" },
+  { href: "#artifact-render-edl", label: "조립 EDL" },
   { href: "#artifact-youtube-upload-job", label: "업로드 작업" },
   { href: "#artifact-feedback-insights", label: "피드백" },
   { href: "#artifact-channel-memory-update", label: "채널 메모리" },
@@ -563,7 +563,7 @@ function activeApprovalGate(plan: RunNextActionPlan): ApprovalGate | null {
   if (plan.headline.includes("생성 승인")) {
     return "generation";
   }
-  if (plan.headline.includes("렌더 승인")) {
+  if (plan.headline.includes("영상 조립 승인") || plan.headline.includes("렌더 승인")) {
     return "render";
   }
   if (plan.headline.includes("게시 승인")) {
@@ -597,7 +597,7 @@ function inspectorDecision({
   }
   if (plan.status === "review") {
     return {
-      detail: "외부 비용, 렌더, 업로드 전에 사람 확인이 필요한 상태입니다.",
+      detail: "외부 비용, 영상 조립, 업로드 전에 사람 확인이 필요한 상태입니다.",
       label: "검토 필요",
       tone: "review",
     };
@@ -992,7 +992,7 @@ function GuidedRunWorkspace({
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
-            description="분석, 클레임, 대본, 스토리보드만 먼저 보여줍니다. 전체 산출물은 필요할 때 펼치면 됩니다."
+            description="분석, 근거 목록, 대본, 스토리보드만 먼저 보여줍니다. 전체 결과는 필요할 때 펼치면 됩니다."
             focusArtifactIds={guidedArtifactFocus.draft}
             runId={run.id}
             title="대본과 스토리보드"
@@ -1014,7 +1014,7 @@ function GuidedRunWorkspace({
             description="스토리보드와 미디어 프롬프트를 중심으로 생성 준비를 정리합니다."
             focusArtifactIds={guidedArtifactFocus.production}
             runId={run.id}
-            title="제작 산출물"
+            title="제작 준비"
           />
           <details className="guided-secondary-panel">
             <summary>제작 준비 상태 보기</summary>
@@ -1256,18 +1256,18 @@ const dashboardNoticeCopy: Record<
     title: "관리자 권한이 필요한 화면입니다.",
   },
   "analysis-drafted": {
-    detail: "영상 분석과 클레임 장부가 갱신됐습니다. 다음 단계가 열렸는지 확인하세요.",
+    detail: "영상 분석과 근거 목록이 갱신됐습니다. 다음 단계가 열렸는지 확인하세요.",
     title: "분석 초안을 만들었습니다.",
     tone: "success",
   },
   "script-patterns": {
-    detail: "TOP10 소스의 훅, 첫 30초, 전개, 시청 유지, 신뢰 장치, CTA 패턴을 대본 전략으로 정리했습니다.",
+    detail: "상위 소스의 훅, 첫 30초, 전개, 시청 유지, 신뢰 장치, CTA 패턴을 대본 전략으로 정리했습니다.",
     title: "대본 유형 분석을 만들었습니다.",
     tone: "success",
   },
   "strategy-recommendations": {
     detail: "대상 시청자 5개, 톤 5개, 영상 각도 5개, 추천 대본 구조와 채널 필터를 생성했습니다.",
-    title: "LLM 전략 추천을 만들었습니다.",
+    title: "전략 추천을 만들었습니다.",
     tone: "success",
   },
   "sources-checked": {
@@ -1291,7 +1291,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "sources-excluded": {
-    detail: "선택한 소스는 run에 보관되지만 분석 초안과 LLM 분석 입력에서는 제외됩니다.",
+    detail: "선택한 소스는 실행 기록에 보관되지만 분석 입력에서는 제외됩니다.",
     title: "선택 소스를 분석에서 제외했습니다.",
     tone: "success",
   },
@@ -1366,7 +1366,7 @@ function SummaryGrid({ run }: { run: RunSummary }) {
         </p>
       </div>
       <div className="stat">
-        <p className="stat-label">클레임</p>
+        <p className="stat-label">근거</p>
         <p className="stat-value">
           <ShieldCheck size={19} />
           {pkg.claim_ledger.length}
@@ -1813,11 +1813,11 @@ function AssemblyPanel({
             <span>대기</span>
           </div>
           <div className="detail-row">
-            <span>렌더</span>
+            <span>영상 조립</span>
             <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>편집/렌더 방식</span>
+            <span>편집/조립 방식</span>
             <span>
               {editingProvider.provider}
               {editingProvider.model ? ` / ${editingProvider.model}` : ""}
@@ -1828,7 +1828,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.editing_handoff_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>렌더 EDL</span>
+            <span>조립 EDL</span>
             <span>{run.package.render_manifest?.edl_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
@@ -1836,7 +1836,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.rendered_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>렌더 작업</span>
+            <span>영상 조립 작업</span>
             <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
           </div>
           <div className="detail-row">
@@ -1852,7 +1852,7 @@ function AssemblyPanel({
             <span>{run.package.asset_manifest?.blocked ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>렌더 차단</span>
+            <span>조립 차단</span>
             <span>{run.package.render_manifest?.blockers ?? 0}</span>
           </div>
           <div className="detail-row">
@@ -2065,7 +2065,7 @@ function StageFocusPanel({
               <strong>{missingTranscripts}</strong>
             </div>
             <div>
-              <span>클레임</span>
+              <span>근거</span>
               <strong>{run.package.claim_ledger.length}</strong>
             </div>
             <div>
@@ -2107,7 +2107,7 @@ function Inspector({
   const showApprovals = nextActionPlan.headline.includes("승인");
   const waitingForMainButton = Boolean(nextActionPlan.primaryActionId);
   const showGeneration = stage === "자산 생성" && !waitingForMainButton;
-  const showAssembly = (stage === "렌더" || stage === "배포") && !waitingForMainButton;
+  const showAssembly = (stage === "영상 조립" || stage === "렌더" || stage === "배포") && !waitingForMainButton;
   const showFeedback = stage === "피드백" && !waitingForMainButton;
   const showProviderReadiness = nextActionPlan.primaryActionId === "open-settings";
   const showValidationImmediate = validation.status === "fail";

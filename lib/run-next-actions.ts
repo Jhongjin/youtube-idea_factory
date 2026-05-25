@@ -165,7 +165,7 @@ export function getRunNextActionPlan({
       headline: "소스 영상 수집",
       items: [
         {
-          detail: "유튜브 파인더에서 후보를 검색한 뒤 선택한 결과를 run 소스로 가져오세요.",
+          detail: "유튜브 파인더에서 후보를 검색한 뒤 선택한 영상을 소스로 가져오세요.",
           status: "pending",
           title: "유튜브 파인더",
         },
@@ -201,11 +201,11 @@ export function getRunNextActionPlan({
 
   if (pkg.claim_ledger.length === 0) {
     return step({
-      detail: "소스에서 훅, 구조, 팩트체크 후보를 먼저 뽑아야 대본과 QA가 안정적으로 이어집니다.",
+      detail: "소스에서 훅, 구조, 확인할 주장을 먼저 뽑아야 대본과 검수가 안정적으로 이어집니다.",
       headline: "분석 초안 생성",
       items: [
         {
-          detail: "분석 초안을 실행한 뒤 클레임 장부에서 needs_evidence 항목을 검토하세요.",
+          detail: "분석 초안을 만든 뒤 근거가 필요한 항목을 검토하세요.",
           status: "pending",
           title: "영상 분석",
         },
@@ -220,11 +220,11 @@ export function getRunNextActionPlan({
 
   if (!hasScriptPatternAnalysis(pkg)) {
     return step({
-      detail: "분석된 소스들의 훅, 첫 30초, 전개, retention, 신뢰 장치, CTA 패턴을 먼저 뽑습니다.",
-      headline: "TOP10 대본 유형 분석",
+      detail: "분석된 소스들의 훅, 첫 30초, 전개, 시청 유지 장치, CTA 패턴을 먼저 뽑습니다.",
+      headline: "대본 유형 분석",
       items: [
         {
-          detail: "소스 구조를 베끼지 않고 재사용 가능한 패턴과 차별화 각도를 정리하세요.",
+          detail: "소스 구조를 베끼지 않고 참고할 패턴과 차별화 각도를 정리하세요.",
           status: "pending",
           title: "대본 유형",
         },
@@ -239,8 +239,8 @@ export function getRunNextActionPlan({
 
   if (!hasStrategyRecommendations(pkg)) {
     return step({
-      detail: "TOP10 패턴을 바탕으로 대상 시청자, 톤, 영상 각도, 추천 대본 구조를 고릅니다.",
-      headline: "LLM 전략 추천",
+      detail: "상위 소스의 패턴을 바탕으로 대상 시청자, 톤, 영상 각도, 추천 대본 구조를 고릅니다.",
+      headline: "전략 추천",
       items: [
         {
           detail: "추천은 방향성 후보입니다. 최종 각도와 사실 사용은 사람이 검토해야 합니다.",
@@ -258,11 +258,11 @@ export function getRunNextActionPlan({
 
   if (!hasScriptDraft(pkg)) {
     return step({
-      detail: "분석과 클레임 장부를 바탕으로 훅, 각도, 비트맵을 만듭니다.",
+      detail: "분석과 근거 목록을 바탕으로 훅, 각도, 전개 흐름을 만듭니다.",
       headline: "대본 초안 생성",
       items: [
         {
-          detail: "대본 초안을 만든 뒤 LLM 제공자가 준비되어 있으면 대본 고도화를 실행하세요.",
+          detail: "대본 초안을 만든 뒤 AI 설정이 준비되어 있으면 대본 고도화를 실행하세요.",
           status: "pending",
           title: "대본 구성",
         },
@@ -277,11 +277,11 @@ export function getRunNextActionPlan({
 
   if (pkg.storyboard.length === 0) {
     return step({
-      detail: "대본 비트를 장면, 내레이션, 화면 문구, 자산 요구사항으로 쪼갭니다.",
+      detail: "대본 흐름을 장면, 내레이션, 화면 문구, 필요한 자료로 나눕니다.",
       headline: "스토리보드 생성",
       items: [
         {
-          detail: "스토리보드가 있어야 장면별 이미지/영상 프롬프트와 렌더 타임라인이 안정화됩니다.",
+          detail: "스토리보드가 있어야 장면별 이미지/영상 프롬프트와 편집 타임라인이 정리됩니다.",
           status: "pending",
           title: "씬 카드",
         },
@@ -349,12 +349,12 @@ export function getRunNextActionPlan({
   if (!generationState.manifestExists || !pkg.asset_manifest) {
     return step({
       detail: "스토리보드와 프롬프트를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
-      headline: "자산 목록 만들기",
+      headline: "필요한 자료 정리",
       items: [
         {
           detail: "버튼을 누르면 장면별로 필요한 자산이 정리됩니다.",
           status: "pending",
-          title: "필요한 자산",
+          title: "필요한 자료",
         },
       ],
       primaryActionId: "asset-manifest",
@@ -384,8 +384,8 @@ export function getRunNextActionPlan({
 
   if (!generationState.queueExists) {
     return step({
-      detail: "승인과 API 설정을 확인해서 바로 만들 수 있는 자산과 막힌 자산을 나눕니다.",
-      headline: "만들 자산 정리하기",
+      detail: "승인과 API 설정을 확인해서 바로 만들 수 있는 항목과 막힌 항목을 나눕니다.",
+      headline: "만들 항목 정리하기",
       items: [
         {
           detail: "버튼을 누르면 만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
@@ -402,8 +402,8 @@ export function getRunNextActionPlan({
 
   if ((generationState.summary?.blocked ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.blocked ?? 0}개 자산이 API 설정이나 프롬프트 문제로 막혀 있습니다.`,
-      headline: "막힌 자산 확인하기",
+      detail: `${generationState.summary?.blocked ?? 0}개 항목이 API 설정이나 프롬프트 문제로 막혀 있습니다.`,
+      headline: "막힌 항목 확인하기",
       items: generationState.items
         .filter((item) => item.blockers.length > 0)
         .slice(0, 3)
@@ -421,13 +421,13 @@ export function getRunNextActionPlan({
 
   if ((generationState.summary?.ready ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.ready ?? 0}개 자산을 만들거나 수동으로 등록할 수 있습니다.`,
-      headline: "자산 만들기",
+      detail: `${generationState.summary?.ready ?? 0}개 항목을 만들거나 수동으로 등록할 수 있습니다.`,
+      headline: "미디어 만들기",
       items: [
         {
           detail: "오른쪽 생성 콘솔에서 직접 만들거나, 수동으로 만든 파일을 등록하세요.",
           status: "pending",
-          title: "미디어 자산",
+          title: "미디어 항목",
         },
       ],
       primaryActionId: undefined,
@@ -439,90 +439,90 @@ export function getRunNextActionPlan({
 
   if (!approvalReady(approvals.render)) {
     return step({
-      detail: "최종 조립과 로컬 ffmpeg 렌더 전에 render 승인이 필요합니다.",
-      headline: "렌더 승인",
+      detail: "최종 영상 조립 전에 영상 조립 승인이 필요합니다.",
+      headline: "영상 조립 승인",
       items: [
         {
-          detail: "오른쪽 승인 게이트에서 render를 승인하고 승인자를 남기세요.",
+          detail: "오른쪽 승인 카드에서 영상 조립 승인을 저장하세요.",
           status: "review",
           title: "승인 게이트",
         },
       ],
       stageIndex: 10,
-      stageLabel: "렌더",
+      stageLabel: "영상 조립",
       status: "review",
     });
   }
 
   if (!pkg.render_manifest) {
     return step({
-      detail: "생성된 자산을 타임라인으로 묶어 렌더 가능성을 확인합니다.",
-      headline: "렌더 매니페스트 생성",
+      detail: "생성된 자료를 타임라인으로 묶어 최종 영상으로 조립할 수 있는지 확인합니다.",
+      headline: "영상 조립 계획 만들기",
       items: [
         {
-          detail: "상단의 렌더 매니페스트 버튼으로 최종 조립 조건을 확인하세요.",
+          detail: "영상 조립 계획 버튼으로 최종 조립 조건을 확인하세요.",
           status: "pending",
-          title: "렌더 프리플라이트",
+          title: "조립 전 확인",
         },
       ],
       primaryActionId: "render-manifest",
       stageIndex: 10,
-      stageLabel: "렌더",
+      stageLabel: "영상 조립",
       status: "pending",
     });
   }
 
   if (pkg.render_manifest.blockers > 0 || !pkg.render_manifest.render_ready) {
     return step({
-      detail: `${pkg.render_manifest.blockers}개 렌더 차단 항목이 남아 있습니다.`,
-      headline: "렌더 차단 해소",
+      detail: `${pkg.render_manifest.blockers}개 영상 조립 차단 항목이 남아 있습니다.`,
+      headline: "영상 조립 차단 해소",
       items: [
         {
-          detail: "누락된 영상, 음성, 자막, BGM 자산을 등록한 뒤 렌더 매니페스트를 다시 생성하세요.",
+          detail: "누락된 영상, 음성, 자막, BGM을 등록한 뒤 영상 조립 계획을 다시 만드세요.",
           status: "blocked",
-          title: "렌더 입력",
+          title: "조립 재료",
         },
       ],
       primaryActionId: "render-manifest",
       stageIndex: 10,
-      stageLabel: "렌더",
+      stageLabel: "영상 조립",
       status: "blocked",
     });
   }
 
   if (workerStatus.render.status === "queued") {
     return step({
-      detail: "렌더 작업이 큐에 등록되어 외부 워커 실행을 기다립니다.",
-      headline: "렌더 워커 실행",
+      detail: "영상 조립 작업이 등록되어 외부 작업자 실행을 기다립니다.",
+      headline: "영상 조립 작업 실행",
       items: [
         {
           command: `npm run render:worker -- --next --confirm RUN_RENDER_WORKER --storage ${storageMode}`,
-          detail: "로컬 또는 별도 워커 환경에서 실행하세요.",
+          detail: "로컬 또는 별도 작업자 환경에서 실행하세요.",
           status: "pending",
           title: "워커 명령",
         },
       ],
       stageIndex: 10,
-      stageLabel: "렌더",
+      stageLabel: "영상 조립",
       status: "pending",
     });
   }
 
   if (workerStatus.render.status !== "completed") {
     return step({
-      detail: "렌더 준비가 끝났습니다. 큐 작업을 만들거나 로컬 렌더를 실행할 수 있습니다.",
-      headline: "렌더 작업 생성",
+      detail: "영상 조립 준비가 끝났습니다. 작업을 등록하거나 로컬 조립을 실행할 수 있습니다.",
+      headline: "영상 조립 작업 만들기",
       items: [
         {
-          detail: "상단의 렌더 작업 버튼으로 외부 워커 큐를 만들거나 로컬 렌더 버튼으로 MVP 렌더를 실행하세요.",
+          detail: "영상 조립 등록 버튼으로 외부 작업을 만들거나 로컬 조립 버튼으로 테스트 영상을 만드세요.",
           status: "pending",
-          title: "렌더 실행",
+          title: "영상 조립",
         },
       ],
       primaryActionId: "render-job",
       secondaryActionIds: ["local-render"],
       stageIndex: 10,
-      stageLabel: "렌더",
+      stageLabel: "영상 조립",
       status: "pending",
     });
   }
@@ -530,10 +530,10 @@ export function getRunNextActionPlan({
   if (!pkg.publishing_handoff?.ready) {
     return step({
       detail: "최종 파일, 썸네일, 제목, 설명, 태그를 업로드 패키지로 잠급니다.",
-      headline: "배포 핸드오프 생성",
+      headline: "업로드 패키지 만들기",
       items: [
         {
-          detail: "상단의 배포 핸드오프 버튼으로 업로드 전 체크리스트를 생성하세요.",
+          detail: "업로드 패키지 버튼으로 업로드 전 체크리스트를 생성하세요.",
           status: "pending",
           title: "배포 패키지",
         },
@@ -547,11 +547,11 @@ export function getRunNextActionPlan({
 
   if (!approvalReady(approvals.publish)) {
     return step({
-      detail: "YouTube 업로드나 예약 게시 전에 publish 승인이 필요합니다.",
+      detail: "YouTube 업로드나 예약 게시 전에 게시 승인이 필요합니다.",
       headline: "게시 승인",
       items: [
         {
-          detail: "오른쪽 승인 게이트에서 publish를 승인하고 승인자를 남기세요.",
+          detail: "오른쪽 승인 카드에서 게시 승인을 저장하세요.",
           status: "review",
           title: "승인 게이트",
         },
