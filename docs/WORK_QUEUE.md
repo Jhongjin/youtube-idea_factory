@@ -67,6 +67,7 @@ This queue keeps the build loop explicit:
 | inspector-five-step-focus | Phase 7 | done | codex | no | The right inspector now uses the same 5-step language as the main flow and folds validation, blockers, and run facts into one advanced section. |
 | inspector-secondary-tools-disclosure | Phase 7 | done | codex | no | The right inspector now keeps API status, generation buttons, assembly status, and feedback tools behind short disclosure rows. |
 | guided-current-step-simplification | Phase 7 | done | codex | no | The central workspace now shows a single current-step line, plainer button outcomes, and softer wording for blocked or secondary details. |
+| artifact-summary-first-preview | Phase 7 | done | codex | no | Artifact results now show a short readable summary first and keep raw markdown behind an explicit disclosure. |
 | approval-default-copy-localization | Phase 7 | done | codex | no | Approval defaults and legacy saved approval notes now render as plain Korean operator copy instead of English template text. |
 | channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |

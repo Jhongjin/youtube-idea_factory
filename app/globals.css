@@ -4651,7 +4651,7 @@ button:disabled,
   padding: 16px;
 }
 
-.artifact-review-card div {
+.artifact-review-card > div:first-child {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4670,12 +4670,84 @@ button:disabled,
   font-size: 13px;
 }
 
-.artifact-review-card pre {
+.artifact-preview-summary {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fbfbf8;
+  padding: 16px;
+}
+
+.artifact-preview-summary h4,
+.artifact-preview-summary p,
+.artifact-preview-summary ul {
+  margin: 0;
+}
+
+.artifact-preview-summary h4 {
+  color: #182235;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.artifact-preview-summary p,
+.artifact-preview-summary li {
+  color: #455366;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.artifact-preview-summary ul {
+  display: grid;
+  gap: 8px;
+  padding-left: 18px;
+}
+
+.artifact-raw-disclosure {
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.artifact-raw-disclosure summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 42px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 16px;
+}
+
+.artifact-raw-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.artifact-raw-disclosure summary span {
+  color: #263447;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.artifact-raw-disclosure summary strong {
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: #536174;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.artifact-raw-disclosure[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.artifact-raw-disclosure pre {
   max-height: 520px;
   overflow: auto;
   margin: 0;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 0;
   background: #fbfbf8;
   color: #182235;
   padding: 16px;
@@ -8675,7 +8747,7 @@ body {
 
 .settings-message code,
 .next-action-item code,
-.artifact-review-card pre,
+.artifact-raw-disclosure pre,
 .artifact-edit-body textarea {
   border: 1px solid rgba(244, 239, 227, 0.13);
   background: rgba(5, 10, 10, 0.64);
@@ -9503,6 +9575,7 @@ body {
 
 .artifact-tabs,
 .artifact-description,
+.artifact-raw-disclosure,
 .artifact-edit-disclosure,
 .artifact-footer {
   border-color: rgba(244, 239, 227, 0.16);
@@ -9515,6 +9588,8 @@ body {
 .artifact-tab,
 .artifact-view-toggle,
 .artifact-meta span,
+.artifact-preview-summary,
+.artifact-raw-disclosure summary,
 .artifact-edit-disclosure summary {
   border-color: rgba(244, 239, 227, 0.16);
   background: rgba(244, 239, 227, 0.055);
@@ -9535,13 +9610,23 @@ body {
 
 .artifact-tabs-heading strong,
 .artifact-review-card strong,
+.artifact-preview-summary h4,
+.artifact-raw-disclosure summary span,
 .artifact-edit-disclosure summary span {
   color: #fff8ea;
 }
 
 .artifact-description,
+.artifact-preview-summary p,
+.artifact-preview-summary li,
+.artifact-raw-disclosure summary strong,
 .artifact-edit-disclosure summary strong {
   color: rgba(244, 239, 227, 0.74);
+}
+
+.artifact-raw-disclosure pre {
+  background: rgba(5, 10, 10, 0.64);
+  color: #fbf6e8;
 }
 
 @media (max-width: 1180px) {

@@ -6,6 +6,59 @@ import type { RunArtifact } from "@/lib/artifacts";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
+function cleanPreviewLine(line: string) {
+  return line
+    .replace(/^#{1,6}\s*/, "")
+    .replace(/^[-*]\s+/, "")
+    .replace(/^\d+\.\s+/, "")
+    .replace(/^>\s*/, "")
+    .replace(/\*\*/g, "")
+    .replace(/`/g, "")
+    .trim();
+}
+
+function getArtifactPreview(content: string, fallbackTitle: string) {
+  const lines = content
+    .trim()
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length === 0) {
+    return {
+      lines: [],
+      title: fallbackTitle,
+    };
+  }
+
+  const heading = lines.find((line) => /^#{1,6}\s+/.test(line));
+  const tableRows = lines
+    .filter((line) => line.startsWith("|") && line.endsWith("|"))
+    .filter((line) => !/^\|[\s|:-]+\|$/.test(line))
+    .slice(1, 5)
+    .map((line) =>
+      line
+        .split("|")
+        .map((cell) => cleanPreviewLine(cell))
+        .filter(Boolean)
+        .slice(0, 3)
+        .join(" · "),
+    )
+    .filter(Boolean);
+  const textLines = lines
+    .filter((line) => !/^#{1,6}\s+/.test(line))
+    .filter((line) => !line.startsWith("|"))
+    .filter((line) => !/^[-_]{3,}$/.test(line))
+    .map(cleanPreviewLine)
+    .filter(Boolean)
+    .slice(0, 5);
+
+  return {
+    lines: (tableRows.length > 0 ? tableRows : textLines).slice(0, 5),
+    title: cleanPreviewLine(heading ?? fallbackTitle),
+  };
+}
+
 export function ArtifactWorkspace({
   runId,
   artifacts,
@@ -97,6 +150,7 @@ export function ArtifactWorkspace({
   const activeContent = contents[activeArtifact.id] ?? "";
   const originalContent = savedContents[activeArtifact.id] ?? activeArtifact.content;
   const isDirty = activeContent !== originalContent;
+  const preview = getArtifactPreview(activeContent, activeArtifact.label);
 
   async function saveArtifact() {
     setSaveState("saving");
@@ -187,11 +241,33 @@ export function ArtifactWorkspace({
           <p className="artifact-description">{activeArtifact.description}</p>
           <article className="artifact-review-card">
             <div>
-              <span>미리보기</span>
+              <span>요약</span>
               <strong>{activeArtifact.label}</strong>
             </div>
-            <pre>{activeContent.trim() || "아직 저장된 내용이 없습니다."}</pre>
+            <div className="artifact-preview-summary">
+              <h4>{preview.title}</h4>
+              {preview.lines.length > 0 ? (
+                <ul>
+                  {preview.lines.map((line, index) => (
+                    <li key={`${line}-${index}`}>{line}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p>아직 저장된 내용이 없습니다.</p>
+              )}
+            </div>
           </article>
+          <details className="artifact-raw-disclosure">
+            <summary>
+              <span>원문 보기</span>
+              <strong>
+                {activeArtifact.size > 0
+                  ? `${activeArtifact.size.toLocaleString()}바이트`
+                  : "비어 있음"}
+              </strong>
+            </summary>
+            <pre>{activeContent.trim() || "아직 저장된 내용이 없습니다."}</pre>
+          </details>
           <details className="artifact-edit-disclosure">
             <summary>
               <span>내용 편집</span>
