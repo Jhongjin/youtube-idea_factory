@@ -135,16 +135,14 @@ export function ArtifactWorkspace({
           <h3 className="panel-title">{title}</h3>
           <p className="panel-subtitle">{description}</p>
         </div>
-        <span className="artifact-read-mode">검토 우선</span>
+        <span className="artifact-read-mode">지금 볼 결과</span>
       </div>
 
       <div className="artifact-layout">
         <div className="artifact-tabs" role="tablist" aria-label="실행 결과">
           <div className="artifact-tabs-heading">
-            <span>{showAllArtifacts || !hasFocusFilter ? "전체 결과" : "이번 단계"}</span>
-            <strong>
-              {visibleArtifacts.length}/{artifacts.length}
-            </strong>
+            <span>{showAllArtifacts || !hasFocusFilter ? "모든 결과" : "현재 결과"}</span>
+            <strong>{visibleArtifacts.length}개</strong>
           </div>
           {visibleArtifacts.map((artifact) => (
             <button
@@ -176,7 +174,7 @@ export function ArtifactWorkspace({
               }}
               type="button"
             >
-              {showAllArtifacts ? "이번 단계만 보기" : "전체 결과 보기"}
+              {showAllArtifacts ? "현재 결과만 보기" : "다른 결과도 보기"}
             </button>
           ) : null}
         </div>
@@ -184,9 +182,7 @@ export function ArtifactWorkspace({
         <div className="artifact-editor">
           <div className="artifact-meta">
             <span>{activeArtifact.label}</span>
-            <span>{activeArtifact.filename}</span>
-            <span>{activeArtifact.skill}</span>
-            <span>{activeArtifact.size.toLocaleString()}바이트</span>
+            <span>{activeArtifact.size > 0 ? "저장됨" : "아직 내용 없음"}</span>
           </div>
           <p className="artifact-description">{activeArtifact.description}</p>
           <article className="artifact-review-card">

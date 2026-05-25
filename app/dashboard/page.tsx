@@ -180,6 +180,69 @@ const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, 
   ],
 };
 
+const actionArtifactFocus: Partial<Record<RunPrimaryActionId, string[]>> = {
+  "analysis-draft": ["video-analysis", "claim-ledger"],
+  "analysis-refine": ["video-analysis", "claim-ledger"],
+  "asset-manifest": ["media-prompts"],
+  "channel-memory": ["channel-memory-update"],
+  "draft-flow": ["video-analysis", "claim-ledger", "script-plan"],
+  "feedback-flow": ["performance-snapshot", "feedback-insights"],
+  "feedback-insights": ["feedback-insights"],
+  "generation-queue": ["media-prompts"],
+  "learning-log": ["ab-learning-log"],
+  "local-render": ["render-edl"],
+  "media-draft": ["media-prompts"],
+  "performance-snapshot": ["performance-snapshot"],
+  "publishing-draft": ["publishing"],
+  "publishing-handoff": ["publishing", "youtube-upload-job"],
+  "qa-draft": ["qa"],
+  "render-job": ["render-edl"],
+  "render-manifest": ["render-edl"],
+  "script-draft": ["script-plan"],
+  "script-pattern-analysis": ["script-patterns"],
+  "script-refine": ["script-plan"],
+  "storyboard-draft": ["storyboard"],
+  "strategy-recommendations": ["strategy-recommendations"],
+  "subtitle-draft": ["storyboard"],
+  "youtube-upload-job": ["youtube-upload-job"],
+};
+
+function getCurrentArtifactFocus(plan: RunNextActionPlan, step: GuidedStepKey) {
+  if (plan.primaryActionId && actionArtifactFocus[plan.primaryActionId]) {
+    return actionArtifactFocus[plan.primaryActionId] ?? [];
+  }
+  if (step === "draft" || step === "production" || step === "review") {
+    return guidedArtifactFocus[step];
+  }
+  return [];
+}
+
+function getArtifactWorkspaceCopy(plan: RunNextActionPlan, step: GuidedStepKey) {
+  const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
+  if (currentGuide) {
+    return {
+      description: "지금 할 일과 연결된 결과만 먼저 보여줍니다.",
+      title: `${currentGuide.title} 결과`,
+    };
+  }
+  if (step === "production") {
+    return {
+      description: "승인이 끝나면 만들 수 있는 항목부터 이어서 정리합니다.",
+      title: "미디어 만들기 결과",
+    };
+  }
+  if (step === "review") {
+    return {
+      description: "최종 확인에 필요한 결과만 먼저 보여줍니다.",
+      title: "검수와 업로드 결과",
+    };
+  }
+  return {
+    description: "현재 단계에서 필요한 결과만 먼저 보여줍니다.",
+    title: "현재 단계 결과",
+  };
+}
+
 const actionGuides: Partial<
   Record<
     RunPrimaryActionId,
@@ -899,12 +962,12 @@ function GuidedActionPanel({
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "완료되면" : "먼저 확인할 것"}</span>
+            <span>{plan.primaryActionId ? "결과 위치" : "먼저 확인할 것"}</span>
             <strong>{currentGuide?.output ?? "확인이 끝나면 다음 버튼이 열립니다."}</strong>
             <small>
               {plan.primaryActionId
-                ? "오른쪽 버튼 하나만 누르면 됩니다."
-                : "승인이나 수동 확인이 필요한 단계입니다."}
+                ? "버튼을 누르면 이 화면의 결과가 갱신됩니다."
+                : "오른쪽 카드에서 필요한 확인을 저장하면 이어서 진행됩니다."}
             </small>
           </div>
           {plan.primaryActionId ? (
@@ -922,7 +985,7 @@ function GuidedActionPanel({
       </div>
       {visibleActions.length > 1 ? (
         <details className="guided-checklist">
-          <summary>다른 도구 보기</summary>
+          <summary>필요할 때만 다른 버튼 보기</summary>
           <div className="guided-secondary-tool-list">
             {visibleActions
               .filter((actionId) => actionId !== plan.primaryActionId)
@@ -938,7 +1001,7 @@ function GuidedActionPanel({
         </details>
       ) : null}
       <details className="guided-checklist">
-        <summary>작업 기준 보기</summary>
+        <summary>왜 해야 하나요?</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -973,7 +1036,8 @@ function GuidedRunWorkspace({
   providerSettings: SafeProviderSettings;
   run: RunSummary;
 }) {
-  const activeStepCopy = guidedStepDefinitions.find((step) => step.key === activeStep) ?? guidedStepDefinitions[0];
+  const focusArtifactIds = getCurrentArtifactFocus(nextActionPlan, activeStep);
+  const workspaceCopy = getArtifactWorkspaceCopy(nextActionPlan, activeStep);
   return (
     <div className="guided-workspace">
       <GuidedStepNav activeStep={activeStep} currentStep={currentStep} />
@@ -994,15 +1058,14 @@ function GuidedRunWorkspace({
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
-            description="분석, 근거 목록, 대본, 스토리보드만 먼저 보여줍니다. 전체 결과는 필요할 때 펼치면 됩니다."
-            focusArtifactIds={guidedArtifactFocus.draft}
+            description={workspaceCopy.description}
+            focusArtifactIds={focusArtifactIds}
             runId={run.id}
-            title="대본과 스토리보드"
+            title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
-            <summary>소스와 제작 단계 같이 보기</summary>
+            <summary>이전 단계 자료 보기</summary>
             <div className="workspace-grid">
-              <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
               <SourcesPanel run={run} />
             </div>
           </details>
@@ -1013,10 +1076,10 @@ function GuidedRunWorkspace({
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
-            description="스토리보드와 미디어 프롬프트를 중심으로 생성 준비를 정리합니다."
-            focusArtifactIds={guidedArtifactFocus.production}
+            description={workspaceCopy.description}
+            focusArtifactIds={focusArtifactIds}
             runId={run.id}
-            title="제작 준비"
+            title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
             <summary>제작 준비 상태 보기</summary>
@@ -1029,15 +1092,14 @@ function GuidedRunWorkspace({
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
-            description="검수와 배포 패키지를 먼저 확인합니다. 근거와 제작 단계 세부는 아래에서 펼칠 수 있습니다."
-            focusArtifactIds={guidedArtifactFocus.review}
+            description={workspaceCopy.description}
+            focusArtifactIds={focusArtifactIds}
             runId={run.id}
-            title="검수와 배포"
+            title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
-            <summary>검토 맥락 보기</summary>
+            <summary>이전 단계 자료 보기</summary>
             <div className="workspace-grid">
-              <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
               <SourcesPanel run={run} />
             </div>
           </details>

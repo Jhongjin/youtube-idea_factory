@@ -58,6 +58,7 @@ This queue keeps the build loop explicit:
 | dashboard-current-step-lock | Phase 7 | done | codex | no | The guided workspace now keeps the main screen on the current step; step dots are progress indicators instead of navigation to older stages. |
 | dashboard-top-chrome-compression | Phase 7 | done | codex | no | Dashboard channel and step headers are more compact so the current action card appears sooner on screen. |
 | dashboard-current-step-copy-cleanup | Phase 7 | done | codex | no | Dashboard next-action copy now uses plain operator language instead of internal terms like claim ledger, LLM strategy, render manifest, or handoff. |
+| dashboard-current-action-artifacts | Phase 7 | done | codex | no | Dashboard artifact panels now show only the result tied to the current button first, with older or adjacent results behind a small disclosure. |
 | source-review-action-density | Phase 7 | done | codex | no | Source review keeps transcript fetch and selection visible while retry, cleanup, analysis exclusion, and deletion actions sit behind additional action drawers. |
 | approval-panel-readability | Phase 7 | done | codex | no | Approval cards now use shorter operator copy, readable timestamps, and dark input surfaces that match the dashboard inspector. |
 | generation-console-disclosure | Phase 7 | done | codex | no | The generation console now shows only readiness counts first, with API setup and per-item generation buttons behind short disclosure panels. |
