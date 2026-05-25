@@ -33,15 +33,7 @@ const assetKindCopy: Record<string, string> = {
   bgm: "BGM",
 };
 
-const generationProviderRoles: ProviderRoleId[] = [
-  "llm",
-  "image",
-  "video",
-  "tts",
-  "subtitles",
-  "bgm",
-  "editing",
-];
+const generationProviderRoles: ProviderRoleId[] = ["image", "video", "tts"];
 
 type ProviderOption = {
   capability: ReturnType<typeof getProviderCapability>;
@@ -96,7 +88,19 @@ function compactPath(value: string) {
 }
 
 function assetDisplayName(item: AssetGenerationStateItem) {
-  return `${item.id}${item.scene_id ? ` / ${item.scene_id}` : ""}`;
+  const kind = assetKindCopy[item.kind] ?? item.kind;
+  return item.scene_id ? `${item.scene_id} ${kind}` : `${kind} ${item.id}`;
+}
+
+function sortedAssetPreview(items: AssetGenerationStateItem[], limit: number) {
+  const order: Record<AssetGenerationStateItem["status"], number> = {
+    pending_generation: 0,
+    pending_approval: 1,
+    failed: 2,
+    generated: 3,
+    skipped: 4,
+  };
+  return [...items].sort((left, right) => order[left.status] - order[right.status]).slice(0, limit);
 }
 
 function AssetStatus({ item }: { item: AssetGenerationStateItem }) {
@@ -304,10 +308,10 @@ export function AssetGenerationConsole({
   const directGenerationBlocker = (role: "image" | "video" | "tts") => {
     const option = selectedProviderOption(role);
     if (!option) {
-      return `${roleLabel(role)} provider가 설정되어 있지 않습니다. API 등록에서 직접 실행 가능한 provider를 먼저 저장하세요.`;
+      return `${roleLabel(role)} API가 아직 설정되지 않았습니다. API 설정에서 직접 실행 가능한 항목을 먼저 저장하세요.`;
     }
     if (option.capability.status !== "direct") {
-      return `${option.provider}는 현재 직접 생성 어댑터가 아닙니다. 수동 핸드오프를 만들고 완료 파일을 등록하세요.`;
+      return `${option.provider}는 지금 바로 생성할 수 없는 방식입니다. 수동 파일로 진행한 뒤 완료 파일을 등록하세요.`;
     }
     if (!option.hasApiKey) {
       return `${option.provider} API 키가 저장되어 있지 않습니다. API 등록에서 키를 저장한 뒤 다시 시도하세요.`;
@@ -317,6 +321,8 @@ export function AssetGenerationConsole({
   const imageGenerationBlocker = directGenerationBlocker("image");
   const videoGenerationBlocker = directGenerationBlocker("video");
   const voiceGenerationBlocker = directGenerationBlocker("tts");
+  const previewImageItems = sortedAssetPreview(imageItems, 4);
+  const previewVideoItems = sortedAssetPreview(videoItems, 3);
 
   return (
     <div className="asset-console">
@@ -326,106 +332,153 @@ export function AssetGenerationConsole({
           <strong>{state.summary?.ready ?? 0}</strong>
         </span>
         <span>
-          <small>생성</small>
+          <small>완료</small>
           <strong>{state.summary?.generated ?? 0}</strong>
         </span>
         <span>
-          <small>차단</small>
+          <small>막힘</small>
           <strong>{state.summary?.blocked ?? 0}</strong>
         </span>
-        <button
-          className="text-button"
-          disabled={!state.manifestExists || Boolean(loadingId)}
-          onClick={createManualHandoff}
-          type="button"
-        >
-          {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
-          수동 핸드오프
-        </button>
       </div>
 
-      <div className="generation-provider-selector">
-        <div className="generation-provider-selector-head">
-          <div>
-            <strong>생성 provider 선택</strong>
-            <span>API 설정에 등록한 기본값과 추가 슬롯을 이 제작 단계에서 고릅니다.</span>
+      <details className="asset-console-settings">
+        <summary>
+          <span>생성 설정</span>
+          <small>API, 품질, 내레이션, 수동 파일 등록</small>
+        </summary>
+        <div className="asset-console-settings-body">
+          <div className="generation-provider-selector">
+            <div className="generation-provider-selector-head">
+              <div>
+                <strong>사용할 API</strong>
+                <span>이미지, 영상, 음성 생성에 사용할 API를 고릅니다.</span>
+              </div>
+              <a className="text-button" href="/settings">
+                API 설정
+              </a>
+            </div>
+            <div className="generation-provider-grid">
+              {providerRows.map(({ options, role }) => {
+                const selectedId = selectedProviders[role] ?? options[0]?.id ?? "";
+                const selectedOption = options.find((option) => option.id === selectedId);
+                return (
+                  <label key={role}>
+                    <span>{roleLabel(role)}</span>
+                    <select
+                      disabled={options.length === 0}
+                      onChange={(event) =>
+                        setSelectedProviders((current) => ({ ...current, [role]: event.target.value }))
+                      }
+                      value={selectedId}
+                    >
+                      {options.length === 0 ? <option value="">설정 없음</option> : null}
+                      {options.map((option) => (
+                        <option key={option.id} value={option.id}>
+                          {option.label} · {option.capability.shortLabel}
+                        </option>
+                      ))}
+                    </select>
+                    <small>
+                      {selectedOption
+                        ? `${selectedOption.hasApiKey ? "키 있음" : "키 없음"} · ${selectedOption.capability.label}`
+                        : "설정 페이지에서 API를 등록하세요."}
+                    </small>
+                  </label>
+                );
+              })}
+            </div>
           </div>
-          <a className="text-button" href="/settings">
-            API 등록
-          </a>
-        </div>
-        <div className="generation-provider-grid">
-          {providerRows.map(({ options, role }) => {
-            const selectedId = selectedProviders[role] ?? options[0]?.id ?? "";
-            const selectedOption = options.find((option) => option.id === selectedId);
-            return (
-              <label key={role}>
-                <span>{roleLabel(role)}</span>
-                <select
-                  disabled={options.length === 0}
-                  onChange={(event) =>
-                    setSelectedProviders((current) => ({ ...current, [role]: event.target.value }))
-                  }
-                  value={selectedId}
-                >
-                  {options.length === 0 ? <option value="">등록된 옵션 없음</option> : null}
-                  {options.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label} · {option.capability.shortLabel}
-                    </option>
-                  ))}
-                </select>
-                <small>
-                  {selectedOption
-                    ? `${selectedOption.hasApiKey ? "키 등록" : "키 없음"} · ${selectedOption.capability.label}`
-                    : "설정 페이지에서 provider를 등록하세요."}
-                </small>
-              </label>
-            );
-          })}
-        </div>
-      </div>
 
-      <div className="asset-control-grid">
-        <label>
-          <span>이미지 품질</span>
-          <select value={quality} onChange={(event) => setQuality(event.target.value as typeof quality)}>
-            <option value="low">낮음</option>
-            <option value="medium">보통</option>
-            <option value="high">높음</option>
-            <option value="auto">자동</option>
-          </select>
-        </label>
-        <label>
-          <span>음성</span>
-          <input value={voice} onChange={(event) => setVoice(event.target.value)} />
-        </label>
-      </div>
+          <div className="asset-control-grid">
+            <label>
+              <span>이미지 품질</span>
+              <select value={quality} onChange={(event) => setQuality(event.target.value as typeof quality)}>
+                <option value="low">낮음</option>
+                <option value="medium">보통</option>
+                <option value="high">높음</option>
+                <option value="auto">자동</option>
+              </select>
+            </label>
+            <label>
+              <span>음성</span>
+              <input value={voice} onChange={(event) => setVoice(event.target.value)} />
+            </label>
+          </div>
 
-      <label className="asset-narration">
-        <span>내레이션</span>
-        <textarea value={narration} onChange={(event) => setNarration(event.target.value)} rows={5} />
-      </label>
-      <label className="asset-narration">
-        <span>음성 지시사항</span>
-        <input value={instructions} onChange={(event) => setInstructions(event.target.value)} />
-      </label>
+          <label className="asset-narration">
+            <span>내레이션</span>
+            <textarea value={narration} onChange={(event) => setNarration(event.target.value)} rows={4} />
+          </label>
+          <label className="asset-narration">
+            <span>음성 지시사항</span>
+            <input value={instructions} onChange={(event) => setInstructions(event.target.value)} />
+          </label>
+
+          <div className="asset-register">
+            <label>
+              <span>자산</span>
+              <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
+                {state.items.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.id} / {assetKindCopy[item.kind] ?? item.kind}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>파일 경로</span>
+              <input
+                placeholder={`artifacts/${runId}/...`}
+                value={registerPath}
+                onChange={(event) => setRegisterPath(event.target.value)}
+              />
+            </label>
+            <button
+              className="text-button"
+              disabled={!registerAssetId || !registerPath.trim() || Boolean(loadingId)}
+              onClick={registerAsset}
+              type="button"
+            >
+              {loadingId === "manual-register" ? (
+                <Loader2 className="spin" size={15} />
+              ) : (
+                <FilePlus2 size={15} />
+              )}
+              파일 등록
+            </button>
+          </div>
+
+          <button
+            className="text-button"
+            disabled={!state.manifestExists || Boolean(loadingId)}
+            onClick={createManualHandoff}
+            type="button"
+          >
+            {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
+            수동 파일로 진행
+          </button>
+        </div>
+      </details>
 
       <div className="asset-action-list">
+        {state.items.length === 0 ? (
+          <p className="asset-console-empty">아직 생성할 항목이 없습니다. 먼저 미디어 프롬프트를 만들어 주세요.</p>
+        ) : null}
+
         {imageItems.length > 0 ? (
           <div className="asset-action-section">
             <div className="asset-action-section-title">
-              <strong>이미지/썸네일</strong>
-              <span>{imageItems.length}개 중 최대 6개 표시</span>
+              <strong>이미지와 썸네일</strong>
+              <span>{imageItems.length}개 중 먼저 볼 {previewImageItems.length}개</span>
             </div>
-            {imageItems.slice(0, 6).map((item) => {
+            {imageGenerationBlocker ? <p className="asset-action-note">{imageGenerationBlocker}</p> : null}
+            {previewImageItems.map((item) => {
               const displayName = assetDisplayName(item);
               const expectedPath = compactPath(item.expected_path);
               return (
                 <div className="asset-action-row" key={item.id}>
                   <div>
-                    <strong title={displayName}>{displayName}</strong>
-                    <small title={expectedPath}>{expectedPath}</small>
+                    <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
                     {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
                   </div>
                   <AssetStatus item={item} />
@@ -450,17 +503,17 @@ export function AssetGenerationConsole({
         {videoItems.length > 0 ? (
           <div className="asset-action-section">
             <div className="asset-action-section-title">
-              <strong>영상</strong>
-              <span>{videoItems.length}개 중 최대 4개 표시</span>
+              <strong>영상 클립</strong>
+              <span>{videoItems.length}개 중 먼저 볼 {previewVideoItems.length}개</span>
             </div>
-            {videoItems.slice(0, 4).map((item) => {
+            {videoGenerationBlocker ? <p className="asset-action-note">{videoGenerationBlocker}</p> : null}
+            {previewVideoItems.map((item) => {
               const displayName = assetDisplayName(item);
               const expectedPath = compactPath(item.expected_path);
               return (
                 <div className="asset-action-row" key={item.id}>
                   <div>
-                    <strong title={displayName}>{displayName}</strong>
-                    <small title={expectedPath}>{expectedPath}</small>
+                    <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
                     {item.blockers.length > 0 ? <small title={item.blockers[0]}>{item.blockers[0]}</small> : null}
                   </div>
                   <AssetStatus item={item} />
@@ -485,13 +538,13 @@ export function AssetGenerationConsole({
         {voiceItem ? (
           <div className="asset-action-section">
             <div className="asset-action-section-title">
-              <strong>음성</strong>
-              <span>내레이션 1개</span>
+              <strong>내레이션 음성</strong>
+              <span>1개</span>
             </div>
+            {voiceGenerationBlocker ? <p className="asset-action-note">{voiceGenerationBlocker}</p> : null}
             <div className="asset-action-row">
               <div>
-                <strong title={voiceItem.id}>{voiceItem.id}</strong>
-                <small title={compactPath(voiceItem.expected_path)}>{compactPath(voiceItem.expected_path)}</small>
+                <strong title={`${voiceItem.id} · ${compactPath(voiceItem.expected_path)}`}>내레이션</strong>
                 {voiceItem.blockers.length > 0 ? (
                   <small title={voiceItem.blockers[0]}>{voiceItem.blockers[0]}</small>
                 ) : null}
@@ -512,40 +565,6 @@ export function AssetGenerationConsole({
             </div>
           </div>
         ) : null}
-      </div>
-
-      <div className="asset-register">
-        <label>
-          <span>자산</span>
-          <select value={registerAssetId} onChange={(event) => setRegisterAssetId(event.target.value)}>
-            {state.items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.id} / {assetKindCopy[item.kind] ?? item.kind}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <span>파일 경로</span>
-          <input
-            placeholder={`artifacts/${runId}/...`}
-            value={registerPath}
-            onChange={(event) => setRegisterPath(event.target.value)}
-          />
-        </label>
-        <button
-          className="text-button"
-          disabled={!registerAssetId || !registerPath.trim() || Boolean(loadingId)}
-          onClick={registerAsset}
-          type="button"
-        >
-          {loadingId === "manual-register" ? (
-            <Loader2 className="spin" size={15} />
-          ) : (
-            <FilePlus2 size={15} />
-          )}
-          등록
-        </button>
       </div>
 
       {message ? <p className="form-error">{message}</p> : null}

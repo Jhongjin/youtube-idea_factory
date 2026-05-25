@@ -3985,6 +3985,49 @@ button:disabled,
   gap: 12px;
 }
 
+.asset-console-settings {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.asset-console-settings summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 42px;
+  cursor: pointer;
+  list-style: none;
+  padding: 10px 12px;
+}
+
+.asset-console-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.asset-console-settings summary span {
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.asset-console-settings summary small {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 780;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.asset-console-settings-body {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding: 10px;
+}
+
 .asset-console-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -4060,6 +4103,22 @@ button:disabled,
 .asset-action-list {
   display: grid;
   gap: 10px;
+}
+
+.asset-console-empty,
+.asset-action-note {
+  margin: 0;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.45;
+  padding: 9px 10px;
+}
+
+.asset-action-note {
+  color: #7a5a16;
 }
 
 .asset-action-section {
@@ -8600,6 +8659,7 @@ body {
 .empty-state,
 .new-run-section,
 .new-run-section.primary,
+.asset-console-settings,
 .asset-register,
 .asset-control-grid label,
 .asset-narration,
@@ -8618,6 +8678,7 @@ body {
 .empty-state h3,
 .empty-state svg,
 .new-run-section-heading strong,
+.asset-console-settings summary span,
 .asset-register span,
 .asset-control-grid span,
 .asset-narration span,
@@ -8631,6 +8692,7 @@ body {
 
 .empty-state p,
 .new-run-section-heading p,
+.asset-console-settings summary small,
 .provider-setup-strip span,
 .deployment-status-card span,
 .schema-grid span small,
@@ -8652,6 +8714,21 @@ body {
 }
 
 .new-run-form .field-help.warning {
+  color: #f0c174;
+}
+
+.shell .asset-console-settings-body {
+  border-color: rgba(244, 239, 227, 0.14);
+}
+
+.shell .asset-console-empty,
+.shell .asset-action-note {
+  border: 1px solid rgba(244, 239, 227, 0.12);
+  background: rgba(244, 239, 227, 0.07);
+  color: rgba(244, 239, 227, 0.78);
+}
+
+.shell .asset-action-note {
   color: #f0c174;
 }
 
