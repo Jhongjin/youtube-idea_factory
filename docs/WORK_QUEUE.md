@@ -53,6 +53,9 @@ This queue keeps the build loop explicit:
 | artifact-review-first | Phase 7 | done | codex | no | Artifact panels now show a readable preview first and keep raw markdown editing behind an explicit disclosure. |
 | dashboard-advanced-tools-soften | Phase 7 | done | codex | no | Topbar advanced tools are now an icon-only overflow control so the guided next-step CTA remains visually dominant. |
 | remove-legacy-dashboard-panels | Phase 7 | done | codex | no | Removed unused legacy next-action and first-run dashboard panels so the guided workflow remains the only maintained path. |
+| dashboard-operator-copy-polish | Phase 7 | done | codex | no | Dashboard, auth, settings, and action buttons now avoid internal terms like handoff, manifest, fallback, and provider where plain operator copy is clearer. |
+| dashboard-inspector-current-focus | Phase 7 | done | codex | no | The right inspector now shows only current-stage support panels and keeps validation and run facts behind short disclosures. |
+| dashboard-current-step-lock | Phase 7 | done | codex | no | The guided workspace now keeps the main screen on the current step; step dots are progress indicators instead of navigation to older stages. |
 | channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |
 | new-run-form-simplification | Phase 7 | done | codex | no | New production creation now shows only channel, topic, source URL, and format presets first; detailed knobs are collapsed. |
