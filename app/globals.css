@@ -1896,6 +1896,37 @@ button:disabled,
   min-height: 34px;
 }
 
+.source-review-card-more {
+  display: grid;
+  gap: 7px;
+}
+
+.source-review-card-more summary {
+  display: inline-flex;
+  width: 100%;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: #425066;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+  list-style: none;
+  padding: 0 10px;
+}
+
+.source-review-card-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-review-card-more > div {
+  display: grid;
+  gap: 7px;
+}
+
 .draft-action {
   display: flex;
   align-items: center;
@@ -8867,6 +8898,7 @@ body {
 .source-queue-toolbar > div:first-child span,
 .source-batch-mode select,
 .source-queue-more-actions summary,
+.source-review-card-more summary,
 .source-review-facts span,
 .source-review-search-note span,
 .source-review-select button {

@@ -273,15 +273,15 @@ export function SourceReviewQueue({
     <section className="source-queue" aria-label="소스 영상 검토 큐">
       <div className="source-queue-toolbar">
         <div>
-          <span>소스 {sources.length}개</span>
-          <span>분석 포함 {includedCount}개</span>
-          <span>자막 필요 {needsTranscriptCount}개</span>
-          <span>실패 {missingCount}개</span>
-          <span>선택 {selectedCount}개</span>
+          <span>소스 {sources.length}</span>
+          <span>분석 {includedCount}</span>
+          <span>자막 필요 {needsTranscriptCount}</span>
+          <span>실패 {missingCount}</span>
+          <span>선택 {selectedCount}</span>
         </div>
         <div className="source-queue-actions">
           <label className="source-batch-mode">
-            <span>자막 방식</span>
+            <span>방식</span>
             <select
               onChange={(event) => setTranscriptMode(event.target.value === "auto" ? "auto" : "native")}
               value={transcriptMode}
@@ -299,22 +299,22 @@ export function SourceReviewQueue({
             {loadingAction === "batch" ? <Loader2 className="spin" size={15} /> : <FileText size={15} />}
             {selectedCount > 0 ? "선택 자막 가져오기" : "전체 자막 가져오기"}
           </button>
-          <button
-            className="text-button"
-            disabled={loadingAction === "batch-failed" || (missingCount === 0 && selectedCount === 0)}
-            onClick={() => batchFetchTranscripts(true)}
-            type="button"
-          >
-            {loadingAction === "batch-failed" ? <Loader2 className="spin" size={15} /> : <RotateCcw size={15} />}
-            실패만 재시도
-          </button>
           <button className="text-button" onClick={selectedCount === sources.length ? clearSelection : selectAll} type="button">
             {selectedCount === sources.length ? <Square size={15} /> : <CheckSquare size={15} />}
             {selectedCount === sources.length ? "선택 해제" : "전체 선택"}
           </button>
           <details className="source-queue-more-actions">
-            <summary>정리 도구</summary>
+            <summary>추가 작업</summary>
             <div>
+              <button
+                className="text-button"
+                disabled={loadingAction === "batch-failed" || (missingCount === 0 && selectedCount === 0)}
+                onClick={() => batchFetchTranscripts(true)}
+                type="button"
+              >
+                {loadingAction === "batch-failed" ? <Loader2 className="spin" size={15} /> : <RotateCcw size={15} />}
+                실패한 자막만 다시 가져오기
+              </button>
               <button
                 className="text-button"
                 disabled={loadingAction === "dedupe"}
@@ -338,7 +338,7 @@ export function SourceReviewQueue({
                 type="button"
               >
                 {loadingAction === "keep" ? <Loader2 className="spin" size={15} /> : <FilterX size={15} />}
-                선택한 영상만 남기기
+                선택한 소스만 남기기
               </button>
               <button
                 className="text-button"
@@ -347,7 +347,7 @@ export function SourceReviewQueue({
                 type="button"
               >
                 {loadingAction === "exclude" ? <Loader2 className="spin" size={15} /> : <RotateCcw size={15} />}
-                선택 영상 분석 제외
+                선택 소스 분석 제외
               </button>
             </div>
           </details>
@@ -419,21 +419,26 @@ export function SourceReviewQueue({
                   {loadingAction === `transcript:${key}` ? <Loader2 className="spin" size={14} /> : <FileText size={14} />}
                   자막 가져오기
                 </button>
-                <button
-                  className="text-button"
-                  disabled={loadingAction === "exclude" || loadingAction === "include"}
-                  onClick={() =>
-                    updateSources(
-                      source.analysis_excluded ? "include" : "exclude",
-                      [key],
-                      source.analysis_excluded ? "sources-included" : "sources-excluded",
-                    )
-                  }
-                  type="button"
-                >
-                  {source.analysis_excluded ? "분석 포함" : "분석 제외"}
-                </button>
-                <SourceDeleteButton label="개별 삭제" mode="single" runId={runId} sourceKey={key} />
+                <details className="source-review-card-more">
+                  <summary>더 보기</summary>
+                  <div>
+                    <button
+                      className="text-button"
+                      disabled={loadingAction === "exclude" || loadingAction === "include"}
+                      onClick={() =>
+                        updateSources(
+                          source.analysis_excluded ? "include" : "exclude",
+                          [key],
+                          source.analysis_excluded ? "sources-included" : "sources-excluded",
+                        )
+                      }
+                      type="button"
+                    >
+                      {source.analysis_excluded ? "분석에 포함" : "분석에서 제외"}
+                    </button>
+                    <SourceDeleteButton label="삭제" mode="single" runId={runId} sourceKey={key} />
+                  </div>
+                </details>
               </div>
             </article>
           );
