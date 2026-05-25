@@ -150,7 +150,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "수동 제공자 핸드오프 생성에 실패했습니다.");
+      setMessage(body?.error ?? "수동 작업 파일을 만들지 못했습니다.");
       setLoadingId("");
       return;
     }
@@ -568,7 +568,7 @@ export function AssetGenerationConsole({
       </div>
 
       {message ? <p className="form-error">{message}</p> : null}
-      {!state.manifestExists ? <p className="form-error">자산 매니페스트가 아직 없습니다.</p> : null}
+      {!state.manifestExists ? <p className="form-error">필요 자산 목록이 아직 없습니다.</p> : null}
     </div>
   );
 }

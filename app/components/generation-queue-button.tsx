@@ -13,7 +13,7 @@ export function GenerationQueueButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/assets/queue`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "생성 대기열 준비에 실패했습니다.");
+      setError(body?.error ?? "생성할 항목을 정리하지 못했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function GenerationQueueButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={prepareQueue} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <ListChecks size={15} />}
-        대기열 준비
+        생성 항목 정리
       </button>
       {error ? <span>{error}</span> : null}
     </div>

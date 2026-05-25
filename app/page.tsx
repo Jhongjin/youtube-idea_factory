@@ -35,7 +35,7 @@ const pipeline = [
     detail: "영상 분석 결과를 스토리보드와 생성 프롬프트로 이어 붙입니다.",
   },
   {
-    label: "Handoff",
+    label: "승인 전달",
     title: "승인 후 렌더와 업로드 큐",
     detail: "비용, OAuth, 배포 단계는 사람이 승인한 뒤 진행합니다.",
   },
@@ -99,7 +99,7 @@ export default async function LandingPage({
         <div className="marketing-nav-links">
           <Link href="/dashboard">작업장</Link>
           <Link href="/admin/channels">채널</Link>
-          <Link href="/settings">제공자</Link>
+          <Link href="/settings">API 설정</Link>
           {user ? (
             <Link className="marketing-nav-cta" href="/me">
               내 계정
@@ -214,7 +214,7 @@ export default async function LandingPage({
         </div>
         <div>
           <Gauge size={17} />
-          <span>cost gates before generation</span>
+          <span>생성 전 비용 승인</span>
         </div>
         <div>
           <Layers3 size={17} />
@@ -247,9 +247,8 @@ export default async function LandingPage({
               <h3>실행마다 남는 제작 패키지</h3>
             </div>
             <p>
-              source ledger, claim ledger, script plan, storyboard, asset manifest, render plan,
-              publish handoff가 한 run에 묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수
-              있습니다.
+              소스, 주장, 대본, 스토리보드, 필요한 자산, 렌더 계획, 업로드 패키지가 한 run에
+              묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수 있습니다.
             </p>
           </article>
         </div>
@@ -281,7 +280,7 @@ export default async function LandingPage({
         <div>
           <h2>다음 실행부터 브랜드 채널별로 분리하세요.</h2>
           <p>
-            채널 OAuth, 제공자 설정, 승인 게이트를 먼저 정리하면 생성 비용과 업로드 리스크를
+            채널 OAuth, API 설정, 승인 절차를 먼저 정리하면 생성 비용과 업로드 위험을
             통제할 수 있습니다.
           </p>
         </div>

@@ -265,7 +265,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
             : supportsLiveRefresh
             ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
             : options.length > 0
-              ? "제공자별 권장 모델 목록입니다."
+              ? "API별 권장 모델 목록입니다."
               : "모델 목록 API가 없으면 직접 입력합니다. 로그인형 도구는 SSO 연결 큐로 남깁니다."}
         </small>
         {modelCatalogErrors[key] ? <small className="field-error">{modelCatalogErrors[key]}</small> : null}
@@ -307,7 +307,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "제공자 설정 저장에 실패했습니다.");
+      setError(body?.error ?? "API 설정 저장에 실패했습니다.");
       setState("error");
       return;
     }
@@ -323,7 +323,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       <div className="settings-summary">
         <div>
           <p className="eyebrow">
-            {settings.configPath.startsWith("supabase") ? "Supabase 제공자 설정" : "로컬 제공자 설정"}
+            {settings.configPath.startsWith("supabase") ? "Supabase API 설정" : "로컬 API 설정"}
           </p>
           <h2>API 등록</h2>
           <p className="muted">
@@ -336,7 +336,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
         </button>
       </div>
 
-      <section className="provider-setup-strip" aria-label="제공자 설정 요약">
+      <section className="provider-setup-strip" aria-label="API 설정 요약">
         <div>
           <span>사용 중</span>
           <strong>{enabledCount}/{roleList.length}</strong>
@@ -359,7 +359,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       {state === "saved" ? (
         <p className="settings-message saved">
           <CheckCircle2 size={15} />
-          제공자 설정이 저장되었습니다.
+          API 설정이 저장되었습니다.
         </p>
       ) : null}
 
@@ -398,7 +398,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                 <span className={`provider-capability ${selectedCapability.status}`}>
                   {selectedCapability.label}
                 </span>
-                <span>{preferredSetting.provider || "제공자 미선택"}</span>
+                <span>{preferredSetting.provider || "API 미선택"}</span>
               </div>
 
               <details className="provider-config-details" open={setting.enabled}>
@@ -408,7 +408,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                 </summary>
                 <div className="provider-fields">
                   <label>
-                    <span>제공자</span>
+                    <span>API</span>
                     <select
                       name={`${id}.provider`}
                       onChange={(event) => updateRole(id, { model: "", provider: event.target.value })}
@@ -516,7 +516,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                         </div>
                         <div className="provider-profile-fields">
                           <label>
-                            <span>제공자</span>
+                            <span>API</span>
                             <select
                               name={`profile.${profile.id}.provider`}
                               onChange={(event) =>

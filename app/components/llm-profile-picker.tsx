@@ -28,7 +28,7 @@ export function LlmProfilePicker({ disabled, onChange, settings, value }: LlmPro
   if (!hasSelectableProvider) {
     return (
       <div className="llm-profile-picker muted" aria-live="polite">
-        LLM provider가 아직 켜져 있지 않습니다. API 설정에서 LLM을 활성화하세요.
+        LLM API가 아직 켜져 있지 않습니다. API 설정에서 LLM을 활성화하세요.
       </div>
     );
   }
@@ -42,7 +42,7 @@ export function LlmProfilePicker({ disabled, onChange, settings, value }: LlmPro
         ) : null}
         {profiles.map((profile) => (
           <option key={profile.id} value={profile.id}>
-            {profile.id} - {providerLabel(profile.provider, profile.model, "LLM profile")}
+            {profile.id} - {providerLabel(profile.provider, profile.model, "LLM 슬롯")}
           </option>
         ))}
       </select>

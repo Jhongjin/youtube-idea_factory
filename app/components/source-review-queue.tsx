@@ -189,7 +189,7 @@ export function SourceReviewQueue({
       return;
     }
     const confirmation = window.prompt(
-      `${fetchTranscriptConfirmToken}를 입력하면 ${selectedCount > 0 ? `선택한 ${selectedCount}개` : failedOnly ? "실패한 소스" : "자막이 없는 전체 소스"}의 자막을 순차 수집합니다.${transcriptMode === "auto" ? " auto 방식은 공개 자막이 없으면 생성 fallback 비용이 발생할 수 있습니다." : " 공개 자막만 사용합니다."}`,
+      `${fetchTranscriptConfirmToken}를 입력하면 ${selectedCount > 0 ? `선택한 ${selectedCount}개` : failedOnly ? "실패한 소스" : "자막이 없는 전체 소스"}의 자막을 순차 수집합니다.${transcriptMode === "auto" ? " 자동 방식은 공개 자막이 없으면 생성 비용이 발생할 수 있습니다." : " 공개 자막만 사용합니다."}`,
     );
     if (confirmation === null) {
       return;
@@ -236,7 +236,7 @@ export function SourceReviewQueue({
   async function fetchTranscript(source: SourceVideo) {
     const key = sourceKey(source);
     const confirmation = window.prompt(
-      `${fetchTranscriptConfirmToken}를 입력하면 이 소스의 공개 자막을 가져옵니다. 공개 자막만 사용하므로 생성 fallback은 실행하지 않습니다.`,
+      `${fetchTranscriptConfirmToken}를 입력하면 이 소스의 공개 자막을 가져옵니다. 공개 자막만 사용하므로 생성 비용은 발생하지 않습니다.`,
     );
     if (confirmation === null) {
       return;
@@ -287,7 +287,7 @@ export function SourceReviewQueue({
               value={transcriptMode}
             >
               <option value="native">공개 자막만</option>
-              <option value="auto">자동 fallback</option>
+              <option value="auto">공개 자막 없으면 생성</option>
             </select>
           </label>
           <button

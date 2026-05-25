@@ -106,7 +106,7 @@ function DeploymentStatusPanel({
           <div className="deployment-status-card">
             <CheckCircle2 size={18} />
             <div>
-              <strong>제공자 설정 저장</strong>
+              <strong>API 설정 저장</strong>
               <span>{readiness.supabase.providerSettingsEnabled ? "준비됨" : "스키마 필요"}</span>
             </div>
           </div>
@@ -170,8 +170,8 @@ function DeploymentStatusPanel({
         <div className="readiness-section">
           <div className="readiness-section-header">
             <div>
-              <h3>제공자 준비도</h3>
-              <p>현재 선택한 역할별 제공자가 직접 실행 가능한지, 수동 워크플로인지 확인합니다.</p>
+              <h3>API 준비도</h3>
+              <p>현재 선택한 역할별 API가 바로 실행 가능한지, 수동 작업이 필요한지 확인합니다.</p>
             </div>
             <RadioTower size={18} />
           </div>
@@ -280,8 +280,8 @@ export default async function SettingsPage() {
         <div className="settings-security-note">
           <ShieldCheck size={15} />
           {settings.configPath.startsWith("supabase")
-            ? "Supabase 저장 제공자 설정"
-            : "로컬 전용 제공자 설정"}
+            ? "Supabase 저장 API 설정"
+            : "로컬 전용 API 설정"}
         </div>
       </div>
       <DeploymentStatusPanel readiness={readiness} settings={settings} />

@@ -9,7 +9,7 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
           <span />
           <span />
           <span />
-          <strong>{isSignup ? "member queue" : "operator gate"}</strong>
+          <strong>{isSignup ? "승인 대기" : "운영 확인"}</strong>
         </div>
         <div className="auth-console-heading">
           <div>
@@ -41,12 +41,12 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
           </div>
           <div className="auth-stage-row">
             <strong>03</strong>
-            <span>채널 OAuth와 제공자 설정 분리</span>
+          <span>채널 OAuth와 API 설정 분리</span>
             <KeyRound size={15} />
           </div>
         </div>
         <div className="auth-product-footer">
-          <span>upload gate</span>
+          <span>업로드 승인</span>
           <strong>비용과 업로드는 승인 전 실행되지 않습니다.</strong>
         </div>
       </div>

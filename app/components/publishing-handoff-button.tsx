@@ -13,7 +13,7 @@ export function PublishingHandoffButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/publishing/handoff`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "배포 핸드오프 검사에 실패했습니다.");
+      setError(body?.error ?? "업로드 패키지를 만들지 못했습니다.");
       setLoading(false);
       return;
     }

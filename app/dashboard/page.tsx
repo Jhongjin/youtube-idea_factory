@@ -202,7 +202,7 @@ const actionGuides: Partial<
     title: "분석 고도화",
   },
   "script-pattern-analysis": {
-    goal: "TOP10 소스의 훅, 첫 30초, 전개, retention, CTA 패턴을 대본 전략으로 요약합니다.",
+    goal: "TOP10 소스의 훅, 첫 30초, 전개, 시청 유지, CTA 패턴을 대본 전략으로 요약합니다.",
     output: "대본 만들기 단계의 대본 유형 탭에 저장됩니다.",
     title: "TOP10 대본 유형",
   },
@@ -227,9 +227,9 @@ const actionGuides: Partial<
     title: "초안 흐름 만들기",
   },
   "feedback-flow": {
-    goal: "업로드 뒤 성과 수집과 다음 기획 반영 루프를 만듭니다.",
-    output: "피드백 루프 산출물이 저장됩니다.",
-    title: "피드백 루프",
+    goal: "업로드 뒤 성과를 모아 다음 기획에 반영할 흐름을 만듭니다.",
+    output: "피드백 산출물이 저장됩니다.",
+    title: "피드백 흐름",
   },
   "feedback-insights": {
     goal: "성과 신호를 다음 제목, 훅, 포맷 의사결정으로 요약합니다.",
@@ -257,8 +257,8 @@ const actionGuides: Partial<
     title: "미디어 프롬프트",
   },
   "open-settings": {
-    goal: "LLM, 이미지, 영상, TTS, 편집 provider 키와 모델을 점검합니다.",
-    output: "제공자가 준비되면 생성 버튼과 워커 큐가 열립니다.",
+    goal: "LLM, 이미지, 영상, TTS, 편집 API 키와 모델을 점검합니다.",
+    output: "API가 준비되면 생성 버튼과 워커 작업이 열립니다.",
     title: "API 설정 확인",
   },
   "performance-snapshot": {
@@ -274,7 +274,7 @@ const actionGuides: Partial<
   "publishing-handoff": {
     goal: "최종 파일과 업로드 메타데이터를 업로드 가능한 패킷으로 묶습니다.",
     output: "YouTube 업로드 작업 생성 전 체크리스트가 만들어집니다.",
-    title: "배포 핸드오프",
+    title: "업로드 패키지",
   },
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
@@ -284,11 +284,11 @@ const actionGuides: Partial<
   "render-job": {
     goal: "외부 렌더 워커가 처리할 작업을 큐에 등록합니다.",
     output: "워커 큐와 렌더 상태 패널에 작업이 표시됩니다.",
-    title: "렌더 작업 큐",
+    title: "렌더 작업 등록",
   },
   "render-manifest": {
     goal: "자산을 타임라인으로 묶고 렌더 차단 항목을 확인합니다.",
-    output: "렌더 매니페스트, EDL, 검수 상태가 갱신됩니다.",
+    output: "렌더 계획서, EDL, 검수 상태가 갱신됩니다.",
     title: "렌더 계획",
   },
   "script-draft": {
@@ -1313,7 +1313,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "script-patterns": {
-    detail: "TOP10 소스의 훅, 첫 30초, 전개, retention, 신뢰 장치, CTA 패턴을 대본 전략으로 정리했습니다.",
+    detail: "TOP10 소스의 훅, 첫 30초, 전개, 시청 유지, 신뢰 장치, CTA 패턴을 대본 전략으로 정리했습니다.",
     title: "대본 유형 분석을 만들었습니다.",
     tone: "success",
   },
@@ -1377,7 +1377,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "transcripts-batch-partial": {
-    detail: "일부 소스는 공개 자막이 없거나 provider 오류가 있어 실패했습니다. 실패만 재시도하거나 수동 입력/STT를 사용하세요.",
+    detail: "일부 소스는 공개 자막이 없거나 자막 API 오류가 있어 실패했습니다. 실패만 재시도하거나 수동 입력/STT를 사용하세요.",
     title: "일부 자막 수집이 실패했습니다.",
   },
 };
@@ -1517,7 +1517,7 @@ function WorkflowActionButton({
       return (
         <Link className="text-button primary" href="/settings">
           <Settings size={15} />
-          제공자 설정
+          API 설정
         </Link>
       );
   }
@@ -1695,7 +1695,7 @@ function ProviderReadinessPanel({
   return (
     <section className="panel provider-readiness-panel">
       <div className="panel-header">
-        <h3 className="panel-title">제공자 준비 상태</h3>
+        <h3 className="panel-title">API 준비 상태</h3>
         <KeyRound size={16} />
       </div>
       <div className="panel-body">
@@ -1719,7 +1719,7 @@ function ProviderReadinessPanel({
           })}
           <Link className="text-button form-submit" href="/settings">
             <Settings size={15} />
-            제공자 설정
+            API 설정
           </Link>
         </div>
       </div>
@@ -1869,14 +1869,14 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.render_ready ? "준비됨" : "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>편집/렌더 provider</span>
+            <span>편집/렌더 방식</span>
             <span>
               {editingProvider.provider}
               {editingProvider.model ? ` / ${editingProvider.model}` : ""}
             </span>
           </div>
           <div className="detail-row">
-            <span>편집 핸드오프</span>
+            <span>편집 전달 파일</span>
             <span>{run.package.render_manifest?.editing_handoff_path ?? "대기"}</span>
           </div>
           <div className="detail-row">
@@ -1892,15 +1892,15 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.worker_job_status ?? "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>자산 매니페스트</span>
+            <span>필요 자산</span>
             <span>{run.package.asset_manifest ? `${run.package.asset_manifest.items}개` : "대기"}</span>
           </div>
           <div className="detail-row">
-            <span>생성 대기열</span>
+            <span>생성 가능</span>
             <span>{run.package.asset_manifest?.ready_for_generation ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>대기열 차단</span>
+            <span>생성 보류</span>
             <span>{run.package.asset_manifest?.blocked ?? 0}</span>
           </div>
           <div className="detail-row">
@@ -1908,7 +1908,7 @@ function AssemblyPanel({
             <span>{run.package.render_manifest?.blockers ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>배포 핸드오프</span>
+            <span>업로드 패키지</span>
             <span>{run.package.publishing_handoff?.ready ? "준비됨" : "대기"}</span>
           </div>
           <div className="detail-row">
@@ -2343,7 +2343,7 @@ export default async function Home({
               >
                 <RefreshCw size={16} />
               </Link>
-              <Link className="icon-button" href="/settings" title="제공자 설정">
+              <Link className="icon-button" href="/settings" title="API 설정">
                 <Settings size={16} />
               </Link>
               <AdvancedActionMenu

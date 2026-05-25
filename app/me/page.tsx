@@ -19,7 +19,7 @@ export default async function MyPage() {
 
       <section className="account-hero">
         <div>
-          <p className="hero-kicker">My workspace</p>
+          <p className="hero-kicker">내 작업 공간</p>
           <h1>{user.name}</h1>
           <p>{user.email}</p>
         </div>
@@ -39,7 +39,7 @@ export default async function MyPage() {
         </Link>
         <Link className="account-action-card" href="/settings">
           <Settings size={20} />
-          <strong>제공자 설정</strong>
+          <strong>API 설정</strong>
           <span>LLM, 이미지, 영상, TTS API 키와 모델을 조정합니다.</span>
         </Link>
       </section>

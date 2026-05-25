@@ -13,7 +13,7 @@ export function AssetManifestButton({ runId }: { runId: string }) {
     const response = await fetch(`/api/runs/${runId}/assets/manifest`, { method: "POST" });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "자산 매니페스트 생성에 실패했습니다.");
+      setError(body?.error ?? "필요 자산 목록을 만들지 못했습니다.");
       setLoading(false);
       return;
     }
@@ -24,7 +24,7 @@ export function AssetManifestButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={createManifest} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Boxes size={15} />}
-        자산 구성
+        필요 자산 정리
       </button>
       {error ? <span>{error}</span> : null}
     </div>
