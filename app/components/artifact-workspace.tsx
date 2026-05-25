@@ -9,9 +9,9 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 export function ArtifactWorkspace({
   runId,
   artifacts,
-  description = "현재 단계에서 필요한 산출물을 먼저 편집합니다.",
+  description = "현재 단계에서 필요한 결과를 먼저 확인합니다.",
   focusArtifactIds = [],
-  title = "산출물",
+  title = "결과",
 }: {
   runId: string;
   artifacts: RunArtifact[];
@@ -43,20 +43,28 @@ export function ArtifactWorkspace({
       if (!artifactId || artifactId === window.location.hash) {
         return;
       }
-      if (artifacts.some((artifact) => artifact.id === artifactId)) {
-        setActiveId(artifactId);
-        if (hasFocusFilter && !focusedArtifacts.some((artifact) => artifact.id === artifactId)) {
-          setShowAllArtifacts(true);
-        }
+      const hashArtifact = artifacts.find((artifact) => artifact.id === artifactId);
+      if (!hashArtifact) {
+        return;
+      }
+      const hashBelongsToCurrentStep =
+        !hasFocusFilter || focusedArtifacts.some((artifact) => artifact.id === artifactId);
+      if (!hashBelongsToCurrentStep) {
+        setActiveId(defaultArtifactId);
+        setShowAllArtifacts(!hasFocusFilter);
         setSaveState("idle");
         setError("");
+        return;
       }
+      setActiveId(hashArtifact.id);
+      setSaveState("idle");
+      setError("");
     }
 
     selectArtifactFromHash();
     window.addEventListener("hashchange", selectArtifactFromHash);
     return () => window.removeEventListener("hashchange", selectArtifactFromHash);
-  }, [artifacts, focusedArtifacts, hasFocusFilter]);
+  }, [artifacts, defaultArtifactId, focusedArtifacts, hasFocusFilter]);
 
   useEffect(() => {
     setShowAllArtifacts(!hasFocusFilter);
@@ -131,9 +139,9 @@ export function ArtifactWorkspace({
       </div>
 
       <div className="artifact-layout">
-        <div className="artifact-tabs" role="tablist" aria-label="실행 산출물">
+        <div className="artifact-tabs" role="tablist" aria-label="실행 결과">
           <div className="artifact-tabs-heading">
-            <span>{showAllArtifacts || !hasFocusFilter ? "전체 산출물" : "이번 단계"}</span>
+            <span>{showAllArtifacts || !hasFocusFilter ? "전체 결과" : "이번 단계"}</span>
             <strong>
               {visibleArtifacts.length}/{artifacts.length}
             </strong>
@@ -168,7 +176,7 @@ export function ArtifactWorkspace({
               }}
               type="button"
             >
-              {showAllArtifacts ? "이번 단계만 보기" : "전체 산출물 보기"}
+              {showAllArtifacts ? "이번 단계만 보기" : "전체 결과 보기"}
             </button>
           ) : null}
         </div>
