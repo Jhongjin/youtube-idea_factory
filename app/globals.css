@@ -1866,7 +1866,14 @@ button:disabled,
   padding: 9px;
 }
 
+.source-review-reason:not([open]) {
+  border-color: transparent;
+  background: transparent;
+  padding: 0;
+}
+
 .source-review-reason summary {
+  width: fit-content;
   color: var(--muted);
   cursor: pointer;
   font-size: 12px;
@@ -1874,11 +1881,22 @@ button:disabled,
   list-style: none;
 }
 
+.source-review-reason:not([open]) summary {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 0 10px;
+}
+
 .source-review-reason summary::-webkit-details-marker {
   display: none;
 }
 
 .source-review-reason[open] summary {
+  margin-bottom: 2px;
   color: #7a5a16;
 }
 

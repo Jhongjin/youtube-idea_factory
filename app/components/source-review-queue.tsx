@@ -369,6 +369,9 @@ export function SourceReviewQueue({
           const selected = selectedKeys.has(key);
           const transcriptStatus =
             transcriptStatusCopy[source.transcript_status ?? "not_checked"] ?? source.transcript_status ?? "미확인";
+          const publishedDate = formatDate(source.published_at);
+          const formatLabel = sourceFormat(source);
+          const durationLabel = formatDuration(source.duration_seconds);
           return (
             <article className={`source-review-item ${source.analysis_excluded ? "excluded" : ""}`} key={`${key}-${index}`}>
               <div className="source-review-select">
@@ -392,21 +395,19 @@ export function SourceReviewQueue({
                 </div>
                 <div className="source-review-facts">
                   <span>채널 {source.channel || "미확인"}</span>
-                  <span>게시일 {formatDate(source.published_at)}</span>
                   <span>조회수 {formatNumber(source.view_count)}</span>
-                  <span>{sourceFormat(source)}</span>
-                  <span>{formatDuration(source.duration_seconds)}</span>
                   <span>자막 {transcriptStatus}</span>
                 </div>
                 <details className="source-review-reason">
-                  <summary>선택 이유 보기</summary>
+                  <summary>세부 정보</summary>
                   <p>{sourceReason(source)}</p>
-                  {source.search_scope || source.search_query ? (
-                    <div className="source-review-search-note">
-                      {source.search_query ? <span>검색어 {source.search_query}</span> : null}
-                      {source.search_scope ? <span>{sourceScopeCopy(source.search_scope)}</span> : null}
-                    </div>
-                  ) : null}
+                  <div className="source-review-search-note">
+                    <span>게시일 {publishedDate}</span>
+                    <span>형식 {formatLabel}</span>
+                    <span>길이 {durationLabel}</span>
+                    {source.search_query ? <span>검색어 {source.search_query}</span> : null}
+                    {source.search_scope ? <span>{sourceScopeCopy(source.search_scope)}</span> : null}
+                  </div>
                 </details>
               </div>
               <div className="source-review-actions-inline">
