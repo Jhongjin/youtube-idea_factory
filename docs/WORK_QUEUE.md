@@ -62,6 +62,7 @@ This queue keeps the build loop explicit:
 | approval-panel-readability | Phase 7 | done | codex | no | Approval cards now use shorter operator copy, readable timestamps, and dark input surfaces that match the dashboard inspector. |
 | generation-console-disclosure | Phase 7 | done | codex | no | The generation console now shows only readiness counts first, with API setup and per-item generation buttons behind short disclosure panels. |
 | artifact-current-step-filter | Phase 7 | done | codex | no | Artifact preview ignores stale URL hashes from earlier stages so the main workspace stays focused on the current step by default. |
+| source-transcript-panel-readability | Phase 7 | done | codex | no | Source transcript editing now keeps STT options folded and uses dashboard-matching dark controls for long transcript review. |
 | channel-activation-guidance | Phase 7 | done | codex | no | Channel admin now highlights upload-token channels that still need activation and sorts those cards first. |
 | channel-oauth-inline-guide | Phase 7 | done | codex | no | Channel registration now includes a compact OAuth preparation guide for client setup, scopes, refresh tokens, and activation. |
 | new-run-form-simplification | Phase 7 | done | codex | no | New production creation now shows only channel, topic, source URL, and format presets first; detailed knobs are collapsed. |

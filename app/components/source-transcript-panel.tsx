@@ -201,7 +201,7 @@ export function SourceTranscriptPanel({
     <section className="transcript-panel">
       <div className="transcript-header">
         <div>
-          <h4>스크립트 슬롯</h4>
+          <h4>자막/스크립트</h4>
           <p>{decodeHtmlEntities(activeSource.title)}</p>
         </div>
         <button className="text-button" disabled={!isDirty || state === "saving"} onClick={save} type="button">
@@ -250,36 +250,41 @@ export function SourceTranscriptPanel({
               자막 가져오기
             </button>
             <label>
-              <span>자막 방식</span>
+              <span>방식</span>
               <select
                 onChange={(event) => setTranscriptMode(event.target.value === "native" ? "native" : "auto")}
                 value={transcriptMode}
               >
-                <option value="auto">자동</option>
+                <option value="auto">공개 없으면 생성</option>
                 <option value="native">공개 자막만</option>
               </select>
             </label>
-            <label>
-              <span>오디오 URL</span>
-              <input
-                placeholder="https://..."
-                value={audioUrl}
-                onChange={(event) => setAudioUrl(event.target.value)}
-              />
-            </label>
-            <label>
-              <span>언어</span>
-              <input value={language} onChange={(event) => setLanguage(event.target.value)} />
-            </label>
-            <button
-              className="text-button"
-              disabled={transcribing || !audioUrl.trim()}
-              onClick={transcribeAudio}
-              type="button"
-            >
-              {transcribing ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
-              STT
-            </button>
+            <details className="transcript-stt-options">
+              <summary>STT 옵션</summary>
+              <div>
+                <label>
+                  <span>오디오 URL</span>
+                  <input
+                    placeholder="https://..."
+                    value={audioUrl}
+                    onChange={(event) => setAudioUrl(event.target.value)}
+                  />
+                </label>
+                <label>
+                  <span>언어</span>
+                  <input value={language} onChange={(event) => setLanguage(event.target.value)} />
+                </label>
+                <button
+                  className="text-button"
+                  disabled={transcribing || !audioUrl.trim()}
+                  onClick={transcribeAudio}
+                  type="button"
+                >
+                  {transcribing ? <Loader2 className="spin" size={15} /> : <Mic2 size={15} />}
+                  STT 실행
+                </button>
+              </div>
+            </details>
           </div>
           <textarea
             aria-label="수동 소스 스크립트"
