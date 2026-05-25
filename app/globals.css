@@ -4089,14 +4089,16 @@ button:disabled,
   gap: 12px;
 }
 
-.asset-console-settings {
+.asset-console-settings,
+.asset-console-worklist {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
 }
 
-.asset-console-settings summary {
+.asset-console-settings summary,
+.asset-console-worklist summary {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -4107,17 +4109,20 @@ button:disabled,
   padding: 10px 12px;
 }
 
-.asset-console-settings summary::-webkit-details-marker {
+.asset-console-settings summary::-webkit-details-marker,
+.asset-console-worklist summary::-webkit-details-marker {
   display: none;
 }
 
-.asset-console-settings summary span {
+.asset-console-settings summary span,
+.asset-console-worklist summary span {
   color: var(--ink);
   font-size: 13px;
   font-weight: 900;
 }
 
-.asset-console-settings summary small {
+.asset-console-settings summary small,
+.asset-console-worklist summary small {
   color: var(--muted);
   font-size: 11px;
   font-weight: 780;
@@ -4125,7 +4130,8 @@ button:disabled,
   text-align: right;
 }
 
-.asset-console-settings-body {
+.asset-console-settings-body,
+.asset-console-worklist-body {
   display: grid;
   gap: 10px;
   border-top: 1px solid var(--line);
@@ -8764,6 +8770,7 @@ body {
 .new-run-section,
 .new-run-section.primary,
 .asset-console-settings,
+.asset-console-worklist,
 .asset-register,
 .asset-control-grid label,
 .asset-narration,
@@ -8783,6 +8790,7 @@ body {
 .empty-state svg,
 .new-run-section-heading strong,
 .asset-console-settings summary span,
+.asset-console-worklist summary span,
 .asset-register span,
 .asset-control-grid span,
 .asset-narration span,
@@ -8797,6 +8805,7 @@ body {
 .empty-state p,
 .new-run-section-heading p,
 .asset-console-settings summary small,
+.asset-console-worklist summary small,
 .provider-setup-strip span,
 .deployment-status-card span,
 .schema-grid span small,
@@ -8821,7 +8830,8 @@ body {
   color: #f0c174;
 }
 
-.shell .asset-console-settings-body {
+.shell .asset-console-settings-body,
+.shell .asset-console-worklist-body {
   border-color: rgba(244, 239, 227, 0.14);
 }
 
