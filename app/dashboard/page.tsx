@@ -2005,6 +2005,9 @@ function StageFocusPanel({
   ).length;
   const decision = inspectorDecision({ plan, run, validation });
   const gate = activeApprovalGate(plan);
+  const guidedStepKey = defaultGuidedStep(plan);
+  const guidedStepPosition = Math.max(guidedStepIndex(guidedStepKey), 0);
+  const guidedStep = guidedStepDefinitions[guidedStepPosition] ?? guidedStepDefinitions[0];
   const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
     (approvalGate) => !approvalReady(approvals[approvalGate]),
   ).length;
@@ -2012,21 +2015,21 @@ function StageFocusPanel({
     <section className={`panel focus-inspector-panel ${decision.tone}`}>
       <div className="panel-header">
         <div>
-          <h3 className="panel-title">현재 단계</h3>
+          <h3 className="panel-title">이번 단계</h3>
           <p className="panel-subtitle">
-            {plan.stageIndex}/{plan.totalStages} {plan.stageLabel}
+            {guidedStepPosition + 1}/{guidedStepDefinitions.length} {guidedStep.label}
           </p>
         </div>
         <StatusPill status={plan.status} />
       </div>
       <div className="panel-body">
         <div className="inspector-decision">
-          <span>상태</span>
+          <span>진행 상태</span>
           <strong>{decision.label}</strong>
           <p>{decision.detail}</p>
         </div>
         <div className="stage-focus-summary">
-          <span>지금 할 일</span>
+          <span>다음 작업</span>
           <strong>{plan.headline}</strong>
           <p>{plan.detail}</p>
         </div>
@@ -2034,14 +2037,14 @@ function StageFocusPanel({
           <div className="approval-gate-summary">
             <span>{approvalGateLabels[gate]}</span>
             <strong>{approvalReady(approvals[gate]) ? "승인됨" : "승인 대기"}</strong>
-            <p>{openApprovalCount}개 게이트가 아직 열려 있습니다.</p>
+            <p>{openApprovalCount}개 승인이 아직 남아 있습니다.</p>
           </div>
         ) : null}
         <details className="stage-focus-details">
-          <summary>세부 확인</summary>
+          <summary>세부 항목 보기</summary>
           <div className="stage-focus-inputs compact">
             <div className="stage-focus-inputs-header">
-              <p>확인할 항목</p>
+              <p>{plan.stageLabel}</p>
               <span>{plan.items.length}개</span>
             </div>
             {plan.items.map((item) => (
@@ -2074,11 +2077,6 @@ function StageFocusPanel({
             </div>
           </div>
         </details>
-        {plan.primaryActionId ? (
-          <p className="stage-focus-note">실행 버튼은 중앙 카드에 있습니다.</p>
-        ) : (
-          <p className="stage-focus-note">승인이나 수동 확인이 필요한 단계입니다.</p>
-        )}
       </div>
     </section>
   );
@@ -2149,16 +2147,10 @@ function Inspector({
         {showFeedback ? <FeedbackPanel run={run} /> : null}
 
         <details className="inspector-more">
-          <summary>문제 확인</summary>
+          <summary>고급 정보</summary>
           <div className="detail-stack">
             {!showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
             {!showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
-          </div>
-        </details>
-
-        <details className="inspector-more">
-          <summary>실행 정보</summary>
-          <div className="detail-stack">
             <BriefPanel run={run} />
           </div>
         </details>
