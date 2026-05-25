@@ -702,6 +702,12 @@ button:disabled,
   gap: 8px;
 }
 
+.guided-step-current div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
 .guided-step-current span {
   display: inline-flex;
   align-items: center;
@@ -720,6 +726,13 @@ button:disabled,
   color: var(--ink);
   font-size: 14px;
   line-height: 1.25;
+}
+
+.guided-step-current small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.35;
 }
 
 .guided-step-dots {

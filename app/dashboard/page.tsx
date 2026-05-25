@@ -101,13 +101,13 @@ const skillLabels: Record<string, string> = {
 const statusCopy = {
   done: "완료",
   review: "확인",
-  blocked: "막힘",
+  blocked: "확인 필요",
   pending: "할 일",
 };
 
 const qaStatusCopy: Record<string, string> = {
   pass: "검수 통과",
-  blocked: "검수 차단",
+  blocked: "확인 필요",
   needs_review: "검토 필요",
 };
 
@@ -238,8 +238,8 @@ function getArtifactWorkspaceCopy(plan: RunNextActionPlan, step: GuidedStepKey) 
     };
   }
   return {
-    description: "현재 단계에서 필요한 결과만 먼저 보여줍니다.",
-    title: "현재 단계 결과",
+    description: "지금 만들어야 하는 결과만 먼저 보여줍니다.",
+    title: "이번 작업 결과",
   };
 }
 
@@ -256,12 +256,12 @@ const actionGuides: Partial<
 > = {
   "analysis-draft": {
     goal: "소스 영상의 훅, 구조, 주장 후보를 분석 초안으로 정리합니다.",
-    output: "결과는 영상 분석과 근거 목록 탭에서 확인합니다.",
+    output: "영상 분석과 근거 목록이 생깁니다.",
     title: "분석 초안",
   },
   "analysis-refine": {
     goal: "AI로 분석 내용을 다듬고 비어 있는 주장 후보를 보강합니다.",
-    output: "영상 분석과 근거 목록이 갱신됩니다.",
+    output: "영상 분석과 근거 목록이 더 정리됩니다.",
     title: "분석 고도화",
   },
   "script-pattern-analysis": {
@@ -276,7 +276,7 @@ const actionGuides: Partial<
   },
   "asset-manifest": {
     goal: "장면별로 필요한 이미지, 영상, 음성, 자막, 썸네일 목록을 만듭니다.",
-    output: "미디어 만들기 단계에서 만들 항목을 확인할 수 있습니다.",
+    output: "장면별로 만들 항목이 정리됩니다.",
     title: "필요한 자료 정리",
   },
   "channel-memory": {
@@ -286,7 +286,7 @@ const actionGuides: Partial<
   },
   "draft-flow": {
     goal: "분석, 근거 목록, 대본 초안 틀을 한 번에 준비합니다.",
-    output: "대본 만들기 단계의 기본 탭이 채워집니다.",
+    output: "분석, 근거 목록, 대본 초안 틀이 채워집니다.",
     title: "초안 흐름 만들기",
   },
   "feedback-flow": {
@@ -316,7 +316,7 @@ const actionGuides: Partial<
   },
   "media-draft": {
     goal: "스토리보드를 이미지와 영상 생성 프롬프트로 바꿉니다.",
-    output: "미디어 만들기 단계의 프롬프트 탭에 저장됩니다.",
+    output: "이미지와 영상 생성 요청서가 저장됩니다.",
     title: "미디어 프롬프트",
   },
   "open-settings": {
@@ -331,7 +331,7 @@ const actionGuides: Partial<
   },
   "publishing-draft": {
     goal: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 만듭니다.",
-    output: "검수/업로드 단계의 배포 패키지에서 확인합니다.",
+    output: "업로드 전에 확인할 제목, 설명, 태그가 정리됩니다.",
     title: "배포 초안",
   },
   "publishing-handoff": {
@@ -341,38 +341,38 @@ const actionGuides: Partial<
   },
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
-    output: "검수 탭과 오른쪽 차단 항목이 갱신됩니다.",
+    output: "남은 확인 항목이 정리됩니다.",
     title: "제작 검수",
   },
   "render-job": {
     goal: "외부 작업자가 처리할 영상 조립 작업을 등록합니다.",
-    output: "작업 큐와 영상 조립 상태에 표시됩니다.",
+    output: "작업 목록과 영상 조립 상태에 표시됩니다.",
     title: "영상 조립 등록",
   },
   "render-manifest": {
     goal: "자료를 타임라인으로 묶고 영상 조립에 빠진 항목을 확인합니다.",
-    output: "영상 조립 계획과 빠진 항목이 갱신됩니다.",
+    output: "영상 조립 계획과 빠진 항목이 정리됩니다.",
     title: "영상 조립 계획",
   },
   "script-draft": {
     goal: "분석과 근거 목록을 바탕으로 대본 구조를 만듭니다.",
-    output: "대본 만들기 단계의 대본 탭에 저장됩니다.",
+    output: "대본 초안이 저장됩니다.",
     title: "대본 초안",
   },
   "script-refine": {
     goal: "AI로 훅, 전개, 내레이션을 더 자연스럽게 다듬습니다.",
-    output: "대본 탭이 새 버전으로 갱신됩니다.",
+    output: "대본 초안이 새 버전으로 다듬어집니다.",
     title: "대본 고도화",
   },
   "source-enrich": {
     caution: "자막을 못 가져오면 아래 스크립트 입력칸에 직접 붙여넣으면 됩니다.",
     goal: "YouTube 후보 영상의 제목, 채널, 썸네일 같은 기본 정보를 다시 확인합니다.",
-    output: "소스 영상 표와 01-research.md가 갱신됩니다.",
+    output: "소스 영상 표와 리서치 문서가 새로 정리됩니다.",
     title: "소스 정보 보강",
   },
   "storyboard-draft": {
     goal: "대본을 장면, 내레이션, 화면 문구, 필요한 자료로 나눕니다.",
-    output: "스토리보드가 저장되고 미디어 만들기 단계가 준비됩니다.",
+    output: "스토리보드가 저장되고 다음 미디어 준비로 이어집니다.",
     title: "스토리보드",
   },
   "subtitle-draft": {
@@ -648,15 +648,15 @@ function inspectorDecision({
 }) {
   if (validation.status === "fail") {
     return {
-      detail: "패키지 구조가 통과해야 다음 자동화가 안전하게 이어집니다.",
-      label: "구조 보정 필요",
+      detail: "제작 자료를 다시 확인해야 다음 작업으로 넘어갈 수 있습니다.",
+      label: "검토 필요",
       tone: "blocked",
     };
   }
   if (run.package.qa.blockers.length > 0 || plan.status === "blocked") {
     return {
-      detail: "차단 항목을 줄인 뒤 다시 검수하거나 다음 단계로 이동하세요.",
-      label: "차단됨",
+      detail: "막힌 항목을 줄인 뒤 다시 검수하거나 다음 단계로 이동하세요.",
+      label: "확인 필요",
       tone: "blocked",
     };
   }
@@ -675,7 +675,7 @@ function inspectorDecision({
     };
   }
   return {
-    detail: "현재 단계의 기본 작업을 실행하면 다음 제작 단계로 넘어갑니다.",
+    detail: "지금 보이는 큰 버튼을 실행하면 다음 작업으로 넘어갑니다.",
     label: "진행 가능",
     tone: "pending",
   };
@@ -746,7 +746,7 @@ function WorkQueuePanel({ summary }: { summary: WorkQueueSummary }) {
   const nextItem = summary.nextItem;
   return (
     <section className="nav-section work-queue-index">
-      <h2>작업 큐</h2>
+      <h2>남은 작업</h2>
       <div className="work-queue-card">
         <div className="work-queue-heading">
           <ListChecks size={16} />
@@ -890,47 +890,21 @@ function OperatingChannelBar({
 
 function GuidedStepNav({
   activeStep,
-  currentStep,
 }: {
   activeStep: GuidedStepKey;
-  currentStep: GuidedStepKey;
 }) {
   const activeIndex = guidedStepIndex(activeStep);
-  const currentIndex = guidedStepIndex(currentStep);
   const activeStepCopy = guidedStepDefinitions[activeIndex] ?? guidedStepDefinitions[0];
   return (
-    <nav className="guided-step-nav" aria-label="제작 단계">
+    <nav className="guided-step-nav" aria-label="현재 제작 단계">
       <div className="guided-step-current">
         <span>
           {activeIndex + 1}/{guidedStepDefinitions.length}
         </span>
-        <strong>
-          지금은 {activeStepCopy.label} 단계입니다.
-        </strong>
-      </div>
-      <div className="guided-step-dots" aria-label="전체 단계">
-        {guidedStepDefinitions.map((step, index) => {
-          const state =
-            index === activeIndex
-              ? "current"
-              : index < currentIndex
-                ? "done"
-                : index === currentIndex
-                  ? "available"
-                  : "pending";
-          const label = `${index + 1}단계 ${step.label}`;
-          return (
-            <span
-              aria-current={state === "current" ? "step" : undefined}
-              aria-disabled={state !== "current" ? "true" : undefined}
-              className={`guided-step-dot ${state}`}
-              key={step.key}
-              title={label}
-            >
-              {index + 1}
-            </span>
-          );
-        })}
+        <div>
+          <strong>{activeStepCopy.label}</strong>
+          <small>{activeStepCopy.description}</small>
+        </div>
       </div>
     </nav>
   );
@@ -962,11 +936,11 @@ function GuidedActionPanel({
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "결과 위치" : "먼저 확인할 것"}</span>
+            <span>{plan.primaryActionId ? "만들어지는 결과" : "먼저 확인할 것"}</span>
             <strong>{currentGuide?.output ?? "확인이 끝나면 다음 버튼이 열립니다."}</strong>
             <small>
               {plan.primaryActionId
-                ? "버튼을 누르면 이 화면의 결과가 갱신됩니다."
+                ? "완료되면 아래 결과 영역에서 바로 확인할 수 있습니다."
                 : "오른쪽 카드에서 필요한 확인을 저장하면 이어서 진행됩니다."}
             </small>
           </div>
@@ -985,7 +959,7 @@ function GuidedActionPanel({
       </div>
       {visibleActions.length > 1 ? (
         <details className="guided-checklist">
-          <summary>필요할 때만 다른 버튼 보기</summary>
+          <summary>보조 버튼 보기</summary>
           <div className="guided-secondary-tool-list">
             {visibleActions
               .filter((actionId) => actionId !== plan.primaryActionId)
@@ -1001,7 +975,7 @@ function GuidedActionPanel({
         </details>
       ) : null}
       <details className="guided-checklist">
-        <summary>왜 해야 하나요?</summary>
+        <summary>작업 설명 보기</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -1023,7 +997,6 @@ function GuidedRunWorkspace({
   activeStep,
   artifacts,
   channelId,
-  currentStep,
   nextActionPlan,
   providerSettings,
   run,
@@ -1031,7 +1004,6 @@ function GuidedRunWorkspace({
   activeStep: GuidedStepKey;
   artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
   channelId: string;
-  currentStep: GuidedStepKey;
   nextActionPlan: RunNextActionPlan;
   providerSettings: SafeProviderSettings;
   run: RunSummary;
@@ -1040,7 +1012,7 @@ function GuidedRunWorkspace({
   const workspaceCopy = getArtifactWorkspaceCopy(nextActionPlan, activeStep);
   return (
     <div className="guided-workspace">
-      <GuidedStepNav activeStep={activeStep} currentStep={currentStep} />
+      <GuidedStepNav activeStep={activeStep} />
       <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
 
       {activeStep === "setup" ? (
@@ -1064,7 +1036,7 @@ function GuidedRunWorkspace({
             title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
-            <summary>이전 단계 자료 보기</summary>
+            <summary>필요하면 소스 확인하기</summary>
             <div className="workspace-grid">
               <SourcesPanel run={run} />
             </div>
@@ -1082,7 +1054,7 @@ function GuidedRunWorkspace({
             title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
-            <summary>제작 준비 상태 보기</summary>
+            <summary>필요하면 준비 상태 보기</summary>
             <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
           </details>
         </>
@@ -1098,7 +1070,7 @@ function GuidedRunWorkspace({
             title={workspaceCopy.title}
           />
           <details className="guided-secondary-panel">
-            <summary>이전 단계 자료 보기</summary>
+            <summary>필요하면 소스 확인하기</summary>
             <div className="workspace-grid">
               <SourcesPanel run={run} />
             </div>
@@ -1237,7 +1209,7 @@ function Sidebar({
 
       <details className="sidebar-disclosure">
         <summary>
-          <span>작업 큐</span>
+          <span>남은 작업</span>
           <strong>{workQueueSummary.deferred} 보류</strong>
         </summary>
         <div className="sidebar-disclosure-body">
@@ -1299,8 +1271,8 @@ function EmptyState({
           <h3>{channelName ? "이 채널의 제작 실행이 없습니다" : "아직 제작 실행이 없습니다"}</h3>
           <p>
             {channelName
-              ? "아래 새 제작 시작에서 이 운영 채널의 첫 패키지를 시작하세요."
-              : "새 제작을 시작하면 패키지가 단계 흐름에 맞춰 여기에 표시됩니다."}
+              ? "아래 새 제작 시작에서 이 운영 채널의 첫 실행을 시작하세요."
+              : "새 제작을 시작하면 단계 흐름에 맞춰 여기에 표시됩니다."}
           </p>
         </div>
       </div>
@@ -1798,7 +1770,7 @@ function BlockersPanel({ blockers }: { blockers: string[] }) {
   return (
     <section className="panel">
       <div className="panel-header">
-        <h3 className="panel-title">검수 차단 항목</h3>
+        <h3 className="panel-title">남은 확인 항목</h3>
         <AlertTriangle size={16} />
       </div>
       <div className="panel-body">
@@ -1916,7 +1888,7 @@ function AssemblyPanel({
             <span>{run.package.asset_manifest?.blocked ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>조립 차단</span>
+            <span>조립 확인</span>
             <span>{run.package.render_manifest?.blockers ?? 0}</span>
           </div>
           <div className="detail-row">
@@ -2357,7 +2329,6 @@ export default async function Home({
               activeStep={activeStep}
               artifacts={artifacts}
               channelId={selectedChannelId}
-              currentStep={currentStep}
               nextActionPlan={nextActionPlan}
               providerSettings={providerSettings}
               run={activeRun}
