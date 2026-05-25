@@ -2138,7 +2138,6 @@ function StageFocusPanel({
 
 function Inspector({
   run,
-  activeChannelId,
   validation,
   providerSettings,
   approvals,
@@ -2146,10 +2145,8 @@ function Inspector({
   nextActionPlan,
   storageMode,
   workerStatus,
-  channels,
 }: {
   run: RunSummary;
-  activeChannelId: string;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
   approvals: RunApprovals;
@@ -2157,14 +2154,14 @@ function Inspector({
   nextActionPlan: RunNextActionPlan;
   storageMode: string;
   workerStatus: RunWorkerStatus;
-  channels: SafeYouTubeChannel[];
 }) {
   const stage = nextActionPlan.stageLabel;
   const showApprovals = nextActionPlan.headline.includes("승인");
-  const showGeneration = stage === "자산 생성";
-  const showAssembly = stage === "렌더" || stage === "배포";
-  const showFeedback = stage === "피드백";
-  const showProviderReadiness = showGeneration || nextActionPlan.primaryActionId === "open-settings";
+  const waitingForMainButton = Boolean(nextActionPlan.primaryActionId);
+  const showGeneration = stage === "자산 생성" && !waitingForMainButton;
+  const showAssembly = (stage === "렌더" || stage === "배포") && !waitingForMainButton;
+  const showFeedback = stage === "피드백" && !waitingForMainButton;
+  const showProviderReadiness = nextActionPlan.primaryActionId === "open-settings";
   const showValidationImmediate = validation.status === "fail";
   const showBlockersImmediate =
     run.package.qa.blockers.length > 0 && (stage === "검수" || nextActionPlan.status === "blocked");
@@ -2203,15 +2200,8 @@ function Inspector({
 
         {showFeedback ? <FeedbackPanel run={run} /> : null}
 
-        <details className="inspector-more new-run-drawer">
-          <summary>새 제작 시작</summary>
-          <div className="detail-stack">
-            <NewRunPanel channels={channels} initialChannelId={activeChannelId || runChannelId(run)} />
-          </div>
-        </details>
-
         <details className="inspector-more">
-          <summary>검증 세부</summary>
+          <summary>문제 확인</summary>
           <div className="detail-stack">
             {!showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
             {!showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
@@ -2219,29 +2209,9 @@ function Inspector({
         </details>
 
         <details className="inspector-more">
-          <summary>운영 세부</summary>
+          <summary>실행 정보</summary>
           <div className="detail-stack">
             <BriefPanel run={run} />
-            {!showApprovals ? (
-              <RunApprovalsPanel key={`${run.id}-more`} initialApprovals={approvals} runId={run.id} />
-            ) : null}
-            {!showProviderReadiness ? <ProviderReadinessPanel providerSettings={providerSettings} /> : null}
-            {!showGeneration ? (
-              <GenerationConsolePanel
-                generationState={generationState}
-                providerSettings={providerSettings}
-                run={run}
-              />
-            ) : null}
-            {!showAssembly ? (
-              <AssemblyPanel
-                providerSettings={providerSettings}
-                run={run}
-                storageMode={storageMode}
-                workerStatus={workerStatus}
-              />
-            ) : null}
-            {!showFeedback ? <FeedbackPanel run={run} /> : null}
           </div>
         </details>
       </div>
@@ -2377,13 +2347,11 @@ export default async function Home({
       )}
       {activeRun ? (
         <Inspector
-          activeChannelId={activeChannelId}
           approvals={approvals!}
           generationState={generationState!}
           nextActionPlan={nextActionPlan!}
           providerSettings={providerSettings}
           run={activeRun}
-          channels={channels}
           storageMode={storageMode}
           validation={validation!}
           workerStatus={workerStatus!}
