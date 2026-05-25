@@ -1656,6 +1656,43 @@ button:disabled,
   min-width: 0;
 }
 
+.source-queue-actions {
+  justify-content: flex-end;
+}
+
+.source-queue-more-actions {
+  display: grid;
+  min-width: 132px;
+}
+
+.source-queue-more-actions summary {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: #263247;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+  list-style: none;
+  padding: 0 12px;
+}
+
+.source-queue-more-actions summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-queue-more-actions > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: flex-end;
+  margin-top: 7px;
+}
+
 .source-queue-toolbar > div:first-child span {
   display: inline-flex;
   min-height: 26px;
@@ -1805,6 +1842,22 @@ button:disabled,
   border-radius: 8px;
   background: #f8fafc;
   padding: 9px;
+}
+
+.source-review-reason summary {
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  list-style: none;
+}
+
+.source-review-reason summary::-webkit-details-marker {
+  display: none;
+}
+
+.source-review-reason[open] summary {
+  color: #7a5a16;
 }
 
 .source-review-reason span {
@@ -8804,6 +8857,7 @@ body {
 
 .source-queue-toolbar > div:first-child span,
 .source-batch-mode select,
+.source-queue-more-actions summary,
 .source-review-facts span,
 .source-review-search-note span,
 .source-review-select button {
@@ -8819,6 +8873,14 @@ body {
 }
 
 .source-review-reason span {
+  color: #f0c174;
+}
+
+.source-review-reason summary {
+  color: rgba(244, 239, 227, 0.82);
+}
+
+.source-review-reason[open] summary {
   color: #f0c174;
 }
 

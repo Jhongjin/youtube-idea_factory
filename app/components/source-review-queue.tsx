@@ -81,6 +81,30 @@ function sourceFormat(source: SourceVideo) {
   return "중간 길이";
 }
 
+function sourceReason(source: SourceVideo) {
+  const reason = source.inclusion_reason?.trim();
+  if (!reason) {
+    return "소스 검토 단계에서 추가한 영상입니다.";
+  }
+  if (reason.startsWith("Selected from YouTube category intake")) {
+    return "최근성, 조회수, 영상 길이, 채널 다양성을 기준으로 고른 후보입니다.";
+  }
+  if (reason.startsWith("Selected from YouTube topic intake")) {
+    return "입력한 아이디어와 최근 성과를 함께 보고 고른 후보입니다.";
+  }
+  if (reason.startsWith("Added manually")) {
+    return "수동으로 추가한 소스입니다.";
+  }
+  return reason;
+}
+
+function sourceScopeCopy(value: string | undefined) {
+  if (!value) {
+    return "";
+  }
+  return value.replace("category keyword fallback", "카테고리 키워드 보강");
+}
+
 export function SourceReviewQueue({
   language = "ko",
   runId,
@@ -255,7 +279,7 @@ export function SourceReviewQueue({
           <span>실패 {missingCount}개</span>
           <span>선택 {selectedCount}개</span>
         </div>
-        <div>
+        <div className="source-queue-actions">
           <label className="source-batch-mode">
             <span>자막 방식</span>
             <select
@@ -288,40 +312,45 @@ export function SourceReviewQueue({
             {selectedCount === sources.length ? <Square size={15} /> : <CheckSquare size={15} />}
             {selectedCount === sources.length ? "선택 해제" : "전체 선택"}
           </button>
-          <button
-            className="text-button"
-            disabled={loadingAction === "dedupe"}
-            onClick={() => updateSources("dedupe", [], "sources-deduped")}
-            type="button"
-          >
-            {loadingAction === "dedupe" ? <Loader2 className="spin" size={15} /> : <Scissors size={15} />}
-            중복 제거
-          </button>
-          <button
-            className="text-button"
-            disabled={selectedCount === 0 || loadingAction === "keep"}
-            onClick={() =>
-              updateSources(
-                "keep",
-                selectedList,
-                "sources-kept",
-                `선택한 ${selectedCount}개 소스만 유지하고 나머지는 삭제할까요?`,
-              )
-            }
-            type="button"
-          >
-            {loadingAction === "keep" ? <Loader2 className="spin" size={15} /> : <FilterX size={15} />}
-            선택 영상만 유지
-          </button>
-          <button
-            className="text-button"
-            disabled={selectedCount === 0 || loadingAction === "exclude"}
-            onClick={() => updateSources("exclude", selectedList, "sources-excluded")}
-            type="button"
-          >
-            {loadingAction === "exclude" ? <Loader2 className="spin" size={15} /> : <RotateCcw size={15} />}
-            선택 분석 제외
-          </button>
+          <details className="source-queue-more-actions">
+            <summary>정리 도구</summary>
+            <div>
+              <button
+                className="text-button"
+                disabled={loadingAction === "dedupe"}
+                onClick={() => updateSources("dedupe", [], "sources-deduped")}
+                type="button"
+              >
+                {loadingAction === "dedupe" ? <Loader2 className="spin" size={15} /> : <Scissors size={15} />}
+                중복 제거
+              </button>
+              <button
+                className="text-button"
+                disabled={selectedCount === 0 || loadingAction === "keep"}
+                onClick={() =>
+                  updateSources(
+                    "keep",
+                    selectedList,
+                    "sources-kept",
+                    `선택한 ${selectedCount}개 소스만 유지하고 나머지는 삭제할까요?`,
+                  )
+                }
+                type="button"
+              >
+                {loadingAction === "keep" ? <Loader2 className="spin" size={15} /> : <FilterX size={15} />}
+                선택한 영상만 남기기
+              </button>
+              <button
+                className="text-button"
+                disabled={selectedCount === 0 || loadingAction === "exclude"}
+                onClick={() => updateSources("exclude", selectedList, "sources-excluded")}
+                type="button"
+              >
+                {loadingAction === "exclude" ? <Loader2 className="spin" size={15} /> : <RotateCcw size={15} />}
+                선택 영상 분석 제외
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -357,7 +386,7 @@ export function SourceReviewQueue({
                 <div className="source-review-title-row">
                   <div>
                     <h4>{decodeHtmlEntities(source.title)}</h4>
-                    <a href={source.url}>{source.url}</a>
+                    <a href={source.url}>YouTube에서 열기</a>
                   </div>
                   {source.analysis_excluded ? <span className="source-status excluded">분석 제외</span> : null}
                 </div>
@@ -369,16 +398,16 @@ export function SourceReviewQueue({
                   <span>{formatDuration(source.duration_seconds)}</span>
                   <span>자막 {transcriptStatus}</span>
                 </div>
-                <div className="source-review-reason">
-                  <span>선택 이유</span>
-                  <p>{source.inclusion_reason || "소스 검토 단계에서 추가된 영상입니다."}</p>
-                </div>
-                {source.search_scope || source.search_query ? (
-                  <div className="source-review-search-note">
-                    {source.search_query ? <span>검색어 {source.search_query}</span> : null}
-                    {source.search_scope ? <span>{source.search_scope}</span> : null}
-                  </div>
-                ) : null}
+                <details className="source-review-reason">
+                  <summary>선택 이유 보기</summary>
+                  <p>{sourceReason(source)}</p>
+                  {source.search_scope || source.search_query ? (
+                    <div className="source-review-search-note">
+                      {source.search_query ? <span>검색어 {source.search_query}</span> : null}
+                      {source.search_scope ? <span>{sourceScopeCopy(source.search_scope)}</span> : null}
+                    </div>
+                  ) : null}
+                </details>
               </div>
               <div className="source-review-actions-inline">
                 <button
