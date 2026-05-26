@@ -903,7 +903,7 @@ function GuidedStepNav({
   return (
     <nav className="guided-step-nav" aria-label="현재 제작 단계">
       <div className="guided-step-current">
-        <span>{activeIndex + 1}단계</span>
+        <span>현재 {activeIndex + 1}/5</span>
         <div>
           <strong>{activeStepCopy.label}</strong>
           <small>{activeStepCopy.description}</small>
@@ -939,7 +939,7 @@ function GuidedActionPanel({
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "결과" : "먼저 확인"}</span>
+            <span>{plan.primaryActionId ? "버튼을 누르면" : "먼저 확인"}</span>
             <strong>{plan.primaryActionId ? actionOutcome : "필요한 확인을 저장하면 이어서 진행됩니다."}</strong>
           </div>
           {plan.primaryActionId ? (
@@ -957,7 +957,7 @@ function GuidedActionPanel({
       </div>
       {visibleActions.length > 1 ? (
         <details className="guided-checklist">
-          <summary>다른 버튼 보기</summary>
+          <summary>다른 방법 보기</summary>
           <div className="guided-secondary-tool-list">
             {visibleActions
               .filter((actionId) => actionId !== plan.primaryActionId)
@@ -973,7 +973,7 @@ function GuidedActionPanel({
         </details>
       ) : null}
       <details className="guided-checklist">
-        <summary>세부 내용 보기</summary>
+        <summary>왜 필요한가요?</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -2051,9 +2051,9 @@ function StageFocusPanel({
     <section className={`panel focus-inspector-panel ${decision.tone}`}>
       <div className="panel-header">
         <div>
-          <h3 className="panel-title">이번 단계</h3>
+          <h3 className="panel-title">현재 단계</h3>
           <p className="panel-subtitle">
-            {guidedStepPosition + 1}/{guidedStepDefinitions.length} {guidedStep.label}
+            {guidedStepPosition + 1}단계 · {guidedStep.label}
           </p>
         </div>
         <StatusPill status={plan.status} />
@@ -2072,7 +2072,7 @@ function StageFocusPanel({
           </div>
         ) : null}
         <details className="stage-focus-details">
-          <summary>상태와 세부 내용</summary>
+          <summary>필요하면 상태 보기</summary>
           <div className="inspector-decision">
             <span>진행 상태</span>
             <strong>{decision.label}</strong>
@@ -2166,7 +2166,7 @@ function Inspector({
 
         {showProviderReadiness ? (
           <details className="inspector-more">
-            <summary>API 상태 보기</summary>
+            <summary>API 설정 보기</summary>
             <div className="detail-stack">
               <ProviderReadinessPanel providerSettings={providerSettings} />
             </div>
@@ -2175,7 +2175,7 @@ function Inspector({
 
         {showGeneration ? (
           <details className="inspector-more">
-            <summary>생성 버튼과 API 설정</summary>
+            <summary>미디어 만들기 버튼 보기</summary>
             <div className="detail-stack">
               <GenerationConsolePanel
                 generationState={generationState}
@@ -2188,7 +2188,7 @@ function Inspector({
 
         {showAssembly ? (
           <details className="inspector-more">
-            <summary>영상 조립 상태 보기</summary>
+            <summary>영상 조립 준비 보기</summary>
             <div className="detail-stack">
               <AssemblyPanel
                 providerSettings={providerSettings}
@@ -2202,7 +2202,7 @@ function Inspector({
 
         {showFeedback ? (
           <details className="inspector-more">
-            <summary>성과 확인 도구 보기</summary>
+            <summary>성과 확인 보기</summary>
             <div className="detail-stack">
               <FeedbackPanel run={run} />
             </div>
@@ -2210,7 +2210,7 @@ function Inspector({
         ) : null}
 
         <details className="inspector-more">
-          <summary>고급 정보</summary>
+          <summary>필요할 때만 보기</summary>
           <div className="detail-stack">
             {!showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
             {!showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}

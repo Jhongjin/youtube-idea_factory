@@ -167,11 +167,11 @@ export function getRunNextActionPlan({
   if (validation.status === "fail") {
     return step({
       detail: `${validation.failures.length}개 구조 문제가 남아 있습니다.`,
-      headline: "패키지 구조 보정",
+      headline: "실행 자료 보정",
       items: firstFailures(validation),
       primaryActionId: "qa-draft",
       stageIndex: 1,
-      stageLabel: "패키지 보정",
+      stageLabel: "자료 보정",
       status: "blocked",
     });
   }
@@ -387,7 +387,7 @@ export function getRunNextActionPlan({
       headline: "생성 승인",
       items: [
         {
-          detail: "오른쪽 승인 카드에서 생성 승인을 저장하세요.",
+          detail: "승인 카드에서 생성 승인을 저장하세요.",
           status: "review",
           title: "생성 승인",
         },
@@ -401,11 +401,11 @@ export function getRunNextActionPlan({
 
   if (!generationState.queueExists) {
     return step({
-      detail: "승인과 API 설정을 확인해서 바로 만들 수 있는 항목과 막힌 항목을 나눕니다.",
+      detail: "승인과 API 설정을 확인해서 바로 만들 항목과 멈춘 항목을 나눕니다.",
       headline: "만들 항목 정리하기",
       items: [
         {
-          detail: "버튼을 누르면 만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
+          detail: "버튼을 누르면 만들 항목, 멈춘 항목, 건너뛸 항목이 정리됩니다.",
           status: "pending",
           title: "생성 목록",
         },
@@ -419,8 +419,8 @@ export function getRunNextActionPlan({
 
   if ((generationState.summary?.blocked ?? 0) > 0) {
     return step({
-      detail: `${generationState.summary?.blocked ?? 0}개 항목이 API 설정이나 요청서 문제로 막혀 있습니다.`,
-      headline: "막힌 항목 확인하기",
+      detail: `${generationState.summary?.blocked ?? 0}개 항목이 API 설정이나 요청서 문제로 멈춰 있습니다.`,
+      headline: "멈춘 항목 확인하기",
       items: generationState.items
         .filter((item) => item.blockers.length > 0)
         .slice(0, 3)
@@ -442,7 +442,7 @@ export function getRunNextActionPlan({
       headline: "미디어 만들기",
       items: [
         {
-          detail: "오른쪽 생성 콘솔에서 직접 만들거나, 수동으로 만든 파일을 등록하세요.",
+          detail: "미디어 만들기 버튼에서 직접 만들거나, 수동으로 만든 파일을 등록하세요.",
           status: "pending",
           title: "미디어 항목",
         },
@@ -460,7 +460,7 @@ export function getRunNextActionPlan({
       headline: "영상 조립 승인",
       items: [
         {
-          detail: "오른쪽 승인 카드에서 영상 조립 승인을 저장하세요.",
+          detail: "승인 카드에서 영상 조립 승인을 저장하세요.",
           status: "review",
           title: "승인",
         },
@@ -568,7 +568,7 @@ export function getRunNextActionPlan({
       headline: "게시 승인",
       items: [
         {
-          detail: "오른쪽 승인 카드에서 게시 승인을 저장하세요.",
+          detail: "승인 카드에서 게시 승인을 저장하세요.",
           status: "review",
           title: "승인",
         },
