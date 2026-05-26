@@ -87,9 +87,24 @@ function compactPath(value: string) {
   return value.replace(/^supabase:\/\/[^/]+\//, "").replace(/^artifacts\//, "");
 }
 
+function sceneDisplayName(sceneId?: string | null) {
+  if (!sceneId) return "";
+  const numericScene = sceneId.match(/^s?0*(\d+)$/i);
+  if (numericScene) return `${Number(numericScene[1])}번 장면`;
+  return `${sceneId} 장면`;
+}
+
 function assetDisplayName(item: AssetGenerationStateItem) {
   const kind = assetKindCopy[item.kind] ?? item.kind;
-  return item.scene_id ? `${item.scene_id} ${kind}` : `${kind} ${item.id}`;
+  const scene = sceneDisplayName(item.scene_id);
+  if (item.kind === "voice") return "내레이션";
+  if (item.kind === "bgm") return "배경음악";
+  if (item.kind === "thumbnail") return scene ? `${scene} 썸네일` : "썸네일";
+  return scene ? `${scene} ${kind}` : kind;
+}
+
+function assetDebugTitle(item: AssetGenerationStateItem) {
+  return [item.id, item.scene_id, compactPath(item.expected_path)].filter(Boolean).join(" · ");
 }
 
 function blockerCopy(value: string) {
@@ -481,8 +496,7 @@ export function AssetGenerationConsole({
         <summary>
           <span>만들 항목 확인</span>
           <small>
-            전체 {state.items.length}개 · 이미지 {imageItems.length}개 · 영상 {videoItems.length}개 · 음성{" "}
-            {voiceItem ? 1 : 0}개
+            이미지 {imageItems.length}개 · 영상 {videoItems.length}개 · 음성 {voiceItem ? 1 : 0}개
           </small>
         </summary>
         <div className="asset-console-worklist-body">
@@ -495,16 +509,15 @@ export function AssetGenerationConsole({
               <div className="asset-action-section">
                 <div className="asset-action-section-title">
                   <strong>이미지와 썸네일</strong>
-                  <span>{imageItems.length}개 중 먼저 볼 {previewImageItems.length}개</span>
+                  <span>{previewImageItems.length}개 표시</span>
                 </div>
                 {imageGenerationBlocker ? <p className="asset-action-note">{imageGenerationBlocker}</p> : null}
                 {previewImageItems.map((item) => {
                   const displayName = assetDisplayName(item);
-                  const expectedPath = compactPath(item.expected_path);
                   return (
                     <div className="asset-action-row" key={item.id}>
                       <div>
-                        <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
+                        <strong title={assetDebugTitle(item)}>{displayName}</strong>
                         {item.blockers.length > 0 ? (
                           <small title={item.blockers[0]}>{blockerCopy(item.blockers[0])}</small>
                         ) : null}
@@ -532,16 +545,15 @@ export function AssetGenerationConsole({
               <div className="asset-action-section">
                 <div className="asset-action-section-title">
                   <strong>영상 클립</strong>
-                  <span>{videoItems.length}개 중 먼저 볼 {previewVideoItems.length}개</span>
+                  <span>{previewVideoItems.length}개 표시</span>
                 </div>
                 {videoGenerationBlocker ? <p className="asset-action-note">{videoGenerationBlocker}</p> : null}
                 {previewVideoItems.map((item) => {
                   const displayName = assetDisplayName(item);
-                  const expectedPath = compactPath(item.expected_path);
                   return (
                     <div className="asset-action-row" key={item.id}>
                       <div>
-                        <strong title={`${displayName} · ${expectedPath}`}>{displayName}</strong>
+                        <strong title={assetDebugTitle(item)}>{displayName}</strong>
                         {item.blockers.length > 0 ? (
                           <small title={item.blockers[0]}>{blockerCopy(item.blockers[0])}</small>
                         ) : null}
@@ -574,7 +586,7 @@ export function AssetGenerationConsole({
                 {voiceGenerationBlocker ? <p className="asset-action-note">{voiceGenerationBlocker}</p> : null}
                 <div className="asset-action-row">
                   <div>
-                    <strong title={`${voiceItem.id} · ${compactPath(voiceItem.expected_path)}`}>내레이션</strong>
+                    <strong title={assetDebugTitle(voiceItem)}>{assetDisplayName(voiceItem)}</strong>
                     {voiceItem.blockers.length > 0 ? (
                       <small title={voiceItem.blockers[0]}>{blockerCopy(voiceItem.blockers[0])}</small>
                     ) : null}
