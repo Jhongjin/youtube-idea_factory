@@ -28,6 +28,16 @@ export type ProviderRoleReadiness = {
   message: string;
 };
 
+function firstNonEmptyEnv(...keys: string[]) {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return "";
+}
+
 export type DeploymentReadiness = {
   runtime: {
     appStorageMode: string;
@@ -411,7 +421,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       appStorageMode,
       vercel,
       vercelEnv: process.env.VERCEL_ENV ?? "",
-      vercelGitCommitSha: process.env.VERCEL_GIT_COMMIT_SHA ?? "",
+      vercelGitCommitSha: firstNonEmptyEnv("VERCEL_GIT_COMMIT_SHA", "YIF_DEPLOYMENT_COMMIT_SHA"),
     },
     supabase,
     providers: {
