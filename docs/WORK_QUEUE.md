@@ -66,6 +66,7 @@ This queue keeps the build loop explicit:
 | generation-console-disclosure | Phase 7 | done | codex | no | The generation console now shows only readiness counts first, with API setup and per-item generation buttons behind short disclosure panels. |
 | generation-console-operator-copy | Phase 7 | done | codex | no | Generation setup now uses operator-facing labels, hides raw item ids in file registration, and translates common approval blockers into plain Korean. |
 | generation-console-readable-asset-names | Phase 7 | done | codex | no | Generation item rows now show scene-based Korean names such as `1번 장면 이미지` while keeping raw ids and storage paths only in hover details. |
+| qa-blocker-operator-copy | Phase 7 | done | codex | no | QA blockers, package validation failures, and next-action issue details now render in plain Korean operator copy while legacy English records are translated at display time. |
 | dashboard-current-step-minimal-copy | Phase 7 | done | codex | no | Dashboard current-step cards now show only the active step, next result, and main button first, with status details folded behind short disclosures. |
 | deployment-commit-health-fallback | Phase 7 | done | codex | no | Deployment health can now read a CLI-provided `YIF_DEPLOYMENT_COMMIT_SHA` when Vercel does not expose `VERCEL_GIT_COMMIT_SHA`. |
 | artifact-current-step-filter | Phase 7 | done | codex | no | Artifact preview ignores stale URL hashes from earlier stages so the main workspace stays focused on the current step by default. |

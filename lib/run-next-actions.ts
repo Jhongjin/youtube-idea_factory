@@ -1,5 +1,6 @@
 import type { RunApprovals } from "@/lib/approvals";
 import type { AssetGenerationState } from "@/lib/asset-generation-state";
+import { operatorIssueCopy } from "@/lib/operator-copy";
 import type { PackageValidationResult } from "@/lib/package-validation";
 import type { ProductionPackage } from "@/lib/runs";
 import type { RunWorkerStatus } from "@/lib/worker-status";
@@ -126,10 +127,26 @@ function step({
 
 function firstFailures(validation: PackageValidationResult) {
   return validation.failures.slice(0, 3).map((failure) => ({
-    detail: failure,
+    detail: operatorIssueCopy(failure),
     status: "blocked" as const,
     title: "구조 실패",
   }));
+}
+
+function generationItemTitle(item: AssetGenerationState["items"][number]) {
+  const kindCopy: Record<string, string> = {
+    bgm: "배경음악",
+    image: "이미지",
+    subtitles: "자막",
+    thumbnail: "썸네일",
+    video: "영상",
+    voice: "내레이션",
+  };
+  if (item.kind === "voice") return "내레이션";
+  const scene = item.scene_id?.match(/^s?0*(\d+)$/i);
+  const sceneName = scene ? `${Number(scene[1])}번 장면` : item.scene_id ? `${item.scene_id} 장면` : "";
+  const kind = kindCopy[item.kind] ?? "미디어";
+  return sceneName ? `${sceneName} ${kind}` : kind;
 }
 
 export function getRunNextActionPlan({
@@ -334,7 +351,7 @@ export function getRunNextActionPlan({
       detail: `${pkg.qa.blockers.length}개 확인할 항목이 남아 있습니다.`,
       headline: "남은 확인 항목 해결",
       items: pkg.qa.blockers.slice(0, 3).map((blocker) => ({
-        detail: blocker,
+        detail: operatorIssueCopy(blocker),
         status: "blocked",
         title: "확인 항목",
       })),
@@ -408,9 +425,9 @@ export function getRunNextActionPlan({
         .filter((item) => item.blockers.length > 0)
         .slice(0, 3)
         .map((item) => ({
-          detail: item.blockers.join(", "),
+          detail: item.blockers.map(operatorIssueCopy).join(", "),
           status: "blocked" as const,
-          title: item.id,
+          title: generationItemTitle(item),
         })),
       primaryActionId: "open-settings",
       stageIndex: 9,
