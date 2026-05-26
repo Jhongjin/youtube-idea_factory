@@ -64,6 +64,7 @@ This queue keeps the build loop explicit:
 | approval-panel-readability | Phase 7 | done | codex | no | Approval cards now use shorter operator copy, readable timestamps, and dark input surfaces that match the dashboard inspector. |
 | generation-console-disclosure | Phase 7 | done | codex | no | The generation console now shows only readiness counts first, with API setup and per-item generation buttons behind short disclosure panels. |
 | generation-console-operator-copy | Phase 7 | done | codex | no | Generation setup now uses operator-facing labels, hides raw item ids in file registration, and translates common approval blockers into plain Korean. |
+| dashboard-current-step-minimal-copy | Phase 7 | done | codex | no | Dashboard current-step cards now show only the active step, next result, and main button first, with status details folded behind short disclosures. |
 | artifact-current-step-filter | Phase 7 | done | codex | no | Artifact preview ignores stale URL hashes from earlier stages so the main workspace stays focused on the current step by default. |
 | source-transcript-panel-readability | Phase 7 | done | codex | no | Source transcript editing now keeps STT options folded and uses dashboard-matching dark controls for long transcript review. |
 | inspector-five-step-focus | Phase 7 | done | codex | no | The right inspector now uses the same 5-step language as the main flow and folds validation, blockers, and run facts into one advanced section. |

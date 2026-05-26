@@ -877,7 +877,7 @@ button:disabled,
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
-  align-items: start;
+  align-items: center;
 }
 
 .guided-action-main h3 {
@@ -2702,6 +2702,10 @@ button:disabled,
 }
 
 .stage-focus-details[open] summary {
+  margin-bottom: 8px;
+}
+
+.stage-focus-details .inspector-decision {
   margin-bottom: 8px;
 }
 

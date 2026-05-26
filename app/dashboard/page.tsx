@@ -118,12 +118,6 @@ const feedbackStatusCopy: Record<string, string> = {
   watch: "주의 관찰",
 };
 
-const approvalGateLabels: Record<ApprovalGate, string> = {
-  generation: "생성 승인",
-  render: "영상 조립 승인",
-  publish: "게시 승인",
-};
-
 const guidedStepDefinitions = [
   {
     description: "채널과 이번 영상 주제를 확인합니다.",
@@ -908,9 +902,7 @@ function GuidedStepNav({
   return (
     <nav className="guided-step-nav" aria-label="현재 제작 단계">
       <div className="guided-step-current">
-        <span>
-          {activeIndex + 1}/{guidedStepDefinitions.length}
-        </span>
+        <span>{activeIndex + 1}단계</span>
         <div>
           <strong>{activeStepCopy.label}</strong>
           <small>{activeStepCopy.description}</small>
@@ -933,26 +925,21 @@ function GuidedActionPanel({
     new Set([plan.primaryActionId, ...(plan.secondaryActionIds ?? [])].filter(Boolean)),
   ) as RunPrimaryActionId[];
   const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
+  const actionOutcome = currentGuide?.output ?? plan.detail;
   return (
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
         <div>
           <p className="eyebrow">지금 할 일</p>
           <h3>{plan.headline}</h3>
-          <p>{currentGuide?.goal ?? plan.detail}</p>
         </div>
         <StatusPill status={plan.status} />
       </div>
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "만들어지는 결과" : "먼저 확인할 것"}</span>
-            <strong>{currentGuide?.output ?? "확인이 끝나면 다음 버튼이 열립니다."}</strong>
-            <small>
-              {plan.primaryActionId
-                ? "완료되면 아래 결과 영역에서 바로 확인할 수 있습니다."
-                : "오른쪽 카드에서 필요한 확인을 저장하면 이어서 진행됩니다."}
-            </small>
+            <span>{plan.primaryActionId ? "결과" : "먼저 확인"}</span>
+            <strong>{plan.primaryActionId ? actionOutcome : "필요한 확인을 저장하면 이어서 진행됩니다."}</strong>
           </div>
           {plan.primaryActionId ? (
             <div className="guide-action-primary">
@@ -963,13 +950,13 @@ function GuidedActionPanel({
               />
             </div>
           ) : (
-            <p className="next-action-note">오른쪽 승인 카드에서 확인을 저장하세요.</p>
+            <p className="next-action-note">오른쪽 카드에서 확인을 저장하세요.</p>
           )}
         </div>
       </div>
       {visibleActions.length > 1 ? (
         <details className="guided-checklist">
-          <summary>보조 버튼 보기</summary>
+          <summary>다른 버튼 보기</summary>
           <div className="guided-secondary-tool-list">
             {visibleActions
               .filter((actionId) => actionId !== plan.primaryActionId)
@@ -985,7 +972,7 @@ function GuidedActionPanel({
         </details>
       ) : null}
       <details className="guided-checklist">
-        <summary>작업 설명 보기</summary>
+        <summary>세부 내용 보기</summary>
         <div className="next-action-list">
           {plan.items.map((item) => (
             <div className="next-action-item" key={`${item.title}-${item.detail}`}>
@@ -2057,6 +2044,8 @@ function StageFocusPanel({
   const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
     (approvalGate) => !approvalReady(approvals[approvalGate]),
   ).length;
+  const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
+  const actionOutcome = currentGuide?.output ?? plan.detail;
   return (
     <section className={`panel focus-inspector-panel ${decision.tone}`}>
       <div className="panel-header">
@@ -2069,25 +2058,25 @@ function StageFocusPanel({
         <StatusPill status={plan.status} />
       </div>
       <div className="panel-body">
-        <div className="inspector-decision">
-          <span>진행 상태</span>
-          <strong>{decision.label}</strong>
-          <p>{decision.detail}</p>
-        </div>
         <div className="stage-focus-summary">
-          <span>다음 작업</span>
+          <span>지금 할 일</span>
           <strong>{plan.headline}</strong>
-          <p>{plan.detail}</p>
+          <p>{actionOutcome}</p>
         </div>
         {gate ? (
           <div className="approval-gate-summary">
-            <span>{approvalGateLabels[gate]}</span>
+            <span>필요한 승인</span>
             <strong>{approvalReady(approvals[gate]) ? "승인됨" : "승인 대기"}</strong>
-            <p>{openApprovalCount}개 승인이 아직 남아 있습니다.</p>
+            <p>{openApprovalCount}개 확인이 남아 있습니다.</p>
           </div>
         ) : null}
         <details className="stage-focus-details">
-          <summary>세부 항목 보기</summary>
+          <summary>상태와 세부 내용</summary>
+          <div className="inspector-decision">
+            <span>진행 상태</span>
+            <strong>{decision.label}</strong>
+            <p>{decision.detail}</p>
+          </div>
           <div className="stage-focus-inputs compact">
             <div className="stage-focus-inputs-header">
               <p>{plan.stageLabel}</p>
