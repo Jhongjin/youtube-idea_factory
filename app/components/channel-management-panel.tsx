@@ -7,8 +7,10 @@ import {
   BadgeCheck,
   BarChart3,
   Database,
+  Info,
   KeyRound,
   Link2,
+  Lightbulb,
   Loader2,
   Pencil,
   Plus,
@@ -35,6 +37,22 @@ const settingsTabLabels: Record<ChannelSettingsTab, string> = {
   connection: "연동 관리",
   learning: "AI 학습 설정",
 };
+
+function FieldLabel({ help, label }: { help?: string; label: string }) {
+  return (
+    <span className="channel-field-label">
+      {label}
+      {help ? (
+        <span aria-label={help} className="channel-field-help" tabIndex={0}>
+          <Info size={12} />
+          <span className="channel-tooltip" role="tooltip">
+            {help}
+          </span>
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function channelUploadReadiness(channel: SafeYouTubeChannel) {
   if (channel.status === "paused") {
@@ -332,8 +350,11 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         </div>
         <details className="channel-oauth-guide">
           <summary>
-            <span>Google 계정 연동 준비 순서</span>
-            <strong>안전 연결</strong>
+            <span>
+              <Lightbulb size={14} />
+              연동 순서 가이드 보기/접기
+            </span>
+            <strong>3단계</strong>
           </summary>
           <div className="channel-oauth-guide-grid">
             <div>
@@ -370,9 +391,11 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <input name="channel_name" placeholder="AI 뉴스 쇼츠" required />
           </label>
           <label>
-            <span>채널 ID</span>
+            <FieldLabel
+              help="커스텀 URL이나 @핸들이 아니라 YouTube Studio의 UC... 값입니다. 모르면 비워두고 핸들만 입력해도 됩니다."
+              label="채널 ID"
+            />
             <input name="channel_id" placeholder="UC..." />
-            <small>커스텀 URL이나 @핸들이 아니라 YouTube Studio의 UC... 값입니다.</small>
           </label>
           <label>
             <span>핸들</span>
@@ -387,17 +410,15 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <input defaultValue="ko" name="default_language" />
           </label>
           <label>
-            <span>업로드용 Google 연결키</span>
+            <FieldLabel help="비밀번호가 아니라 업로드 권한으로 발급한 연결 값입니다." label="업로드용 Google 연결키" />
             <input name="upload_refresh_token" placeholder="업로드 연결값 입력" type="password" />
-            <small>비밀번호가 아니라 `youtube.upload` 권한으로 발급한 연결 값입니다.</small>
           </label>
           <label>
-            <span>분석용 Google 연결키</span>
+            <FieldLabel help="비밀번호가 아니라 성과 분석 권한으로 발급한 연결 값입니다." label="분석용 Google 연결키" />
             <input name="analytics_refresh_token" placeholder="분석 연결값 입력" type="password" />
-            <small>비밀번호가 아니라 `yt-analytics.readonly` 권한으로 발급한 연결 값입니다.</small>
           </label>
           <label>
-            <span>상태</span>
+            <FieldLabel help="운영 중 채널만 YouTube 업로드 준비에 사용할 수 있습니다." label="상태" />
             <select defaultValue="setup" name="status">
               {Object.entries(statusLabels).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -405,13 +426,16 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 </option>
               ))}
             </select>
-            <small>운영 중 채널만 YouTube 업로드 준비에 사용할 수 있습니다.</small>
           </label>
           <label className="channel-notes">
             <span>AI 채널 학습 데이터</span>
-            <textarea name="notes" placeholder="콘텐츠 포지션, 업로드 주기, 주의할 브랜드 톤" rows={3} />
+            <textarea
+              name="notes"
+              placeholder="예: 주 시청층은 50대 남성, 전문적이고 차분한 아나운서 톤앤매너 유지, 자극적인 단어 제외"
+              rows={4}
+            />
           </label>
-          <button className="text-button primary" disabled={saving === "new"} type="submit">
+          <button className="text-button primary channel-submit-cta" disabled={saving === "new"} type="submit">
             {saving === "new" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
             {saving === "new" ? "연결 중" : "내 채널 추가하기"}
           </button>
@@ -564,7 +588,10 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                       <input defaultValue={channel.channel_name} name="channel_name" required />
                     </label>
                     <label>
-                      <span>채널 ID</span>
+                      <FieldLabel
+                        help="커스텀 URL이나 @핸들이 아니라 YouTube Studio의 UC... 값입니다."
+                        label="채널 ID"
+                      />
                       <input defaultValue={channel.channel_id ?? ""} name="channel_id" placeholder="UC..." />
                     </label>
                     <label>
@@ -580,7 +607,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                       <input defaultValue={channel.default_language} name="default_language" />
                     </label>
                     <label>
-                      <span>상태</span>
+                      <FieldLabel help="운영 중 채널만 업로드 작업에 사용할 수 있습니다." label="상태" />
                       <select defaultValue={channel.status} name="status">
                         {Object.entries(statusLabels).map(([value, label]) => (
                           <option key={value} value={value}>
@@ -588,11 +615,15 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                           </option>
                         ))}
                       </select>
-                      <small>운영 중 채널만 업로드 작업에 사용할 수 있습니다.</small>
                     </label>
-                    <label>
+                    <label className="channel-notes">
                       <span>AI 채널 학습 데이터</span>
-                      <input defaultValue={channel.notes ?? ""} name="notes" placeholder="운영 메모와 채널 톤" />
+                      <textarea
+                        defaultValue={channel.notes ?? ""}
+                        name="notes"
+                        placeholder="예: 주 시청층은 50대 남성, 전문적이고 차분한 아나운서 톤앤매너 유지, 자극적인 단어 제외"
+                        rows={4}
+                      />
                     </label>
                     <button className="text-button" disabled={saving === channel.id} type="submit">
                       {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
@@ -637,14 +668,18 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 {activeTab === "connection" ? (
                   <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
                     <label>
-                      <span>업로드용 Google 연결키 교체</span>
+                      <FieldLabel
+                        help="업로드 권한으로 발급한 연결키만 입력하세요. 스코프명 자체는 넣지 않습니다."
+                        label="업로드용 Google 연결키 교체"
+                      />
                       <input name="upload_refresh_token" placeholder="새 연결키 / 비워두면 유지" type="password" />
-                      <small>`youtube.upload` 스코프명 자체를 넣지 마세요.</small>
                     </label>
                     <label>
-                      <span>분석용 Google 연결키 교체</span>
+                      <FieldLabel
+                        help="성과 분석 권한으로 발급한 연결키만 입력하세요. 스코프명 자체는 넣지 않습니다."
+                        label="분석용 Google 연결키 교체"
+                      />
                       <input name="analytics_refresh_token" placeholder="새 연결키 / 비워두면 유지" type="password" />
-                      <small>`yt-analytics.readonly` 스코프명 자체를 넣지 마세요.</small>
                     </label>
                     <p className="channel-security-note">
                       YouTube Idea Factory는 구글의 보안 가이드라인을 준수하며, 귀하의 비밀번호를 절대 저장하지
