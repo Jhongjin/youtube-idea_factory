@@ -10633,8 +10633,41 @@ body {
 }
 
 .signup-card .auth-submit {
+  border-color: rgba(189, 240, 198, 0.86);
   border-radius: 10px;
+  background: var(--neon-green);
+  color: #0b1112;
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.14),
+    0 12px 28px rgba(155, 215, 167, 0.2);
   transition: all 200ms ease;
+}
+
+.signup-card .auth-submit:hover:not(:disabled) {
+  border-color: #d5ffdc;
+  background: #d5ffdc;
+  color: #0b1112;
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.22),
+    0 14px 32px rgba(189, 240, 198, 0.24);
+}
+
+.signup-card .auth-submit:disabled {
+  background: rgba(189, 240, 198, 0.58);
+  color: rgba(11, 17, 18, 0.62);
+}
+
+.signup-card .auth-form {
+  gap: 15px;
+  margin-top: 12px;
+}
+
+.signup-card .auth-footnote {
+  margin-top: 10px;
+}
+
+.signup-card .auth-console-heading h2 {
+  line-height: 1.45;
 }
 
 .auth-page .auth-submit:hover {
