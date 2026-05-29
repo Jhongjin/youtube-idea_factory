@@ -6941,7 +6941,7 @@ button:disabled,
 
 .channel-form-grid textarea,
 .channel-update-grid textarea {
-  min-height: 104px;
+  min-height: 96px;
   resize: vertical;
   line-height: 1.5;
 }
@@ -7066,11 +7066,12 @@ button:disabled,
 }
 
 .channel-admin-stack.has-channels .channel-grid {
-  order: 1;
+  order: 2;
+  margin-top: 2.5rem;
 }
 
 .channel-admin-stack.has-channels .channel-hero-card {
-  order: 2;
+  order: 1;
 }
 
 .channel-feedback-stack {
@@ -10922,7 +10923,7 @@ body {
 
 .admin-page .channel-form-grid textarea,
 .admin-page .channel-update-grid textarea {
-  min-height: 104px;
+  min-height: 96px;
 }
 
 .admin-page .channel-form-grid {

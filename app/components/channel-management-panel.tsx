@@ -431,8 +431,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <span>AI 채널 학습 데이터</span>
             <textarea
               name="notes"
-              placeholder="예시: 주 시청층은 3040 직장인 / 테크 전문 리뷰 채널 / 차분하고 신뢰감 주는 전문가 톤앤매너 유지"
-              rows={4}
+              placeholder={"예시:\n주 시청층: 3040 직장인\n채널 성격: 테크 전문 리뷰 채널\n톤앤매너: 차분하고 전문적인 대장 톤"}
+              rows={3}
             />
           </label>
           <button className="text-button primary channel-submit-cta" disabled={saving === "new"} type="submit">
@@ -621,8 +621,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                       <textarea
                         defaultValue={channel.notes ?? ""}
                         name="notes"
-                        placeholder="예시: 주 시청층은 3040 직장인 / 테크 전문 리뷰 채널 / 차분하고 신뢰감 주는 전문가 톤앤매너 유지"
-                        rows={4}
+                        placeholder={"예시:\n주 시청층: 3040 직장인\n채널 성격: 테크 전문 리뷰 채널\n톤앤매너: 차분하고 전문적인 대장 톤"}
+                        rows={3}
                       />
                     </label>
                     <button className="text-button" disabled={saving === channel.id} type="submit">
