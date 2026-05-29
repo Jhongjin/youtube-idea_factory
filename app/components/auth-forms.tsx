@@ -3,7 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, LogIn, LogOut, UserPlus } from "lucide-react";
+import { CheckCircle2, KeyRound, LogOut, UserPlus } from "lucide-react";
 
 export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
   const router = useRouter();
@@ -40,7 +40,7 @@ export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
   return (
     <form className="auth-form" onSubmit={submit}>
       <label>
-        <span>아이디 또는 이메일</span>
+        <span>이메일 또는 관리자 ID</span>
         <input
           autoComplete="username"
           onChange={(event) => setIdentifier(event.target.value)}
@@ -54,7 +54,7 @@ export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
         <input
           autoComplete="current-password"
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="관리자 비밀번호"
+          placeholder="비밀번호를 입력해 주세요."
           required
           type="password"
           value={password}
@@ -69,8 +69,8 @@ export function LoginForm({ nextPath = "/dashboard" }: { nextPath?: string }) {
         </div>
       ) : null}
       <button className="text-button primary auth-submit" disabled={loading} type="submit">
-        <LogIn size={16} />
-        {loading ? "확인 중" : "로그인"}
+        <KeyRound size={16} />
+        {loading ? "보안 확인 중" : "로그인"}
       </button>
     </form>
   );

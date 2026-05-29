@@ -26,11 +26,11 @@ export default async function LoginPage({
       <section className="auth-card">
         <AuthContextPanel mode="login" />
         <div className="auth-copy">
-          <p className="hero-kicker">운영자 로그인</p>
-          <h1>제작 운영에 로그인</h1>
+          <p className="hero-kicker">보안 워크스페이스</p>
+          <h1>워크스페이스 로그인</h1>
           <p>
-            승인된 계정만 대시보드, 채널 권한, API 설정으로 들어갈 수 있습니다. 기본 관리자 아이디는
-            <code>admin</code>입니다.
+            승인된 계정 전용 보안 세션입니다. 로그인 후 콘텐츠 대시보드, 채널 관리, AI 인프라
+            설정 권한이 활성화됩니다. <span className="auth-admin-hint">초기 관리자 ID: <code>admin</code></span>
           </p>
           {user ? (
             <div className="settings-message saved">
@@ -39,7 +39,7 @@ export default async function LoginPage({
           ) : null}
           <LoginForm nextPath={nextPath} />
           <p className="auth-footnote">
-            계정이 없다면 <Link href="/signup">가입 요청</Link>을 보내세요.
+            아직 권한 계정이 없으신가요? <Link href="/signup">가입 권한 요청하기</Link>
           </p>
         </div>
       </section>
