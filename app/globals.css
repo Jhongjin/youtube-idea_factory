@@ -7400,6 +7400,10 @@ button:disabled,
   justify-content: flex-end;
 }
 
+.admin-current-account {
+  max-width: 100%;
+}
+
 .channel-admin-hero {
   align-items: center;
   background:
@@ -7622,11 +7626,12 @@ button:disabled,
 .admin-pending-card {
   border-color: #b9dfcb;
   background: #fbfffc;
+  margin-bottom: 1rem;
 }
 
 .admin-pending-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-pending-row {
@@ -7637,7 +7642,7 @@ button:disabled,
   border: 1px solid #dbe9e0;
   border-radius: 12px;
   background: #ffffff;
-  padding: 12px;
+  padding: 10px 12px;
 }
 
 .admin-pending-row div {
@@ -7663,8 +7668,21 @@ button:disabled,
   grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(120px, 0.7fr)) minmax(108px, auto);
   gap: 10px;
   align-items: end;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.user-row:hover,
+.user-row:focus-within {
+  border-color: rgba(47, 111, 78, 0.28);
+  background: #ffffff;
+  box-shadow: 0 14px 34px rgba(31, 45, 61, 0.08);
 }
 
 .user-identity {
@@ -7681,6 +7699,71 @@ button:disabled,
 .user-identity small {
   font-size: 11px;
   font-weight: 800;
+}
+
+.user-status-badge,
+.status-select-shell {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.user-status-badge {
+  width: fit-content;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.08);
+  padding: 4px 8px;
+  color: #667386;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.user-status-badge i,
+.status-select-shell i {
+  display: block;
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+
+.user-status-badge.active,
+.status-select-shell.active {
+  color: #0f9f6e;
+}
+
+.user-status-badge.pending,
+.status-select-shell.pending {
+  color: #f0a94a;
+}
+
+.user-status-badge.disabled,
+.status-select-shell.disabled {
+  color: rgba(148, 163, 184, 0.86);
+}
+
+.status-select-field {
+  min-width: 0;
+}
+
+.status-select-shell {
+  position: relative;
+  width: 100%;
+}
+
+.status-select-shell select {
+  width: 100%;
+  padding-left: 28px;
+}
+
+.status-select-shell i {
+  position: absolute;
+  left: 12px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .user-row-actions {
@@ -7703,9 +7786,23 @@ button:disabled,
   background: #e4f5ec;
 }
 
+.text-button.approve-primary {
+  border-color: #2f6f4e;
+  background: #2f6f4e;
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(47, 111, 78, 0.18);
+}
+
+.text-button.approve-primary:hover {
+  border-color: #3d8b63;
+  background: #3d8b63;
+  color: #ffffff;
+}
+
 .admin-create-user {
   display: grid;
   gap: 14px;
+  margin-top: 0.5rem;
 }
 
 .admin-create-user summary {
@@ -7742,6 +7839,19 @@ button:disabled,
 .admin-create-user[open] summary {
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 12px;
+}
+
+.admin-form-grid > .admin-create-submit {
+  justify-self: end;
+  border-color: rgba(47, 111, 78, 0.58);
+  background: rgba(47, 111, 78, 0.1);
+  color: #2f6f4e;
+}
+
+.admin-form-grid > .admin-create-submit:hover {
+  border-color: #2f6f4e;
+  background: rgba(47, 111, 78, 0.16);
+  color: #1f5f42;
 }
 
 .channel-grid {
@@ -10051,6 +10161,84 @@ body {
   color: var(--green);
 }
 
+.admin-page {
+  letter-spacing: 0;
+}
+
+.admin-page .admin-current-account {
+  background: rgba(189, 240, 198, 0.16);
+  color: var(--neon-green);
+}
+
+.admin-page .admin-pending-card {
+  border-color: rgba(189, 240, 198, 0.46);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.13), rgba(244, 239, 227, 0.035)),
+    rgba(12, 19, 19, 0.86);
+}
+
+.admin-page .admin-pending-row,
+.admin-page .user-row {
+  border-color: rgba(244, 239, 227, 0.12);
+  background: rgba(244, 239, 227, 0.052);
+}
+
+.admin-page .admin-pending-row:hover,
+.admin-page .user-row:hover,
+.admin-page .user-row:focus-within {
+  border-color: rgba(189, 240, 198, 0.42);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.09), rgba(244, 239, 227, 0.035)),
+    rgba(13, 21, 21, 0.82);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.1),
+    0 0 24px rgba(155, 215, 167, 0.11);
+}
+
+.admin-page .user-status-badge {
+  border-color: rgba(244, 239, 227, 0.12);
+  background: rgba(244, 239, 227, 0.055);
+}
+
+.admin-page .user-status-badge.active,
+.admin-page .status-select-shell.active {
+  color: var(--neon-green);
+}
+
+.admin-page .user-status-badge.pending,
+.admin-page .status-select-shell.pending {
+  color: #f0c174;
+}
+
+.admin-page .user-status-badge.disabled,
+.admin-page .status-select-shell.disabled {
+  color: rgba(244, 239, 227, 0.52);
+}
+
+.admin-page .text-button.approve-primary {
+  border-color: rgba(189, 240, 198, 0.78);
+  background: var(--neon-green);
+  color: #0b1112;
+}
+
+.admin-page .text-button.approve-primary:hover {
+  border-color: rgba(255, 255, 255, 0.82);
+  background: #d4ffd9;
+  color: #0b1112;
+}
+
+.admin-page .admin-form-grid > .admin-create-submit {
+  border-color: rgba(189, 240, 198, 0.46);
+  background: rgba(155, 215, 167, 0.1);
+  color: var(--neon-green);
+}
+
+.admin-page .admin-form-grid > .admin-create-submit:hover {
+  border-color: rgba(189, 240, 198, 0.76);
+  background: rgba(155, 215, 167, 0.16);
+  color: #d4ffd9;
+}
+
 .admin-page .channel-connect-cta,
 .admin-page .channel-submit-cta,
 .admin-page .channel-settings-tabs button.active {
@@ -11181,6 +11369,20 @@ body {
 .account-page select option {
   background: #0b1112;
   color: #f8f2e7;
+}
+
+.admin-page select {
+  appearance: none;
+  background-color: rgba(6, 12, 12, 0.64);
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(244, 239, 227, 0.72) 50%),
+    linear-gradient(135deg, rgba(244, 239, 227, 0.72) 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 12px) 50%;
+  background-repeat: no-repeat;
+  background-size: 5px 5px, 5px 5px;
+  padding-right: 36px;
 }
 
 .settings-page select {

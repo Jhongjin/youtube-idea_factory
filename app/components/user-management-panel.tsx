@@ -2,12 +2,12 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Save, UserPlus } from "lucide-react";
+import { CheckCircle2, Save, UserPlus, Zap } from "lucide-react";
 import type { AppUser, AppUserStatus } from "@/lib/users";
 import type { SessionRole } from "@/lib/session";
 
 const roleLabels: Record<SessionRole, string> = {
-  admin: "관리자",
+  admin: "최고 관리자",
   member: "멤버",
 };
 
@@ -16,6 +16,37 @@ const statusLabels: Record<AppUserStatus, string> = {
   disabled: "비활성",
   pending: "승인 대기",
 };
+
+function UserStatusField({
+  defaultStatus,
+  disabled,
+}: {
+  defaultStatus: AppUserStatus;
+  disabled?: boolean;
+}) {
+  const [status, setStatus] = useState<AppUserStatus>(defaultStatus);
+
+  return (
+    <label className="status-select-field">
+      <span>상태</span>
+      <div className={`status-select-shell ${status}`}>
+        <i aria-hidden="true" />
+        <select
+          defaultValue={defaultStatus}
+          disabled={disabled}
+          name="status"
+          onChange={(event) => setStatus(event.target.value as AppUserStatus)}
+        >
+          {Object.entries(statusLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </label>
+  );
+}
 
 export function UserManagementPanel({ users }: { users: AppUser[] }) {
   const router = useRouter();
@@ -106,7 +137,7 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
           <div className="admin-card-header">
             <div>
               <h2>승인 대기 {pendingUserCount}명</h2>
-              <p>가입 요청을 활성으로 바꾸면 해당 사용자가 바로 로그인할 수 있습니다.</p>
+              <p>신규 가입 요청을 승인하면 즉시 AI 파이프라인 워크스페이스 접근 권한이 부여됩니다.</p>
             </div>
             <span className="admin-count">먼저 처리</span>
           </div>
@@ -118,12 +149,12 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
                   <span>{user.email}</span>
                 </div>
                 <button
-                  className="text-button approve"
+                  className="text-button approve approve-primary"
                   disabled={approvingUserId === user.id}
                   onClick={() => approveUser(user.id)}
                   type="button"
                 >
-                  <CheckCircle2 size={15} />
+                  {approvingUserId === user.id ? <CheckCircle2 size={15} /> : <Zap size={15} />}
                   {approvingUserId === user.id ? "승인 중" : "활성으로 승인"}
                 </button>
               </div>
@@ -136,25 +167,19 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
         <div className="admin-card-header">
           <div>
             <h2>회원 목록</h2>
-            <p>승인 대기 계정은 위에 먼저 모으고, 전체 계정은 여기서 세부 값을 조정합니다.</p>
           </div>
           <span className="admin-count">{pendingUserCount ? `대기 ${pendingUserCount}` : users.length}</span>
         </div>
-        {pendingUserCount ? (
-          <div className="admin-approval-guide">
-            <CheckCircle2 size={17} />
-            <div>
-              <strong>가입 요청 승인</strong>
-              <span>승인 대기 행의 오른쪽 승인 버튼을 누르면 상태가 활성으로 바뀌고 사용자가 로그인할 수 있습니다.</span>
-            </div>
-          </div>
-        ) : null}
         <div className="user-list">
           {orderedUsers.map((user) => (
             <form className="user-row" key={user.id} onSubmit={(event) => updateUser(event, user.id)}>
               <div className="user-identity">
                 <strong>{user.name}</strong>
                 <span>{user.email}</span>
+                <span className={`user-status-badge ${user.status}`}>
+                  <i aria-hidden="true" />
+                  {statusLabels[user.status]}
+                </span>
                 <small>{user.id === "env-admin" ? "환경변수 관리자" : `최근 로그인 ${user.last_login_at ?? "기록 없음"}`}</small>
               </div>
               <label>
@@ -171,19 +196,15 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
                   ))}
                 </select>
               </label>
-              <label>
-                <span>상태</span>
-                <select defaultValue={user.status} disabled={user.id === "env-admin"} name="status">
-                  {Object.entries(statusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <UserStatusField defaultStatus={user.status} disabled={user.id === "env-admin"} />
               <label>
                 <span>새 비밀번호</span>
-                <input disabled={user.id === "env-admin"} name="password" placeholder="변경 시 입력" type="password" />
+                <input
+                  disabled={user.id === "env-admin"}
+                  name="password"
+                  placeholder="•••••••• (변경 시에만 입력)"
+                  type="password"
+                />
               </label>
               <div className="user-row-actions">
                 {user.status === "pending" ? (
@@ -209,10 +230,10 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
 
       <details className="admin-card admin-create-user">
         <summary>
-          <span>회원 직접 만들기</span>
+          <span>신규 멤버 직접 등록</span>
           <UserPlus size={18} />
         </summary>
-        <p>팀원이 가입 요청을 보내기 전에도 관리자 계정에서 직접 등록할 수 있습니다.</p>
+        <p>초대 링크 발송 전, 관리자가 워크스페이스에 멤버 계정을 선제적으로 생성하고 권한을 부여할 수 있습니다.</p>
         <form className="admin-form-grid" onSubmit={createUser}>
           <label>
             <span>이름</span>
@@ -241,7 +262,7 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
               <option value="disabled">비활성</option>
             </select>
           </label>
-          <button className="text-button primary" type="submit">
+          <button className="text-button admin-create-submit" type="submit">
             <Save size={15} />
             회원 저장
           </button>
