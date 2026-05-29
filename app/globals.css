@@ -4123,7 +4123,7 @@ button:disabled,
   background: var(--surface);
   box-shadow: var(--shadow);
   padding: 16px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .provider-card.enabled {
@@ -4260,7 +4260,7 @@ button:disabled,
   border-radius: 10px;
   background: #f8fafc;
   overflow: clip;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .provider-config-details summary {
@@ -11447,25 +11447,25 @@ body {
 }
 
 .settings-page .provider-card {
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .settings-page .provider-card:hover,
 .settings-page .provider-card:focus-within {
-  border-color: rgba(189, 240, 198, 0.5);
+  border-color: rgba(189, 240, 198, 0.56);
   background:
-    linear-gradient(145deg, rgba(155, 215, 167, 0.11), rgba(244, 239, 227, 0.04)),
+    linear-gradient(145deg, rgba(155, 215, 167, 0.13), rgba(244, 239, 227, 0.045)),
     rgba(13, 21, 21, 0.92);
   box-shadow:
-    0 0 0 1px rgba(189, 240, 198, 0.12),
-    0 0 26px rgba(155, 215, 167, 0.13),
+    0 0 0 1px rgba(189, 240, 198, 0.14),
+    0 0 30px rgba(155, 215, 167, 0.15),
     var(--shadow);
   transform: translateY(-1px);
 }
 
 .settings-page .provider-config-details,
 .settings-page .provider-profile-details {
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .settings-page .provider-config-details::details-content,
@@ -11474,8 +11474,8 @@ body {
   opacity: 0;
   overflow: clip;
   transition:
-    block-size 0.2s ease,
-    opacity 0.2s ease;
+    block-size 0.25s ease,
+    opacity 0.25s ease;
   transition-behavior: allow-discrete;
 }
 
@@ -11488,6 +11488,33 @@ body {
 .settings-page .provider-fields input::placeholder,
 .settings-page .provider-profile-fields input::placeholder {
   color: rgba(244, 239, 227, 0.48);
+}
+
+.settings-page .provider-save-footer .text-button.primary {
+  min-height: 46px;
+  border-color: rgba(189, 240, 198, 0.9);
+  background: var(--neon-green);
+  color: #0b1112;
+  font-weight: 950;
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.16),
+    0 12px 30px rgba(155, 215, 167, 0.18);
+}
+
+.settings-page .provider-save-footer .text-button.primary:hover {
+  border-color: #d5ffdc;
+  background: #d5ffdc;
+  color: #0b1112;
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.22),
+    0 14px 34px rgba(189, 240, 198, 0.22);
+}
+
+.settings-page .worker-readiness-card code {
+  border: 1px solid rgba(244, 239, 227, 0.08);
+  background: rgba(5, 10, 10, 0.34);
+  color: rgba(244, 239, 227, 0.62);
+  box-shadow: none;
 }
 
 .settings-page .provider-switch input:checked ~ span:last-child {

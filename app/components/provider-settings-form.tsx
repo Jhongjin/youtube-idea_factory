@@ -54,8 +54,16 @@ function providerCapabilityLabel(status: ReturnType<typeof getProviderCapability
   }
 }
 
+function cleanSelectLabel(label: string) {
+  let next = label.replace(/[{}]/gu, "").replace(/\s+/gu, " ").trim();
+  while (next.startsWith("(") && next.endsWith(")") && next.length > 2) {
+    next = next.slice(1, -1).trim();
+  }
+  return next.replace(/\(\s*\(/gu, "(").replace(/\)\s*\)/gu, ")");
+}
+
 function modelOptionLabel(model: ProviderModelOption) {
-  return `${model.label} (${model.source === "live" ? "실시간 확인" : "권장"})`;
+  return cleanSelectLabel(`${model.label} (${model.source === "live" ? "실시간 확인" : "권장"})`);
 }
 
 function providerCapabilityOptionLabel(status: ReturnType<typeof getProviderCapability>["status"]) {
@@ -93,6 +101,10 @@ function apiKeyPlaceholder(provider: string, hasApiKey: boolean) {
     return formatSavedKeyPreview("stored");
   }
   return `${apiKeyFormatHint(provider)} 형태로 시작하는 API 보안 키를 입력하세요`;
+}
+
+function providerOptionLabel(provider: string, status: ReturnType<typeof getProviderCapability>["status"]) {
+  return cleanSelectLabel(`${provider} (${providerCapabilityOptionLabel(status)})`);
 }
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
@@ -277,7 +289,9 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
               value={normalizedValue}
             >
               <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
-              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue} (직접 입력)</option> : null}
+              {hasCurrentModel ? (
+                <option value={normalizedValue}>{cleanSelectLabel(`${normalizedValue} (직접 입력)`)}</option>
+              ) : null}
               {options.map((model) => (
                 <option key={model.id} value={model.id}>
                   {modelOptionLabel(model)}
@@ -480,7 +494,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                         const capability = getProviderCapability(id, provider);
                         return (
                           <option key={provider} value={provider}>
-                            {provider} ({providerCapabilityOptionLabel(capability.status)})
+                            {providerOptionLabel(provider, capability.status)}
                           </option>
                         );
                       })}
@@ -590,7 +604,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                                 const itemCapability = getProviderCapability(id, provider);
                                 return (
                                   <option key={provider} value={provider}>
-                                    {provider} ({providerCapabilityOptionLabel(itemCapability.status)})
+                                    {providerOptionLabel(provider, itemCapability.status)}
                                   </option>
                                 );
                               })}
