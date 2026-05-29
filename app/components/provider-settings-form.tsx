@@ -27,7 +27,7 @@ function providerProfileLabel(profile: SafeProviderProfile) {
   if (profile.baseUrl.trim()) {
     return `${profile.provider} / custom endpoint`;
   }
-  return profile.provider || "등록 슬롯";
+  return profile.provider || "엔진 슬롯";
 }
 
 function looksLikeAutofilledAccount(value: string) {
@@ -36,6 +36,28 @@ function looksLikeAutofilledAccount(value: string) {
 
 function requiresSavedKeyForModelRefresh(provider: string) {
   return ["anthropic", "google", "openai"].includes(provider.trim().toLowerCase());
+}
+
+function formatSavedKeyPreview(preview: string) {
+  const safePreview = preview.trim();
+  const ending = safePreview.match(/[A-Za-z0-9_-]{4}$/u)?.[0] ?? safePreview.slice(-4);
+  return `•••••••••••• ${ending || "저장됨"} (안전하게 저장됨)`;
+}
+
+function providerCapabilityLabel(status: ReturnType<typeof getProviderCapability>["status"]) {
+  switch (status) {
+    case "direct":
+      return "✅ 즉시 자동화 지원";
+    case "manual":
+      return "🛠️ 수동/외부 워크플로우";
+    case "pending":
+    default:
+      return "⚪ 연결 대기 중";
+  }
+}
+
+function modelOptionLabel(model: ProviderModelOption) {
+  return `${model.label} · ${model.source === "live" ? "실시간 확인" : "권장 모델"}`;
 }
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
@@ -215,14 +237,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
           {options.length > 0 ? (
             <select
               aria-label="모델 선택"
+              className="provider-model-select"
               onChange={(event) => onChange(event.target.value)}
               value={normalizedValue}
             >
               <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
-              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue}</option> : null}
+              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue} · 직접 입력</option> : null}
               {options.map((model) => (
                 <option key={model.id} value={model.id}>
-                  {model.label}
+                  {modelOptionLabel(model)}
                 </option>
               ))}
             </select>
@@ -322,35 +345,34 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     <form className="provider-settings-form" onSubmit={onSubmit}>
       <div className="settings-summary">
         <div>
-          <p className="eyebrow">
-            {settings.configPath.startsWith("supabase") ? "Supabase API 설정" : "로컬 API 설정"}
-          </p>
-          <h2>API 등록</h2>
+          <p className="eyebrow">AI 크레덴셜 보관소</p>
+          <h2>🔒 보안 AI 크레덴셜(API 키) 등록</h2>
           <p className="muted">
-            <strong>{settings.configPath}</strong>에 저장됩니다. API 키 원문은 브라우저로 반환하지 않습니다.
+            모든 API 키는 강력하게 암호화되어 안전하게 보관되며, 등록 후 유출 방지를 위해
+            원문은 시스템 외부로 절대 노출되지 않습니다.
           </p>
         </div>
         <button className="text-button primary" disabled={state === "saving"} type="submit">
           {state === "saving" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-          설정 저장
+          API 설정 저장
         </button>
       </div>
 
       <section className="provider-setup-strip" aria-label="API 설정 요약">
         <div>
-          <span>사용 중</span>
+          <span>활성 엔진</span>
           <strong>{enabledCount}/{roleList.length}</strong>
         </div>
         <div>
-          <span>저장된 키</span>
+          <span>보안 저장 키</span>
           <strong>{keyCount}</strong>
         </div>
         <div>
-          <span>직접 실행</span>
+          <span>즉시 자동화</span>
           <strong>{directCount}</strong>
         </div>
         <div>
-          <span>수동 전달</span>
+          <span>수동/외부</span>
           <strong>{manualCount}</strong>
         </div>
       </section>
@@ -373,42 +395,47 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
           return (
             <section className={`provider-card ${preferredSetting.enabled ? "enabled" : "disabled"}`} key={id}>
               <div className="provider-card-header">
-                <div>
-                  <h3>{label}</h3>
+                <div className="provider-card-heading">
+                  <div className="provider-card-title-row">
+                    <label className="provider-toggle provider-switch">
+                      <input
+                        checked={setting.enabled}
+                        name={`${id}.enabled`}
+                        onChange={(event) => updateRole(id, { enabled: event.target.checked })}
+                        type="checkbox"
+                      />
+                      <span className="provider-toggle-track" aria-hidden="true">
+                        <span />
+                      </span>
+                      <span>{setting.enabled ? "엔진 가동" : "연결 대기"}</span>
+                    </label>
+                    <h3>{label}</h3>
+                  </div>
                   <p>{description}</p>
                 </div>
-                <label className="provider-toggle">
-                  <input
-                    checked={setting.enabled}
-                    name={`${id}.enabled`}
-                    onChange={(event) => updateRole(id, { enabled: event.target.checked })}
-                    type="checkbox"
-                  />
-                  사용
-                </label>
               </div>
 
               <div className="provider-status">
                 <KeyRound size={14} />
                 <span>
                   {preferredSetting.hasApiKey
-                    ? `키 ${preferredSetting.apiKeyPreview}`
+                    ? formatSavedKeyPreview(preferredSetting.apiKeyPreview)
                     : "저장된 키 없음"}
                 </span>
                 <span className={`provider-capability ${selectedCapability.status}`}>
-                  {selectedCapability.label}
+                  {providerCapabilityLabel(selectedCapability.status)}
                 </span>
                 <span>{preferredSetting.provider || "API 미선택"}</span>
               </div>
 
               <details className="provider-config-details" open={setting.enabled}>
                 <summary>
-                  <span>{setting.enabled ? "실행 설정 편집" : "비활성 역할 설정"}</span>
-                  <strong>{setting.enabled ? "사용 중" : "접힘"}</strong>
+                  <span>{setting.enabled ? "엔진 연결 설정" : "연결 대기 설정"}</span>
+                  <strong>{setting.enabled ? "가동 중" : "접힘"}</strong>
                 </summary>
                 <div className="provider-fields">
                   <label>
-                    <span>API</span>
+                    <span>AI 엔진</span>
                     <select
                       name={`${id}.provider`}
                       onChange={(event) => updateRole(id, { model: "", provider: event.target.value })}
@@ -429,7 +456,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                     <ModelField
                       name={`${id}.model`}
                       onChange={(value) => updateRole(id, { model: value })}
-                      placeholder="모델명, 음성, 프리셋, 워크플로 ID"
+                      placeholder="모델 또는 워크플로우 선택"
                       hasSavedApiKey={setting.hasApiKey}
                       provider={setting.provider}
                       role={id}
@@ -437,16 +464,16 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                     />
                   </label>
                   <label>
-                    <span>API 키</span>
+                    <span>보안 API 키</span>
                     <input
                       autoComplete="off"
                       name={`${id}.apiKey`}
-                      placeholder={setting.hasApiKey ? setting.apiKeyPreview : "API 키 붙여넣기"}
+                      placeholder={setting.hasApiKey ? formatSavedKeyPreview(setting.apiKeyPreview) : "새 API 키를 안전하게 붙여넣기"}
                       type="password"
                     />
                   </label>
                   <label>
-                    <span>기본 URL</span>
+                    <span>커스텀 엔드포인트</span>
                     <input
                       name={`${id}.baseUrl`}
                       onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
@@ -455,7 +482,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                     />
                   </label>
                   <label className="provider-notes">
-                    <span>메모</span>
+                    <span>운영 메모</span>
                     <textarea
                       name={`${id}.notes`}
                       onChange={(event) => updateRole(id, { notes: event.target.value })}
@@ -469,24 +496,24 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
 
               <details className="provider-profile-details" open={roleProfiles.length > 0}>
                 <summary>
-                  <span>추가 등록 슬롯</span>
+                  <span>추가 엔진 슬롯</span>
                   <strong>{roleProfiles.length}개</strong>
                 </summary>
                 <div className="provider-profile-stack">
                   <div className="provider-profile-intro">
                     <div>
-                      <strong>{label} 다중 등록</strong>
+                      <strong>{label} 백업/대체 엔진</strong>
                       <span>
-                        같은 역할에 여러 API 키와 모델을 등록해두면 제작 단계에서 선택지로 노출됩니다.
+                        같은 역할에 여러 보안 키와 모델을 등록해두면 제작 단계에서 선택지로 노출됩니다.
                       </span>
                     </div>
                     <button className="text-button" onClick={() => addProfile(id)} type="button">
                       <Plus size={14} />
-                      슬롯 추가
+                      엔진 추가
                     </button>
                   </div>
                   {roleProfiles.length === 0 ? (
-                    <p className="provider-profile-empty">아직 추가 등록 슬롯이 없습니다.</p>
+                    <p className="provider-profile-empty">아직 추가 엔진 슬롯이 없습니다.</p>
                   ) : null}
                   {roleProfiles.map((profile) => {
                     const capability = getProviderCapability(profile.role, profile.provider);
@@ -499,11 +526,11 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               onChange={(event) => updateProfile(profile.id, { enabled: event.target.checked })}
                               type="checkbox"
                             />
-                            사용
+                            {profile.enabled ? "가동" : "대기"}
                           </label>
                           <strong>{providerProfileLabel(profile)}</strong>
                           <span className={`provider-capability ${capability.status}`}>
-                            {capability.shortLabel}
+                            {providerCapabilityLabel(capability.status)}
                           </span>
                           <button
                             className="icon-button danger"
@@ -516,7 +543,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                         </div>
                         <div className="provider-profile-fields">
                           <label>
-                            <span>API</span>
+                            <span>AI 엔진</span>
                             <select
                               name={`profile.${profile.id}.provider`}
                               onChange={(event) =>
@@ -539,7 +566,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                             <ModelField
                               name={`profile.${profile.id}.model`}
                               onChange={(value) => updateProfile(profile.id, { model: value })}
-                              placeholder="예: gpt-5.2, kling-2.1, render preset"
+                              placeholder="모델 또는 워크플로우 선택"
                               hasSavedApiKey={profile.hasApiKey}
                               profileId={profile.id}
                               provider={profile.provider}
@@ -548,16 +575,16 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                             />
                           </label>
                           <label>
-                            <span>API 키</span>
+                            <span>보안 API 키</span>
                             <input
                               autoComplete="off"
                               name={`profile.${profile.id}.apiKey`}
-                              placeholder={profile.hasApiKey ? profile.apiKeyPreview : "새 API 키"}
+                              placeholder={profile.hasApiKey ? formatSavedKeyPreview(profile.apiKeyPreview) : "새 API 키"}
                               type="password"
                             />
                           </label>
                           <label>
-                            <span>기본 URL</span>
+                            <span>커스텀 엔드포인트</span>
                             <input
                               name={`profile.${profile.id}.baseUrl`}
                               onChange={(event) => updateProfile(profile.id, { baseUrl: event.target.value })}
@@ -566,7 +593,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                             />
                           </label>
                           <label className="provider-profile-notes">
-                            <span>메모</span>
+                            <span>운영 메모</span>
                             <input
                               name={`profile.${profile.id}.notes`}
                               onChange={(event) => updateProfile(profile.id, { notes: event.target.value })}
@@ -583,6 +610,12 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
             </section>
           );
         })}
+      </div>
+      <div className="provider-save-footer">
+        <button className="text-button primary" disabled={state === "saving"} type="submit">
+          {state === "saving" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
+          API 설정 저장
+        </button>
       </div>
     </form>
   );
