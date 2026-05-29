@@ -22,18 +22,15 @@ The default dashboard mode should behave like a production wizard:
 - Keep approvals hidden until the current stage actually needs generation, render, or publish approval.
 - Use the right inspector for the current stage context instead of showing every possible control at once.
 
-Advanced operators can still open the full tool menu, but the default path is sequential:
+Advanced operators can still open the full tool menu, but the default screen groups the work into five operator steps:
 
-1. Intake
-2. Source review
-3. Video analysis
-4. Script
-5. Storyboard
-6. Media prompts
-7. QA review
-8. Asset generation
-9. Render
-10. Publishing and feedback
+1. Channel and topic
+2. Find sources
+3. Make the script
+4. Make media
+5. Review and upload
+
+The deeper production pipeline still exists behind these steps: intake, source review, video analysis, claim review, script, storyboard, media prompts, QA, asset generation, render, publishing, and feedback. The UI should surface only the part that helps the operator decide what to press next.
 
 ### Run Intake
 
@@ -79,6 +76,15 @@ Dense table for source videos:
 - transcript status
 - analysis status
 
+Transcript status should use operator-readable labels:
+
+- unchecked
+- external caption/script obtained
+- manual script
+- STT generated
+- failed
+- excluded from analysis
+
 ### Claim Ledger
 
 Table optimized for review:
@@ -101,6 +107,18 @@ Scene cards with compact controls:
 - prompt
 - QA notes
 
+### Media Workboard
+
+Media generation should separate:
+
+- ready to generate
+- needs human review
+- manual registration
+- failed retry
+- skipped
+
+Editable request text should be available before paid generation, while raw provider IDs and storage paths stay secondary.
+
 ### Publishing Pack
 
 Reviewable metadata:
@@ -111,6 +129,10 @@ Reviewable metadata:
 - tags
 - chapters
 - upload checklist
+
+### Review And Approvals
+
+Validation and QA screens should show both the issue and the next operator action. Approval cards should state the scope and what becomes available after approval. Saving approvals must not itself generate, render, upload, or publish.
 
 ## Design Tone
 

@@ -70,6 +70,12 @@ This queue keeps the build loop explicit:
 | dashboard-step-language-softening | Phase 7 | done | codex | no | Dashboard current-step labels, inspector disclosures, and next-action copy now use softer operator wording and keep secondary state behind clearer "needed only" disclosures. |
 | dashboard-current-step-minimal-copy | Phase 7 | done | codex | no | Dashboard current-step cards now show only the active step, next result, and main button first, with status details folded behind short disclosures. |
 | deployment-commit-health-fallback | Phase 7 | done | codex | no | Deployment health can now read a CLI-provided `YIF_DEPLOYMENT_COMMIT_SHA` when Vercel does not expose `VERCEL_GIT_COMMIT_SHA`. |
+| media-workboard-clarity | Phase 7 | done | codex | no | Step 4 now shows a media workboard with clear groups for ready-to-generate, manual registration, review-needed, failed retry, and skipped items. |
+| media-prompt-editing | Phase 7 | done | codex | no | Image, thumbnail, and video request text can be reviewed and edited before generation; failed or skipped items return to review when edited. |
+| transcript-status-clarity | Phase 7 | done | codex | no | Source review and transcript editing now share readable status labels for external captions, manual scripts, STT, failures, and unchecked sources. |
+| review-action-approval-clarity | Phase 7 | done | codex | no | Validation and QA blockers now show the operator-facing issue plus the next action; approval cards show scope and what each approval unlocks. |
+| top10-strategy-analysis-depth | Phase 7 | done | codex | no | TOP10 pattern analysis and LLM strategy recommendations now include title promise, first-30-second structure, retention devices, credibility checks, fact-check candidates, and do-not-copy boundaries. |
+| next-security-patch | Phase 7 | done | codex | no | Updated Next.js to `16.2.6`; local and Vercel installs report zero npm audit vulnerabilities. |
 | artifact-current-step-filter | Phase 7 | done | codex | no | Artifact preview ignores stale URL hashes from earlier stages so the main workspace stays focused on the current step by default. |
 | source-transcript-panel-readability | Phase 7 | done | codex | no | Source transcript editing now keeps STT options folded and uses dashboard-matching dark controls for long transcript review. |
 | inspector-five-step-focus | Phase 7 | done | codex | no | The right inspector now uses the same 5-step language as the main flow and folds validation, blockers, and run facts into one advanced section. |
