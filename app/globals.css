@@ -692,6 +692,10 @@ button:disabled,
   gap: 12px;
 }
 
+#media-workboard + #artifact-workspace {
+  margin-top: 10px;
+}
+
 .guided-step-nav {
   display: flex;
   align-items: center;
@@ -4390,6 +4394,16 @@ button:disabled,
   background: var(--surface);
 }
 
+.asset-console > .asset-console-settings,
+.asset-console > .asset-console-worklist {
+  margin-top: 4px;
+}
+
+.asset-console > .asset-work-section + .asset-console-settings,
+.asset-console > .asset-work-section + .asset-console-worklist {
+  margin-top: 8px;
+}
+
 .asset-console-settings summary,
 .asset-console-worklist summary {
   display: flex;
@@ -4399,6 +4413,7 @@ button:disabled,
   min-height: 42px;
   cursor: pointer;
   list-style: none;
+  line-height: 1.45;
   padding: 10px 12px;
 }
 
@@ -4412,6 +4427,7 @@ button:disabled,
   color: var(--ink);
   font-size: 13px;
   font-weight: 900;
+  line-height: 1.45;
 }
 
 .asset-console-settings summary small,
@@ -4419,7 +4435,7 @@ button:disabled,
   color: var(--muted);
   font-size: 11px;
   font-weight: 780;
-  line-height: 1.35;
+  line-height: 1.5;
   text-align: right;
 }
 
@@ -5226,6 +5242,7 @@ button:disabled,
   min-height: 42px;
   cursor: pointer;
   list-style: none;
+  line-height: 1.45;
   padding: 10px 16px;
 }
 
@@ -5237,6 +5254,7 @@ button:disabled,
   color: #263447;
   font-size: 13px;
   font-weight: 850;
+  line-height: 1.45;
 }
 
 .artifact-raw-disclosure summary strong {
@@ -5246,6 +5264,7 @@ button:disabled,
   padding: 5px 8px;
   font-size: 11px;
   font-weight: 850;
+  line-height: 1.45;
 }
 
 .artifact-raw-disclosure[open] summary {
@@ -5279,6 +5298,7 @@ button:disabled,
   min-height: 44px;
   cursor: pointer;
   list-style: none;
+  line-height: 1.45;
   padding: 12px 16px;
 }
 
@@ -5290,6 +5310,7 @@ button:disabled,
   color: #263447;
   font-size: 13px;
   font-weight: 850;
+  line-height: 1.45;
 }
 
 .artifact-edit-disclosure summary strong {
@@ -5299,6 +5320,7 @@ button:disabled,
   padding: 5px 8px;
   font-size: 11px;
   font-weight: 850;
+  line-height: 1.45;
 }
 
 .artifact-edit-disclosure[open] summary {
@@ -5336,10 +5358,12 @@ button:disabled,
   color: var(--muted);
   font-size: 12px;
   font-weight: 750;
+  line-height: 1.55;
 }
 
 .artifact-footer strong {
   color: var(--red);
+  line-height: 1.55;
 }
 
 .empty-state {
