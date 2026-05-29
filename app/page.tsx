@@ -228,7 +228,7 @@ export default async function LandingPage({
 
       <section className="marketing-section">
         <div className="section-heading">
-          <h2>
+          <h2 aria-label="AI가 빌드하고 당신이 컨펌하는, 가장 완벽한 유튜브 워크플로우">
             <span>AI가 빌드하고 당신이 컨펌하는,</span>
             <span>가장 완벽한 유튜브 워크플로우</span>
           </h2>
