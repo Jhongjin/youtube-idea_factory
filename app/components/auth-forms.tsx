@@ -114,11 +114,11 @@ export function SignupForm() {
   return (
     <form className="auth-form" onSubmit={submit}>
       <label>
-        <span>이름</span>
+        <span>운영자 이름 (닉네임)</span>
         <input
           autoComplete="name"
           onChange={(event) => setName(event.target.value)}
-          placeholder="채널 운영자 이름"
+          placeholder="이름 또는 활동명을 입력해 주세요."
           value={name}
         />
       </label>
@@ -161,7 +161,7 @@ export function SignupForm() {
       ) : null}
       <button className="text-button primary auth-submit" disabled={!canSubmit || loading} type="submit">
         <UserPlus size={16} />
-        {loading ? "요청 중" : "가입 요청"}
+        {loading ? "요청 중" : "📨 가입 권한 요청하기"}
       </button>
     </form>
   );

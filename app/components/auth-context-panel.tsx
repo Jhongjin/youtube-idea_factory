@@ -17,7 +17,11 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
             <span>{isSignup ? "승인 대기" : "보안 인증"}</span>
           </div>
           {isSignup ? (
-            <h2>요청은 관리자 승인 후 대시보드로 연결됩니다</h2>
+            <h2>
+              <span className="auth-title-accent">보안 검토</span> 및 승인 후
+              <br />
+              <span className="auth-title-accent">대시보드 세션</span>이 개방됩니다.
+            </h2>
           ) : (
             <h2>
               <span className="auth-title-accent">보안 인증</span>이 완료되면
@@ -44,7 +48,7 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
           </div>
           <div className="auth-stage-row">
             <strong>02</strong>
-            <span>{isSignup ? "관리자 회원 승인" : "워크스페이스 권한 식별"}</span>
+            <span>{isSignup ? "최고 관리자 권한 승인" : "워크스페이스 권한 식별"}</span>
             <ShieldCheck size={15} />
           </div>
           <div className="auth-stage-row">

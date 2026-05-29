@@ -16,11 +16,11 @@ export default function SignupPage() {
       </div>
       <section className="auth-card signup-card">
         <div className="auth-copy">
-          <p className="hero-kicker">Member request</p>
-          <h1>제작 운영 계정 요청</h1>
+          <p className="hero-kicker">WORKSPACE ACCESS</p>
+          <h1>워크스페이스 가입 권한 요청</h1>
           <p>
-            가입 요청은 승인 대기 목록에 저장됩니다. 관리자가 회원관리에서 활성화하면 제작 기록과 채널
-            운영 화면에 접근할 수 있습니다.
+            본 플랫폼은 승인된 크리에이터 및 마케터를 위한 프라이빗 세션입니다. 권한 요청을
+            남겨주시면 관리자 검토 후 대시보드 및 멀티 채널 관제실 접근 권한을 활성화해 드립니다.
           </p>
           <SignupForm />
           <p className="auth-footnote">

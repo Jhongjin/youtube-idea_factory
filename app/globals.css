@@ -9500,6 +9500,11 @@ button:disabled,
   word-break: keep-all;
 }
 
+.signup-card .auth-copy h1 {
+  font-size: clamp(38px, 4.6vw, 62px);
+  line-height: 1.08;
+}
+
 .auth-copy p {
   color: #536057;
   word-break: keep-all;
@@ -10625,6 +10630,11 @@ body {
     color 200ms ease,
     transform 200ms ease,
     box-shadow 200ms ease;
+}
+
+.signup-card .auth-submit {
+  border-radius: 10px;
+  transition: all 200ms ease;
 }
 
 .auth-page .auth-submit:hover {
