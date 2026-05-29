@@ -10,6 +10,7 @@
   --blue-soft: #e8f0ff;
   --green: #0f9f6e;
   --green-soft: #e7f8ef;
+  --neon-green: #bdf0c6;
   --amber: #b7791f;
   --amber-soft: #fff5d6;
   --red: #c2413d;
@@ -4634,6 +4635,32 @@ button:disabled,
   border-radius: 8px;
   background: #ffffff;
   padding: 10px;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.asset-action-row.media-work-row:hover {
+  border-color: rgba(47, 111, 78, 0.32);
+  background: #f8fbf9;
+  box-shadow:
+    0 0 0 1px rgba(47, 111, 78, 0.08),
+    0 10px 24px rgba(28, 39, 55, 0.08);
+}
+
+.asset-action-row.media-work-row.is-approved {
+  border-color: rgba(15, 159, 110, 0.34);
+  background: #f4fbf6;
+  box-shadow: 0 0 0 1px rgba(15, 159, 110, 0.08);
+}
+
+.asset-action-row.media-work-row.is-approved:hover {
+  border-color: rgba(15, 159, 110, 0.46);
+  background: #effaf3;
+  box-shadow:
+    0 0 0 1px rgba(15, 159, 110, 0.12),
+    0 12px 26px rgba(15, 159, 110, 0.1);
 }
 
 .asset-action-row.media-work-row.compact {
@@ -4696,6 +4723,18 @@ button:disabled,
   color: #ffffff;
   font-weight: 900;
   box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.12);
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    color 0.22s ease;
+}
+
+.asset-row-actions .text-button.primary:hover {
+  border-color: #3c8a62;
+  background: #3c8a62;
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.18);
 }
 
 .asset-row-actions .text-button.quiet {
@@ -4703,6 +4742,16 @@ button:disabled,
   background: transparent;
   color: var(--muted);
   font-weight: 800;
+  transition:
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    color 0.22s ease;
+}
+
+.asset-row-actions .text-button.quiet:hover {
+  border-color: #aab8ae;
+  background: rgba(101, 115, 134, 0.06);
+  color: #334155;
 }
 
 .asset-row-actions .asset-action-note.compact {
@@ -4775,6 +4824,14 @@ button:disabled,
   font-size: 12px;
 }
 
+.asset-action-row strong.asset-kind-label.voice,
+.asset-action-row strong.asset-kind-label.subtitles,
+.asset-action-row strong.asset-kind-label.bgm {
+  color: #748196;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .asset-action-row small {
   color: var(--muted);
   font-size: 11px;
@@ -4786,15 +4843,27 @@ button:disabled,
   align-items: center;
   gap: 5px;
   min-height: 26px;
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 0 8px;
   font-size: 11px;
   font-weight: 850;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
   white-space: nowrap;
 }
 
 .asset-status.ready {
   background: var(--green-soft);
+  color: var(--green);
+}
+
+.asset-status.ready.approved {
+  border-color: rgba(15, 159, 110, 0.28);
+  background: rgba(15, 159, 110, 0.12);
   color: var(--green);
 }
 
@@ -8971,6 +9040,7 @@ button:disabled,
   --blue-soft: rgba(155, 215, 167, 0.12);
   --green: #9bd7a7;
   --green-soft: rgba(155, 215, 167, 0.12);
+  --neon-green: #bdf0c6;
   --amber: #d6a45c;
   --amber-soft: rgba(214, 164, 92, 0.13);
   --red: #ef8f84;
@@ -9339,7 +9409,7 @@ body {
 
 .pipeline-panel .stage-row.current .stage-name,
 .pipeline-panel .stage-row.current .stage-row-action > span {
-  color: #bdf0c6;
+  color: var(--neon-green);
 }
 
 .guided-step.pending em {
@@ -9388,6 +9458,11 @@ body {
   box-shadow:
     0 0 0 1px rgba(189, 240, 198, 0.12),
     0 0 24px rgba(155, 215, 167, 0.12);
+}
+
+.pipeline-panel .stage-row.current .stage-index {
+  background: var(--neon-green);
+  color: #0b1112;
 }
 
 .guided-tool-card > span {
@@ -9850,6 +9925,36 @@ body {
   background: rgba(5, 10, 10, 0.48);
 }
 
+.shell .asset-action-row.media-work-row:hover {
+  border-color: rgba(189, 240, 198, 0.38);
+  background:
+    linear-gradient(145deg, rgba(189, 240, 198, 0.08), rgba(244, 239, 227, 0.035)),
+    rgba(5, 10, 10, 0.62);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.09),
+    0 16px 36px rgba(0, 0, 0, 0.18);
+}
+
+.shell .asset-action-row.media-work-row.is-approved {
+  border-color: rgba(189, 240, 198, 0.54);
+  background:
+    linear-gradient(145deg, rgba(189, 240, 198, 0.12), rgba(244, 239, 227, 0.035)),
+    rgba(5, 10, 10, 0.7);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.1),
+    0 0 22px rgba(189, 240, 198, 0.08);
+}
+
+.shell .asset-action-row.media-work-row.is-approved:hover {
+  border-color: rgba(189, 240, 198, 0.68);
+  background:
+    linear-gradient(145deg, rgba(189, 240, 198, 0.16), rgba(244, 239, 227, 0.045)),
+    rgba(5, 10, 10, 0.72);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.14),
+    0 0 28px rgba(189, 240, 198, 0.12);
+}
+
 .shell .asset-thumb {
   border-color: rgba(244, 239, 227, 0.16);
   background:
@@ -9864,17 +9969,46 @@ body {
 
 .shell .asset-row-actions .text-button.primary {
   border-color: rgba(189, 240, 198, 0.88);
-  background: #bdf0c6;
+  background: var(--neon-green);
   color: #0b1112;
   box-shadow:
     0 0 0 1px rgba(189, 240, 198, 0.12),
     0 8px 22px rgba(155, 215, 167, 0.14);
 }
 
+.shell .asset-row-actions .text-button.primary:hover {
+  border-color: #d5ffdc;
+  background: #d5ffdc;
+  color: #0b1112;
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.18),
+    0 10px 26px rgba(189, 240, 198, 0.18);
+}
+
 .shell .asset-row-actions .text-button.quiet {
   border-color: rgba(244, 239, 227, 0.18);
   background: transparent;
   color: rgba(244, 239, 227, 0.64);
+}
+
+.shell .asset-row-actions .text-button.quiet:hover {
+  border-color: rgba(244, 239, 227, 0.34);
+  background: rgba(244, 239, 227, 0.045);
+  color: rgba(244, 239, 227, 0.88);
+}
+
+.shell .asset-action-row strong.asset-kind-label.voice,
+.shell .asset-action-row strong.asset-kind-label.subtitles,
+.shell .asset-action-row strong.asset-kind-label.bgm {
+  color: rgba(244, 239, 227, 0.66);
+  font-size: 11px;
+}
+
+.shell .asset-status.ready.approved {
+  border-color: rgba(189, 240, 198, 0.44);
+  background: rgba(189, 240, 198, 0.14);
+  color: var(--neon-green);
+  box-shadow: 0 0 18px rgba(189, 240, 198, 0.1);
 }
 
 .shell .asset-prompt-editor {
