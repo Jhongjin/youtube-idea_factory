@@ -1863,6 +1863,42 @@ button:disabled,
   font-weight: 800;
 }
 
+.source-review-facts .transcript-state,
+.transcript-state {
+  border: 1px solid transparent;
+  font-weight: 900;
+}
+
+.transcript-state.ready {
+  border-color: #b9d9c2;
+  background: #edf8ef;
+  color: #2f6f4e;
+}
+
+.transcript-state.manual {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+  color: #4050a6;
+}
+
+.transcript-state.generated {
+  border-color: #b7d7f2;
+  background: #edf7ff;
+  color: #25627f;
+}
+
+.transcript-state.waiting {
+  border-color: #d9e0ea;
+  background: #f6f8fb;
+  color: #526173;
+}
+
+.transcript-state.missing {
+  border-color: #efc2b6;
+  background: #fff1ee;
+  color: #a6402b;
+}
+
 .source-review-reason {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -2144,6 +2180,16 @@ button:disabled,
   font-size: 11px;
 }
 
+.transcript-source small.transcript-state {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 22px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 7px;
+  line-height: 1;
+}
+
 .transcript-source.active {
   border-color: rgba(155, 215, 167, 0.52);
   background: rgba(155, 215, 167, 0.12);
@@ -2156,6 +2202,42 @@ button:disabled,
   border: 1px solid rgba(244, 239, 227, 0.14);
   border-radius: 8px;
   background: rgba(4, 9, 9, 0.74);
+}
+
+.transcript-status-strip {
+  display: grid;
+  gap: 3px;
+  border-bottom: 1px solid rgba(244, 239, 227, 0.12);
+  background: rgba(244, 239, 227, 0.04);
+  padding: 10px;
+}
+
+.transcript-status-strip strong {
+  color: #fff8ea;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.transcript-status-strip span {
+  color: rgba(244, 239, 227, 0.68);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.transcript-status-strip.ready {
+  background: rgba(155, 215, 167, 0.1);
+}
+
+.transcript-status-strip.manual {
+  background: rgba(167, 181, 255, 0.1);
+}
+
+.transcript-status-strip.generated {
+  background: rgba(123, 198, 239, 0.1);
+}
+
+.transcript-status-strip.missing {
+  background: rgba(239, 146, 116, 0.1);
 }
 
 .transcript-automation {
@@ -9294,6 +9376,41 @@ body {
   border-color: rgba(244, 239, 227, 0.14);
   background: rgba(244, 239, 227, 0.07);
   color: rgba(244, 239, 227, 0.76);
+}
+
+.source-review-facts .transcript-state.ready,
+.transcript-state.ready {
+  border-color: rgba(155, 215, 167, 0.42);
+  background: rgba(155, 215, 167, 0.13);
+  color: #bdf0c6;
+}
+
+.source-review-facts .transcript-state.manual,
+.transcript-state.manual {
+  border-color: rgba(167, 181, 255, 0.42);
+  background: rgba(167, 181, 255, 0.13);
+  color: #cad2ff;
+}
+
+.source-review-facts .transcript-state.generated,
+.transcript-state.generated {
+  border-color: rgba(123, 198, 239, 0.42);
+  background: rgba(123, 198, 239, 0.13);
+  color: #bde8ff;
+}
+
+.source-review-facts .transcript-state.waiting,
+.transcript-state.waiting {
+  border-color: rgba(244, 239, 227, 0.14);
+  background: rgba(244, 239, 227, 0.07);
+  color: rgba(244, 239, 227, 0.76);
+}
+
+.source-review-facts .transcript-state.missing,
+.transcript-state.missing {
+  border-color: rgba(239, 146, 116, 0.42);
+  background: rgba(239, 146, 116, 0.13);
+  color: #ffc9ba;
 }
 
 .source-review-select button.active {

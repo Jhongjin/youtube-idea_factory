@@ -13,20 +13,12 @@ import {
 import { SourceDeleteButton } from "@/app/components/source-delete-button";
 import { decodeHtmlEntities } from "@/lib/html-text";
 import type { SourceVideo } from "@/lib/runs";
+import { getTranscriptStatusView, hasUsableTranscript } from "@/lib/transcript-status-copy";
 
 type SourceAction = "dedupe" | "exclude" | "include" | "keep";
 type TranscriptMode = "native" | "auto";
 
 const fetchTranscriptConfirmToken = "FETCH_TRANSCRIPT";
-
-const transcriptStatusCopy: Record<string, string> = {
-  not_checked: "미확인",
-  missing: "없음",
-  manual_transcript: "수동 입력",
-  external_transcript: "외부 자막",
-  stt_transcript: "STT",
-  available: "확보됨",
-};
 
 function sourceKey(source: SourceVideo) {
   if (source.video_id) {
@@ -122,13 +114,10 @@ export function SourceReviewQueue({
   const selectedCount = selectedKeys.size;
   const selectedList = useMemo(() => Array.from(selectedKeys), [selectedKeys]);
   const includedCount = sources.filter((source) => !source.analysis_excluded).length;
+  const transcriptReadyCount = sources.filter((source) => hasUsableTranscript(source.transcript_status)).length;
   const missingCount = sources.filter((source) => source.transcript_status === "missing").length;
-  const needsTranscriptCount = sources.filter(
-    (source) =>
-      !["external_transcript", "manual_transcript", "stt_transcript", "available"].includes(
-        source.transcript_status ?? "",
-      ),
-  ).length;
+  const excludedCount = sources.length - includedCount;
+  const needsTranscriptCount = sources.filter((source) => !hasUsableTranscript(source.transcript_status)).length;
 
   function toggleSource(key: string) {
     setSelectedKeys((current) => {
@@ -275,8 +264,10 @@ export function SourceReviewQueue({
         <div>
           <span>소스 {sources.length}</span>
           <span>분석 {includedCount}</span>
-          <span>자막 필요 {needsTranscriptCount}</span>
+          <span>자막 확보 {transcriptReadyCount}</span>
+          <span>확인 필요 {needsTranscriptCount}</span>
           <span>실패 {missingCount}</span>
+          <span>분석 제외 {excludedCount}</span>
           <span>선택 {selectedCount}</span>
         </div>
         <div className="source-queue-actions">
@@ -367,11 +358,11 @@ export function SourceReviewQueue({
         {sources.map((source, index) => {
           const key = sourceKey(source);
           const selected = selectedKeys.has(key);
-          const transcriptStatus =
-            transcriptStatusCopy[source.transcript_status ?? "not_checked"] ?? source.transcript_status ?? "미확인";
+          const transcriptStatus = getTranscriptStatusView(source);
           const publishedDate = formatDate(source.published_at);
           const formatLabel = sourceFormat(source);
           const durationLabel = formatDuration(source.duration_seconds);
+          const fetchLabel = hasUsableTranscript(source.transcript_status) ? "자막 다시 가져오기" : "자막 가져오기";
           return (
             <article className={`source-review-item ${source.analysis_excluded ? "excluded" : ""}`} key={`${key}-${index}`}>
               <div className="source-review-select">
@@ -396,12 +387,13 @@ export function SourceReviewQueue({
                 <div className="source-review-facts">
                   <span>채널 {source.channel || "미확인"}</span>
                   <span>조회수 {formatNumber(source.view_count)}</span>
-                  <span>자막 {transcriptStatus}</span>
+                  <span className={`transcript-state ${transcriptStatus.tone}`}>자막 {transcriptStatus.label}</span>
                 </div>
                 <details className="source-review-reason">
                   <summary>세부 정보</summary>
                   <p>{sourceReason(source)}</p>
                   <div className="source-review-search-note">
+                    <span>{transcriptStatus.detail}</span>
                     <span>게시일 {publishedDate}</span>
                     <span>형식 {formatLabel}</span>
                     <span>길이 {durationLabel}</span>
@@ -418,7 +410,7 @@ export function SourceReviewQueue({
                   type="button"
                 >
                   {loadingAction === `transcript:${key}` ? <Loader2 className="spin" size={14} /> : <FileText size={14} />}
-                  자막 가져오기
+                  {fetchLabel}
                 </button>
                 <details className="source-review-card-more">
                   <summary>더 보기</summary>

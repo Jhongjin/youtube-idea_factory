@@ -22,7 +22,13 @@ export type SourceVideo = {
   analysis_excluded?: boolean;
   analysis_exclusion_reason?: string;
   inclusion_reason: string;
+  transcript_error?: string;
+  transcript_model?: string;
+  transcript_path?: string;
+  transcript_provider?: string;
+  transcript_source_url?: string;
   transcript_status?: string;
+  transcript_updated_at?: string;
   video_id?: string;
 };
 

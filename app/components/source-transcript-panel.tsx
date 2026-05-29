@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Check, FileText, Loader2, Mic2, Save } from "lucide-react";
 import type { SourceVideo } from "@/lib/runs";
 import { decodeHtmlEntities } from "@/lib/html-text";
+import { getTranscriptStatusView } from "@/lib/transcript-status-copy";
 
 type SaveState = "idle" | "loading" | "saving" | "saved" | "error";
 const fetchTranscriptConfirmToken = "FETCH_TRANSCRIPT";
@@ -12,15 +13,6 @@ const transcribeConfirmToken = "TRANSCRIBE_AUDIO";
 function getSourceKey(source: SourceVideo) {
   return source.video_id || `source-${source.rank ?? 0}`;
 }
-
-const transcriptStatusCopy: Record<string, string> = {
-  not_checked: "미확인",
-  missing: "없음",
-  manual_transcript: "수동 입력",
-  external_transcript: "외부 자막",
-  stt_transcript: "STT",
-  available: "확보됨",
-};
 
 export function SourceTranscriptPanel({
   runId,
@@ -37,7 +29,7 @@ export function SourceTranscriptPanel({
   const [audioUrl, setAudioUrl] = useState("");
   const [fetchingTranscript, setFetchingTranscript] = useState(false);
   const [language, setLanguage] = useState("ko");
-  const [transcriptMode, setTranscriptMode] = useState<"auto" | "native">("auto");
+  const [transcriptMode, setTranscriptMode] = useState<"auto" | "native">("native");
   const [transcribing, setTranscribing] = useState(false);
 
   const activeSource = useMemo(
@@ -84,6 +76,7 @@ export function SourceTranscriptPanel({
   }
 
   const isDirty = content !== savedContent;
+  const activeTranscriptStatus = getTranscriptStatusView(activeSource);
 
   async function save() {
     setState("saving");
@@ -162,8 +155,12 @@ export function SourceTranscriptPanel({
 
   async function fetchExternalTranscript() {
     setError("");
+    const modeNotice =
+      transcriptMode === "native"
+        ? "공개 자막만 확인하므로 생성 비용은 발생하지 않습니다."
+        : "공개 자막이 없으면 AI 생성 비용이 발생할 수 있습니다.";
     const confirmation = window.prompt(
-      `${fetchTranscriptConfirmToken}를 입력하면 Supadata 자막 가져오기를 실행합니다. auto 방식은 공개 자막이 없으면 AI 생성 비용이 발생할 수 있습니다.`,
+      `${fetchTranscriptConfirmToken}를 입력하면 Supadata 자막 가져오기를 실행합니다. ${modeNotice}`,
     );
     if (confirmation === null) {
       return;
@@ -220,25 +217,27 @@ export function SourceTranscriptPanel({
         <div className="transcript-source-list">
           {sources.map((source) => {
             const key = getSourceKey(source);
+            const transcriptStatus = getTranscriptStatusView(source);
             return (
               <button
                 className={`transcript-source ${key === activeKey ? "active" : ""}`}
                 key={key}
                 onClick={() => setActiveKey(key)}
+                title={transcriptStatus.detail}
                 type="button"
               >
                 <FileText size={14} />
                 <span>{decodeHtmlEntities(source.title)}</span>
-                <small>
-                  {transcriptStatusCopy[source.transcript_status ?? "not_checked"] ??
-                    source.transcript_status ??
-                    "미확인"}
-                </small>
+                <small className={`transcript-state ${transcriptStatus.tone}`}>{transcriptStatus.label}</small>
               </button>
             );
           })}
         </div>
         <div className="transcript-editor">
+          <div className={`transcript-status-strip ${activeTranscriptStatus.tone}`}>
+            <strong>{activeTranscriptStatus.label}</strong>
+            <span>{activeTranscriptStatus.detail}</span>
+          </div>
           <div className="transcript-automation">
             <button
               className="text-button primary"
@@ -255,8 +254,8 @@ export function SourceTranscriptPanel({
                 onChange={(event) => setTranscriptMode(event.target.value === "native" ? "native" : "auto")}
                 value={transcriptMode}
               >
-                <option value="auto">공개 없으면 생성</option>
                 <option value="native">공개 자막만</option>
+                <option value="auto">공개 없으면 생성</option>
               </select>
             </label>
             <details className="transcript-stt-options">
