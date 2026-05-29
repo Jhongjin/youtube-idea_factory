@@ -4123,11 +4123,7 @@ button:disabled,
   background: var(--surface);
   box-shadow: var(--shadow);
   padding: 16px;
-  transition:
-    border-color 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    background 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .provider-card.enabled {
@@ -4264,6 +4260,7 @@ button:disabled,
   border-radius: 10px;
   background: #f8fafc;
   overflow: clip;
+  transition: all 0.2s ease;
 }
 
 .provider-config-details summary {
@@ -11443,6 +11440,54 @@ body {
 
 .settings-page .provider-toggle {
   color: rgba(244, 239, 227, 0.76);
+}
+
+.settings-page {
+  interpolate-size: allow-keywords;
+}
+
+.settings-page .provider-card {
+  transition: all 0.2s ease;
+}
+
+.settings-page .provider-card:hover,
+.settings-page .provider-card:focus-within {
+  border-color: rgba(189, 240, 198, 0.5);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.11), rgba(244, 239, 227, 0.04)),
+    rgba(13, 21, 21, 0.92);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.12),
+    0 0 26px rgba(155, 215, 167, 0.13),
+    var(--shadow);
+  transform: translateY(-1px);
+}
+
+.settings-page .provider-config-details,
+.settings-page .provider-profile-details {
+  transition: all 0.2s ease;
+}
+
+.settings-page .provider-config-details::details-content,
+.settings-page .provider-profile-details::details-content {
+  block-size: 0;
+  opacity: 0;
+  overflow: clip;
+  transition:
+    block-size 0.2s ease,
+    opacity 0.2s ease;
+  transition-behavior: allow-discrete;
+}
+
+.settings-page .provider-config-details[open]::details-content,
+.settings-page .provider-profile-details[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+.settings-page .provider-fields input::placeholder,
+.settings-page .provider-profile-fields input::placeholder {
+  color: rgba(244, 239, 227, 0.48);
 }
 
 .settings-page .provider-switch input:checked ~ span:last-child {

@@ -38,10 +38,8 @@ function requiresSavedKeyForModelRefresh(provider: string) {
   return ["anthropic", "google", "openai"].includes(provider.trim().toLowerCase());
 }
 
-function formatSavedKeyPreview(preview: string) {
-  const safePreview = preview.trim();
-  const ending = safePreview.match(/[A-Za-z0-9_-]{4}$/u)?.[0] ?? safePreview.slice(-4);
-  return `•••••••••••• ${ending || "저장됨"} (안전하게 저장됨)`;
+function formatSavedKeyPreview(_preview: string) {
+  return "•••••••••••••••••••••••• (보안 저장됨)";
 }
 
 function providerCapabilityLabel(status: ReturnType<typeof getProviderCapability>["status"]) {
@@ -57,7 +55,44 @@ function providerCapabilityLabel(status: ReturnType<typeof getProviderCapability
 }
 
 function modelOptionLabel(model: ProviderModelOption) {
-  return `${model.label} · ${model.source === "live" ? "실시간 확인" : "권장 모델"}`;
+  return `${model.label} (${model.source === "live" ? "실시간 확인" : "권장"})`;
+}
+
+function providerCapabilityOptionLabel(status: ReturnType<typeof getProviderCapability>["status"]) {
+  switch (status) {
+    case "direct":
+      return "직접 연동";
+    case "manual":
+      return "수동 워크플로우";
+    case "pending":
+    default:
+      return "연결 대기";
+  }
+}
+
+function apiKeyFormatHint(provider: string) {
+  const normalized = provider.trim().toLowerCase();
+  if (normalized.includes("openai")) return "sk-... 또는 sk-proj-...";
+  if (normalized.includes("anthropic")) return "sk-ant-...";
+  if (normalized.includes("google") || normalized.includes("youtube")) return "AIza...";
+  if (normalized.includes("runway")) return "key_...";
+  if (normalized.includes("fal.ai")) return "fal-...";
+  if (normalized.includes("stability")) return "sk-...";
+  if (normalized.includes("elevenlabs")) return "xi-...";
+  if (normalized.includes("deepseek")) return "sk-...";
+  if (normalized.includes("mistral")) return "sk-...";
+  if (normalized.includes("openrouter")) return "sk-or-...";
+  if (normalized.includes("perplexity")) return "pplx-...";
+  if (normalized.includes("supadata")) return "supadata-...";
+  if (normalized.includes("inworld")) return "inworld-...";
+  return "API";
+}
+
+function apiKeyPlaceholder(provider: string, hasApiKey: boolean) {
+  if (hasApiKey) {
+    return formatSavedKeyPreview("stored");
+  }
+  return `${apiKeyFormatHint(provider)} 형태로 시작하는 API 보안 키를 입력하세요`;
 }
 
 export function ProviderSettingsForm({ initialSettings }: { initialSettings: SafeProviderSettings }) {
@@ -242,7 +277,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
               value={normalizedValue}
             >
               <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
-              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue} · 직접 입력</option> : null}
+              {hasCurrentModel ? <option value={normalizedValue}>{normalizedValue} (직접 입력)</option> : null}
               {options.map((model) => (
                 <option key={model.id} value={model.id}>
                   {modelOptionLabel(model)}
@@ -445,7 +480,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                         const capability = getProviderCapability(id, provider);
                         return (
                           <option key={provider} value={provider}>
-                            {provider} · {capability.shortLabel}
+                            {provider} ({providerCapabilityOptionLabel(capability.status)})
                           </option>
                         );
                       })}
@@ -468,7 +503,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                     <input
                       autoComplete="off"
                       name={`${id}.apiKey`}
-                      placeholder={setting.hasApiKey ? formatSavedKeyPreview(setting.apiKeyPreview) : "새 API 키를 안전하게 붙여넣기"}
+                      placeholder={apiKeyPlaceholder(setting.provider, setting.hasApiKey)}
                       type="password"
                     />
                   </label>
@@ -555,7 +590,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                                 const itemCapability = getProviderCapability(id, provider);
                                 return (
                                   <option key={provider} value={provider}>
-                                    {provider} · {itemCapability.shortLabel}
+                                    {provider} ({providerCapabilityOptionLabel(itemCapability.status)})
                                   </option>
                                 );
                               })}
@@ -579,7 +614,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                             <input
                               autoComplete="off"
                               name={`profile.${profile.id}.apiKey`}
-                              placeholder={profile.hasApiKey ? formatSavedKeyPreview(profile.apiKeyPreview) : "새 API 키"}
+                              placeholder={apiKeyPlaceholder(profile.provider, profile.hasApiKey)}
                               type="password"
                             />
                           </label>
