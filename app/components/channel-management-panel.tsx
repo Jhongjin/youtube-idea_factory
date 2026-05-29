@@ -352,7 +352,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           <summary>
             <span>
               <Lightbulb size={14} />
-              연동 순서 가이드 보기/접기
+              Google 계정 연동 가이드 보기/접기
             </span>
             <strong>3단계</strong>
           </summary>
@@ -431,7 +431,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <span>AI 채널 학습 데이터</span>
             <textarea
               name="notes"
-              placeholder="예: 주 시청층은 50대 남성, 전문적이고 차분한 아나운서 톤앤매너 유지, 자극적인 단어 제외"
+              placeholder="예시: 주 시청층은 3040 직장인 / 테크 전문 리뷰 채널 / 차분하고 신뢰감 주는 전문가 톤앤매너 유지"
               rows={4}
             />
           </label>
@@ -621,7 +621,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                       <textarea
                         defaultValue={channel.notes ?? ""}
                         name="notes"
-                        placeholder="예: 주 시청층은 50대 남성, 전문적이고 차분한 아나운서 톤앤매너 유지, 자극적인 단어 제외"
+                        placeholder="예시: 주 시청층은 3040 직장인 / 테크 전문 리뷰 채널 / 차분하고 신뢰감 주는 전문가 톤앤매너 유지"
                         rows={4}
                       />
                     </label>

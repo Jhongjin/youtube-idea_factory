@@ -10920,6 +10920,11 @@ body {
   color: #fff8ea;
 }
 
+.admin-page .channel-form-grid textarea,
+.admin-page .channel-update-grid textarea {
+  min-height: 104px;
+}
+
 .admin-page .channel-form-grid {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   align-items: start;
