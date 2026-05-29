@@ -12,7 +12,7 @@ export default async function MyPage() {
       <nav className="account-nav">
         <Link className="text-button" href="/dashboard">
           <ArrowLeft size={15} />
-          작업장
+          대시보드
         </Link>
         <LogoutButton />
       </nav>
@@ -29,7 +29,7 @@ export default async function MyPage() {
       <section className="account-grid">
         <Link className="account-action-card" href="/dashboard">
           <BadgeCheck size={20} />
-          <strong>제작 작업장</strong>
+          <strong>제작 대시보드</strong>
           <span>현재 실행을 열고 다음 버튼을 순서대로 진행합니다.</span>
         </Link>
         <Link className="account-action-card" href="/admin/channels">

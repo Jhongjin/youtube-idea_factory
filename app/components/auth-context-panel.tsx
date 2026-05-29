@@ -16,7 +16,7 @@ export function AuthContextPanel({ mode }: { mode: "login" | "signup" }) {
             {isSignup ? <UserCheck size={24} /> : <ShieldCheck size={24} />}
             <span>{isSignup ? "승인 대기" : "세션 보호"}</span>
           </div>
-          <h2>{isSignup ? "요청은 관리자 승인 후 작업장으로 연결됩니다" : "권한이 맞으면 제작 관제실이 열립니다"}</h2>
+          <h2>{isSignup ? "요청은 관리자 승인 후 대시보드로 연결됩니다" : "권한이 맞으면 제작 관제실이 열립니다"}</h2>
         </div>
 
         <div className="auth-console-map" aria-hidden="true">

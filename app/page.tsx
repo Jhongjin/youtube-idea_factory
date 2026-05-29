@@ -36,8 +36,8 @@ const pipeline = [
   },
   {
     label: "승인 전달",
-    title: "승인 후 영상 조립과 업로드",
-    detail: "비용, OAuth, 배포 단계는 사람이 승인한 뒤 진행합니다.",
+    title: "승인 후 영상 합성과 업로드",
+    detail: "비용과 업로드가 연결되는 단계는 유저 승인 이후 진행합니다.",
   },
 ];
 
@@ -45,7 +45,7 @@ const proofItems = [
   {
     icon: ShieldCheck,
     title: "위험한 단계는 멈춤",
-    body: "외부 비용, 영상 조립, YouTube 업로드는 사람이 승인하기 전까지 작업 목록에 들어가지 않습니다.",
+    body: "외부 비용, 영상 합성, YouTube 업로드는 유저가 승인하기 전까지 작업 목록에 들어가지 않습니다.",
   },
   {
     icon: RadioTower,
@@ -63,7 +63,7 @@ const commandTiles = [
   {
     label: "gate",
     title: "승인 전 비용 차단",
-    detail: "생성, 영상 조립, 업로드는 사람이 승인할 때만 다음 작업으로 넘어갑니다.",
+    detail: "생성, 영상 합성, 업로드는 유저가 승인할 때만 다음 작업으로 넘어갑니다.",
   },
   {
     label: "channel",
@@ -97,7 +97,7 @@ export default async function LandingPage({
           <span>YouTube Idea Factory</span>
         </Link>
         <div className="marketing-nav-links">
-          <Link href="/dashboard">작업장</Link>
+          <Link href="/dashboard">대시보드</Link>
           <Link href="/admin/channels">채널</Link>
           <Link href="/settings">API 설정</Link>
           {user ? (
@@ -145,7 +145,7 @@ export default async function LandingPage({
               <article className="deck-approval-gate">
                 <ShieldCheck size={19} />
                 <span>승인 단계</span>
-                <strong>렌더와 업로드는 검토 후 실행</strong>
+                <strong>영상 합성과 업로드는 승인 후 실행</strong>
               </article>
 
               <article className="deck-channel-rack">
@@ -173,11 +173,12 @@ export default async function LandingPage({
         </div>
 
         <div className="hero-copy">
-          <p className="hero-kicker">검수 후 진행하는 제작 작업장</p>
+          <p className="hero-kicker">유저 승인 후 진행되는 제작 대시보드</p>
           <h1 id="home-title">YouTube Idea Factory</h1>
           <p>
-            여러 브랜드 채널의 리서치, 분석, 대본, 스토리보드, 생성, 영상 조립, 배포를 하나의
-            제작 기록으로 묶습니다. 비용과 업로드 위험이 있는 단계는 사람이 승인할 때까지 멈춥니다.
+            상위 조회수 영상 후보를 리서치하고, 분석, 대본, 스토리보드, 생성 요청서, 영상 합성,
+            업로드 준비까지 하나의 제작 패키지로 구성합니다. 비용이 발생하거나 업로드와 연결되는
+            단계는 유저의 사용 승인 이후에만 진행됩니다.
           </p>
           <div className="hero-command-strip" aria-label="핵심 운영 기준">
             <span>
@@ -195,7 +196,7 @@ export default async function LandingPage({
           </div>
           <div className="hero-actions">
             <Link className="text-button primary" href={primaryHref}>
-              <span>작업장 열기</span>
+              <span>대시보드 열기</span>
               <i aria-hidden="true">
                 <ArrowRight size={15} />
               </i>
@@ -247,7 +248,7 @@ export default async function LandingPage({
               <h3>실행마다 남는 제작 패키지</h3>
             </div>
             <p>
-              소스, 주장, 대본, 스토리보드, 필요한 미디어, 영상 조립 계획, 업로드 준비 목록이 하나의
+              소스, 주장, 대본, 스토리보드, 필요한 미디어, 영상 합성 계획, 업로드 준비 목록이 하나의
               제작 기록에 묶입니다. 운영자는 어느 단계가 막혔는지 바로 확인할 수 있습니다.
             </p>
           </article>

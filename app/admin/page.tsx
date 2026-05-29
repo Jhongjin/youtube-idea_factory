@@ -22,7 +22,7 @@ export default async function AdminPage() {
       <nav className="admin-nav">
         <Link className="text-button" href="/dashboard">
           <ArrowLeft size={15} />
-          작업장
+          대시보드
         </Link>
         <div>
           <Link className="text-button" href="/admin/channels">

@@ -29,7 +29,7 @@ export default async function LoginPage({
           <p className="hero-kicker">운영자 로그인</p>
           <h1>제작 운영에 로그인</h1>
           <p>
-            승인된 계정만 작업장, 채널 권한, API 설정으로 들어갈 수 있습니다. 기본 관리자 아이디는
+            승인된 계정만 대시보드, 채널 권한, API 설정으로 들어갈 수 있습니다. 기본 관리자 아이디는
             <code>admin</code>입니다.
           </p>
           {user ? (
