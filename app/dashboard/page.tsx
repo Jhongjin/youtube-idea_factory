@@ -36,6 +36,7 @@ import { LocalRenderButton } from "@/app/components/local-render-button";
 import { NewRunForm } from "@/app/components/new-run-form";
 import { PackageValidationPanel } from "@/app/components/package-validation-panel";
 import { PerformanceSnapshotButton } from "@/app/components/performance-snapshot-button";
+import { PipelinePanelClient, type PipelineStageView } from "@/app/components/pipeline-panel-client";
 import { PublishingDraftButton } from "@/app/components/publishing-draft-button";
 import { PublishingHandoffButton } from "@/app/components/publishing-handoff-button";
 import { QaDraftButton } from "@/app/components/qa-draft-button";
@@ -433,18 +434,6 @@ const advancedActionGroupsByStep: Record<
     },
   ],
 };
-
-const pipelineStageTargets = [
-  { href: "#next-action", label: "기획 보기" },
-  { href: "#youtube-finder", label: "소스 수집" },
-  { href: "#artifact-video-analysis", label: "분석 보기" },
-  { href: "#artifact-claim-ledger", label: "클레임 보기" },
-  { href: "#artifact-script-plan", label: "스크립트" },
-  { href: "#artifact-storyboard", label: "연출 설계" },
-  { href: "#media-workboard", label: "에셋 작업판" },
-  { href: "#artifact-publishing", label: "메타데이터" },
-  { href: "#artifact-youtube-upload-job", label: "발행 컨펌" },
-];
 
 function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
   if (
@@ -1563,43 +1552,9 @@ function AdvancedActionMenu({
 }
 
 function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionPlan; run: RunSummary }) {
-  const stages = getStageState(run.package);
+  const stages = getStageState(run.package) satisfies PipelineStageView[];
   const currentStageIndex = getCurrentPipelineStageIndex(nextActionPlan);
-  const currentStageLabel = String(currentStageIndex + 1).padStart(2, "0");
-  return (
-    <section className="panel pipeline-panel" id="pipeline-panel">
-      <div className="panel-header">
-        <h3 className="panel-title">제작 단계</h3>
-        <span className="meta">현재 {currentStageLabel}</span>
-      </div>
-      <div className="panel-body">
-        <div className="stage-list">
-          {stages.map((stage, index) => {
-            const target = pipelineStageTargets[index] ?? { href: "#next-action", label: "보기" };
-            const isCurrent = index === currentStageIndex;
-            return (
-              <a
-                aria-current={isCurrent ? "step" : undefined}
-                className={`stage-row ${isCurrent ? "current" : ""}`}
-                href={target.href}
-                key={stage.name}
-              >
-                <div className="stage-index">{String(index + 1).padStart(2, "0")}</div>
-                <div>
-                  <p className="stage-name">{stage.name}</p>
-                  <p className="stage-meta">{stage.meta}</p>
-                </div>
-                <div className="stage-row-action">
-                  <span>{isCurrent ? "현재 위치" : target.label}</span>
-                  <StatusPill status={stage.status} />
-                </div>
-              </a>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
+  return <PipelinePanelClient currentStageIndex={currentStageIndex} stages={stages} />;
 }
 
 function SourcesPanel({

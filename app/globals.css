@@ -4635,13 +4635,11 @@ button:disabled,
   border-radius: 8px;
   background: #ffffff;
   padding: 10px;
-  transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.asset-action-row.media-work-row:hover {
+.asset-action-row.media-work-row:hover,
+.asset-action-row.media-work-row:focus-within {
   border-color: rgba(47, 111, 78, 0.32);
   background: #f8fbf9;
   box-shadow:
@@ -4655,12 +4653,19 @@ button:disabled,
   box-shadow: 0 0 0 1px rgba(15, 159, 110, 0.08);
 }
 
-.asset-action-row.media-work-row.is-approved:hover {
+.asset-action-row.media-work-row.is-approved:hover,
+.asset-action-row.media-work-row.is-approved:focus-within {
   border-color: rgba(15, 159, 110, 0.46);
   background: #effaf3;
   box-shadow:
     0 0 0 1px rgba(15, 159, 110, 0.12),
     0 12px 26px rgba(15, 159, 110, 0.1);
+}
+
+.asset-action-row.media-work-row.is-skipped {
+  border-color: #d4d9df;
+  background: #f2f4f6;
+  box-shadow: none;
 }
 
 .asset-action-row.media-work-row.compact {
@@ -4723,11 +4728,7 @@ button:disabled,
   color: #ffffff;
   font-weight: 900;
   box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.12);
-  transition:
-    background-color 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease,
-    color 0.22s ease;
+  transition: all 0.2s ease;
 }
 
 .asset-row-actions .text-button.primary:hover {
@@ -4742,10 +4743,7 @@ button:disabled,
   background: transparent;
   color: var(--muted);
   font-weight: 800;
-  transition:
-    background-color 0.22s ease,
-    border-color 0.22s ease,
-    color 0.22s ease;
+  transition: all 0.2s ease;
 }
 
 .asset-row-actions .text-button.quiet:hover {
@@ -4848,11 +4846,7 @@ button:disabled,
   padding: 0 8px;
   font-size: 11px;
   font-weight: 850;
-  transition:
-    background-color 0.25s ease,
-    border-color 0.25s ease,
-    color 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
@@ -4883,6 +4877,12 @@ button:disabled,
 }
 
 .asset-status.muted {
+  background: #eef1ef;
+  color: #607168;
+}
+
+.asset-status.muted.skipped {
+  border-color: #d4d9df;
   background: #eef1ef;
   color: #607168;
 }
@@ -9465,6 +9465,45 @@ body {
   color: #0b1112;
 }
 
+.pipeline-panel .stage-row.local-approved {
+  border-color: rgba(189, 240, 198, 0.72);
+  background:
+    linear-gradient(145deg, rgba(189, 240, 198, 0.16), rgba(244, 239, 227, 0.04)),
+    rgba(13, 21, 21, 0.86);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.12),
+    0 0 24px rgba(189, 240, 198, 0.1);
+}
+
+.pipeline-panel .stage-row.local-approved .stage-index {
+  background: var(--neon-green);
+  color: #0b1112;
+}
+
+.pipeline-panel .stage-row.local-approved .stage-name,
+.pipeline-panel .stage-row.local-approved .stage-row-action > span {
+  color: var(--neon-green);
+}
+
+.pipeline-panel .stage-row.local-skipped {
+  border-color: rgba(244, 239, 227, 0.2);
+  background: rgba(244, 239, 227, 0.045);
+}
+
+.pipeline-panel .stage-row.local-skipped .stage-index {
+  background: rgba(244, 239, 227, 0.12);
+  color: rgba(244, 239, 227, 0.7);
+}
+
+.pipeline-panel .stage-row.local-skipped .stage-row-action > span {
+  color: rgba(244, 239, 227, 0.66);
+}
+
+.status-pill.skipped {
+  background: rgba(244, 239, 227, 0.08);
+  color: rgba(244, 239, 227, 0.66);
+}
+
 .guided-tool-card > span {
   background: rgba(155, 215, 167, 0.13);
   color: var(--green);
@@ -9925,7 +9964,8 @@ body {
   background: rgba(5, 10, 10, 0.48);
 }
 
-.shell .asset-action-row.media-work-row:hover {
+.shell .asset-action-row.media-work-row:hover,
+.shell .asset-action-row.media-work-row:focus-within {
   border-color: rgba(189, 240, 198, 0.38);
   background:
     linear-gradient(145deg, rgba(189, 240, 198, 0.08), rgba(244, 239, 227, 0.035)),
@@ -9945,7 +9985,8 @@ body {
     0 0 22px rgba(189, 240, 198, 0.08);
 }
 
-.shell .asset-action-row.media-work-row.is-approved:hover {
+.shell .asset-action-row.media-work-row.is-approved:hover,
+.shell .asset-action-row.media-work-row.is-approved:focus-within {
   border-color: rgba(189, 240, 198, 0.68);
   background:
     linear-gradient(145deg, rgba(189, 240, 198, 0.16), rgba(244, 239, 227, 0.045)),
@@ -9953,6 +9994,19 @@ body {
   box-shadow:
     0 0 0 1px rgba(189, 240, 198, 0.14),
     0 0 28px rgba(189, 240, 198, 0.12);
+}
+
+.shell .asset-action-row.media-work-row.is-skipped {
+  border-color: rgba(244, 239, 227, 0.14);
+  background: rgba(244, 239, 227, 0.04);
+  box-shadow: none;
+}
+
+.shell .asset-action-row.media-work-row.is-skipped:hover,
+.shell .asset-action-row.media-work-row.is-skipped:focus-within {
+  border-color: rgba(244, 239, 227, 0.26);
+  background: rgba(244, 239, 227, 0.06);
+  box-shadow: 0 0 0 1px rgba(244, 239, 227, 0.06);
 }
 
 .shell .asset-thumb {
@@ -10009,6 +10063,12 @@ body {
   background: rgba(189, 240, 198, 0.14);
   color: var(--neon-green);
   box-shadow: 0 0 18px rgba(189, 240, 198, 0.1);
+}
+
+.shell .asset-status.muted.skipped {
+  border-color: rgba(244, 239, 227, 0.18);
+  background: rgba(244, 239, 227, 0.07);
+  color: rgba(244, 239, 227, 0.62);
 }
 
 .shell .asset-prompt-editor {

@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   Ban,
   CheckCircle2,
+  Circle,
   FilePlus2,
   Image as ImageIcon,
   Loader2,
@@ -25,6 +26,8 @@ import {
 const imageConfirmToken = "GENERATE_IMAGE";
 const ttsConfirmToken = "GENERATE_TTS";
 const videoConfirmToken = "GENERATE_VIDEO";
+
+type LocalAssetTransition = "approved" | "skipped";
 
 const assetKindCopy: Record<string, string> = {
   image: "이미지",
@@ -158,8 +161,9 @@ function sortedAssetPreview(items: AssetGenerationStateItem[], limit: number) {
   return [...items].sort((left, right) => order[left.status] - order[right.status]).slice(0, limit);
 }
 
-function assetStatusLabel(status: AssetGenerationStateItem["status"], isApproved = false) {
-  if (isApproved && status === "pending_approval") return "승인 및 생성 대기";
+function assetStatusLabel(status: AssetGenerationStateItem["status"], transition?: LocalAssetTransition) {
+  if (transition === "skipped") return "건너뜀";
+  if (transition === "approved") return status === "pending_generation" ? "검토 완료" : "승인 및 생성 대기";
   if (status === "pending_generation") return "바로 만들기";
   if (status === "generated") return "완료";
   if (status === "pending_approval") return "검토 및 승인 대기";
@@ -167,10 +171,19 @@ function assetStatusLabel(status: AssetGenerationStateItem["status"], isApproved
   return "건너뜀";
 }
 
-function AssetStatus({ isApproved = false, item }: { isApproved?: boolean; item: AssetGenerationStateItem }) {
-  const isApprovalReady = isApproved && item.status === "pending_approval";
+function AssetStatus({
+  item,
+  transition,
+}: {
+  item: AssetGenerationStateItem;
+  transition?: LocalAssetTransition;
+}) {
+  const isApprovalReady = transition === "approved";
+  const isSkipped = transition === "skipped" || item.status === "skipped";
   const tone =
-    isApprovalReady
+    isSkipped
+      ? "muted skipped"
+      : isApprovalReady
       ? "ready approved"
       : item.status === "generated"
       ? "done"
@@ -183,8 +196,14 @@ function AssetStatus({ isApproved = false, item }: { isApproved?: boolean; item:
             : "blocked";
   return (
     <span className={`asset-status ${tone}`}>
-      {isApprovalReady || tone === "ready" || tone === "done" ? <CheckCircle2 size={13} /> : <AlertTriangle size={13} />}
-      {assetStatusLabel(item.status, isApprovalReady)}
+      {isSkipped ? (
+        <Circle size={12} />
+      ) : isApprovalReady || tone === "ready" || tone === "done" ? (
+        <CheckCircle2 size={13} />
+      ) : (
+        <AlertTriangle size={13} />
+      )}
+      {assetStatusLabel(item.status, transition)}
     </span>
   );
 }
@@ -212,7 +231,28 @@ export function AssetGenerationConsole({
   const [registerPath, setRegisterPath] = useState("");
   const [loadingId, setLoadingId] = useState("");
   const [message, setMessage] = useState("");
-  const [approvedAssetIds, setApprovedAssetIds] = useState<Set<string>>(() => new Set());
+  const [assetTransitions, setAssetTransitions] = useState<Record<string, LocalAssetTransition>>({});
+
+  const publishAssetTransition = (assetId: string, transition: LocalAssetTransition | null) => {
+    window.dispatchEvent(
+      new CustomEvent("yif:asset-state-transition", {
+        detail: { assetId, transition },
+      }),
+    );
+  };
+
+  const setLocalAssetTransition = (assetId: string, transition?: LocalAssetTransition) => {
+    setAssetTransitions((current) => {
+      const next = { ...current };
+      if (transition) {
+        next[assetId] = transition;
+      } else {
+        delete next[assetId];
+      }
+      return next;
+    });
+    publishAssetTransition(assetId, transition ?? null);
+  };
 
   async function createManualHandoff() {
     setMessage("");
@@ -331,6 +371,12 @@ export function AssetGenerationConsole({
         return;
       }
     }
+    const previousTransition = assetTransitions[assetId];
+    if (action === "skip") {
+      setLocalAssetTransition(assetId, "skipped");
+    } else {
+      setLocalAssetTransition(assetId);
+    }
     setLoadingId(`${action}:${assetId}`);
     const response = await fetch(`/api/runs/${runId}/assets/status`, {
       method: "POST",
@@ -343,6 +389,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setLocalAssetTransition(assetId, previousTransition);
       setMessage(body?.error ?? `${label}에 실패했습니다.`);
       setLoadingId("");
       return;
@@ -472,11 +519,7 @@ export function AssetGenerationConsole({
 
   const selectForManualRegistration = (assetId: string) => {
     setRegisterAssetId(assetId);
-    setApprovedAssetIds((current) => {
-      const next = new Set(current);
-      next.add(assetId);
-      return next;
-    });
+    setLocalAssetTransition(assetId, "approved");
     setMessage("아래 직접 제작한 에셋 업로드에서 파일 경로를 넣고 저장하세요.");
   };
 
@@ -512,11 +555,16 @@ export function AssetGenerationConsole({
     return <FilePlus2 size={15} />;
   };
 
-  const isApprovedForManualFlow = (item: AssetGenerationStateItem) =>
-    item.status === "pending_approval" && approvedAssetIds.has(item.id);
+  const assetTransitionForItem = (item: AssetGenerationStateItem) => assetTransitions[item.id];
 
   const assetRowClassName = (item: AssetGenerationStateItem, extraClass = "") =>
-    ["asset-action-row", "media-work-row", extraClass, isApprovedForManualFlow(item) ? "is-approved" : ""]
+    [
+      "asset-action-row",
+      "media-work-row",
+      extraClass,
+      assetTransitionForItem(item) === "approved" ? "is-approved" : "",
+      assetTransitionForItem(item) === "skipped" ? "is-skipped" : "",
+    ]
       .filter(Boolean)
       .join(" ");
 
@@ -698,7 +746,7 @@ export function AssetGenerationConsole({
               return (
                 <div className={assetRowClassName(item)} key={item.id}>
                   {assetInfo(item)}
-                  <AssetStatus isApproved={isApprovedForManualFlow(item)} item={item} />
+                  <AssetStatus item={item} transition={assetTransitionForItem(item)} />
                   <div className="asset-row-actions">
                     {blocker ? <p className="asset-action-note compact">{blocker}</p> : directGenerateButton(item)}
                     {manualSelectButton(item)}
@@ -725,7 +773,7 @@ export function AssetGenerationConsole({
               {manualRegisterItems.length === 0 ? <option value="">등록할 항목 없음</option> : null}
               {manualRegisterItems.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {assetDisplayName(item)} · {assetStatusLabel(item.status, isApprovedForManualFlow(item))}
+                  {assetDisplayName(item)} · {assetStatusLabel(item.status, assetTransitionForItem(item))}
                 </option>
               ))}
             </select>
@@ -771,7 +819,7 @@ export function AssetGenerationConsole({
             {failedItems.map((item) => (
               <div className={assetRowClassName(item)} key={item.id}>
                 {assetInfo(item)}
-                <AssetStatus isApproved={isApprovedForManualFlow(item)} item={item} />
+                <AssetStatus item={item} transition={assetTransitionForItem(item)} />
                 <div className="asset-row-actions">
                   {retryButton(item)}
                   {manualSelectButton(item)}
@@ -795,7 +843,7 @@ export function AssetGenerationConsole({
             {blockedItems.map((item) => (
               <div className={assetRowClassName(item)} key={item.id}>
                 {assetInfo(item)}
-                <AssetStatus isApproved={isApprovedForManualFlow(item)} item={item} />
+                <AssetStatus item={item} transition={assetTransitionForItem(item)} />
                 <div className="asset-row-actions">
                   {manualSelectButton(item)}
                   {skipButton(item)}
@@ -818,7 +866,7 @@ export function AssetGenerationConsole({
             {readyManualItems.map((item) => (
               <div className={assetRowClassName(item)} key={item.id}>
                 {assetInfo(item)}
-                <AssetStatus isApproved={isApprovedForManualFlow(item)} item={item} />
+                <AssetStatus item={item} transition={assetTransitionForItem(item)} />
                 <div className="asset-row-actions">
                   {manualSelectButton(item)}
                   {skipButton(item)}
@@ -841,7 +889,7 @@ export function AssetGenerationConsole({
             {[...generatedItems, ...skippedItems].map((item) => (
               <div className={assetRowClassName(item, "compact")} key={item.id}>
                 {assetInfo(item)}
-                <AssetStatus isApproved={isApprovedForManualFlow(item)} item={item} />
+                <AssetStatus item={item} transition={assetTransitionForItem(item)} />
                 <div className="asset-row-actions">
                   {item.status === "skipped" ? retryButton(item) : null}
                 </div>
