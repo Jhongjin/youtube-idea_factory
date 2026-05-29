@@ -45,17 +45,20 @@ const proofItems = [
   {
     icon: ShieldCheck,
     title: "완전 수동 승인 시스템",
-    body: "API 비용이 발생하는 영상 합성이나 최종 YouTube 업로드 등 중요한 단계는 사용자의 최종 승인 없이 절대 실행되지 않습니다.",
+    body: "영상 합성과 유튜브 업로드 등 비용이 발생하는 중요한 단계는 사용자의 승인 없이 절대 독단적으로 실행되지 않습니다.",
+    visual: "approval",
   },
   {
     icon: RadioTower,
     title: "한 화면에서 끝내는 다중 채널",
-    body: "각 브랜드 채널별 OAuth, 타겟 언어, 운영 메모리를 분리해 여러 채널을 하나의 대시보드에서 안전하게 운영합니다.",
+    body: "채널별 연동 계정(OAuth), 타겟 언어, AI 데이터를 완전히 분리하여 여러 채널을 하나의 대시보드에서 안전하게 독립 운영합니다.",
+    visual: "channels",
   },
   {
     icon: Brain,
     title: "성과를 학습하는 AI 기획",
     body: "업로드된 영상의 조회수, 피드백, A/B 테스트 데이터를 다음 콘텐츠 기획의 정교한 타겟팅 재료로 축적합니다.",
+    visual: "learning",
   },
 ];
 
@@ -225,18 +228,57 @@ export default async function LandingPage({
 
       <section className="marketing-section">
         <div className="section-heading">
-          <h2>AI가 빌드하고 당신이 컨펌하는, 가장 완벽한 유튜브 워크플로우</h2>
-          <p>
-            매주 상위 트렌드 영상을 분석해 대본 추출부터 스토리보드 작성까지 AI가 먼저 준비합니다.
-            단순 반복 작업은 시스템에 맡기고, 당신은 최종 컨펌과 채널 성장에 집중하세요.
-          </p>
+          <h2>
+            <span>AI가 빌드하고 당신이 컨펌하는,</span>
+            <span>가장 완벽한 유튜브 워크플로우</span>
+          </h2>
+          <div className="section-heading-copy">
+            <p>
+              매주 상위 트렌드 영상을 분석해 대본 추출부터 스토리보드 작성까지 AI가 먼저 준비합니다.
+              단순 반복 작업은 시스템에 맡기고, 당신은 최종 컨펌과 채널 성장에 집중하세요.
+            </p>
+            <div className="section-cta-row">
+              <Link className="text-button primary" href={primaryHref}>
+                <span>무료로 시작하기</span>
+                <i aria-hidden="true">
+                  <ArrowRight size={15} />
+                </i>
+              </Link>
+              <Link className="home-text-link" href="#content-workflow">
+                서비스 가이드 보기
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
         </div>
         <div className="feature-masonry">
           {proofItems.map((item, index) => {
             const Icon = item.icon;
             return (
               <article className={`feature-tile tile-${index + 1}`} key={item.title}>
-                <Icon size={22} />
+                <div className={`feature-visual ${item.visual}`} aria-hidden="true">
+                  <Icon size={22} />
+                  {item.visual === "approval" ? (
+                    <span className="approval-lock-signal">
+                      <i />
+                      <i />
+                    </span>
+                  ) : null}
+                  {item.visual === "channels" ? (
+                    <span className="channel-node-map">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  ) : null}
+                  {item.visual === "learning" ? (
+                    <span className="learning-meter">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  ) : null}
+                </div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </article>
@@ -247,11 +289,21 @@ export default async function LandingPage({
               <ListChecks size={22} />
               <h3>프로젝트별 통합 제작 히스토리</h3>
             </div>
-            <p>
-              레퍼런스 소스, 대본, 스토리보드, 미디어 에셋부터 업로드 대기 목록까지 전 과정이 하나의
-              프로젝트 패키지로 묶입니다. 워크플로우 중 어느 단계에서 병목이나 오류가 생겼는지
-              직관적으로 추적하고 수정할 수 있습니다.
-            </p>
+            <div className="wide-feature-copy">
+              <p>
+                레퍼런스 소스, 대본, 스토리보드, 미디어 에셋부터 업로드 대기 목록까지 전 과정이 하나의
+                프로젝트 패키지로 묶입니다. 워크플로우 중 어느 단계에서 병목이나 오류가 생겼는지
+                직관적으로 추적하고 수정할 수 있습니다.
+              </p>
+              <div className="history-timeline" aria-label="제작 패키지 흐름">
+                {["소스", "대본", "스토리보드", "영상"].map((step, index) => (
+                  <span key={step}>
+                    <strong>{String(index + 1).padStart(2, "0")}</strong>
+                    {step}
+                  </span>
+                ))}
+              </div>
+            </div>
           </article>
         </div>
       </section>
@@ -266,7 +318,7 @@ export default async function LandingPage({
         ))}
       </section>
 
-      <section className="pipeline-strip" aria-label="콘텐츠 제작 순서">
+      <section className="pipeline-strip" id="content-workflow" aria-label="콘텐츠 제작 순서">
         {pipeline.map((item, index) => (
           <article className="pipeline-strip-item" key={item.label}>
             <span>
