@@ -927,6 +927,7 @@ function GuidedActionPanel({
   ) as RunPrimaryActionId[];
   const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
   const actionOutcome = currentGuide?.output ?? plan.detail;
+  const useMediaWorkboard = !plan.primaryActionId && plan.stageLabel === "미디어 만들기";
   return (
     <section className="panel guided-action-panel" id="next-action">
       <div className="guided-action-main">
@@ -939,8 +940,14 @@ function GuidedActionPanel({
       <div className="guided-action-buttons">
         <div className={`guided-primary-cta ${plan.primaryActionId ? "" : "manual"}`}>
           <div className="guided-primary-copy">
-            <span>{plan.primaryActionId ? "버튼을 누르면" : "먼저 확인"}</span>
-            <strong>{plan.primaryActionId ? actionOutcome : "필요한 확인을 저장하면 이어서 진행됩니다."}</strong>
+            <span>{plan.primaryActionId ? "버튼을 누르면" : useMediaWorkboard ? "아래 작업판" : "먼저 확인"}</span>
+            <strong>
+              {plan.primaryActionId
+                ? actionOutcome
+                : useMediaWorkboard
+                  ? "바로 만들기, 수동 등록, 실패 재시도, 건너뛰기를 나눠 처리하세요."
+                  : "필요한 확인을 저장하면 이어서 진행됩니다."}
+            </strong>
           </div>
           {plan.primaryActionId ? (
             <div className="guide-action-primary">
@@ -950,6 +957,11 @@ function GuidedActionPanel({
                 run={run}
               />
             </div>
+          ) : useMediaWorkboard ? (
+            <a className="text-button primary" href="#media-workboard">
+              <Sparkles size={15} />
+              미디어 작업판 보기
+            </a>
           ) : (
             <p className="next-action-note">오른쪽 카드에서 확인을 저장하세요.</p>
           )}
@@ -995,6 +1007,7 @@ function GuidedRunWorkspace({
   activeStep,
   artifacts,
   channelId,
+  generationState,
   nextActionPlan,
   providerSettings,
   run,
@@ -1002,6 +1015,7 @@ function GuidedRunWorkspace({
   activeStep: GuidedStepKey;
   artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
   channelId: string;
+  generationState: AssetGenerationState;
   nextActionPlan: RunNextActionPlan;
   providerSettings: SafeProviderSettings;
   run: RunSummary;
@@ -1044,6 +1058,15 @@ function GuidedRunWorkspace({
 
       {activeStep === "production" ? (
         <>
+          {generationState.manifestExists ? (
+            <GenerationConsolePanel
+              generationState={generationState}
+              panelId="media-workboard"
+              providerSettings={providerSettings}
+              run={run}
+              title="미디어 작업판"
+            />
+          ) : null}
           <ArtifactWorkspace
             artifacts={artifacts}
             description={workspaceCopy.description}
@@ -1787,17 +1810,21 @@ function BlockersPanel({ blockers }: { blockers: string[] }) {
 
 function GenerationConsolePanel({
   generationState,
+  panelId,
   providerSettings,
   run,
+  title = "미디어 작업판",
 }: {
   generationState: AssetGenerationState;
+  panelId?: string;
   providerSettings: SafeProviderSettings;
   run: RunSummary;
+  title?: string;
 }) {
   return (
-    <section className="panel generation-console-panel">
+    <section className="panel generation-console-panel" id={panelId}>
       <div className="panel-header">
-        <h3 className="panel-title">생성 콘솔</h3>
+        <h3 className="panel-title">{title}</h3>
         <Sparkles size={16} />
       </div>
       <div className="panel-body">
@@ -2140,7 +2167,7 @@ function Inspector({
   const stage = nextActionPlan.stageLabel;
   const showApprovals = nextActionPlan.headline.includes("승인");
   const waitingForMainButton = Boolean(nextActionPlan.primaryActionId);
-  const showGeneration = (stage === "자산 생성" || stage === "미디어 만들기") && !waitingForMainButton;
+  const showGeneration = stage === "자산 생성" && !waitingForMainButton;
   const showAssembly =
     (stage === "영상 조립" || stage === "렌더" || stage === "배포" || stage === "업로드") &&
     !waitingForMainButton;
@@ -2332,6 +2359,7 @@ export default async function Home({
               activeStep={activeStep}
               artifacts={artifacts}
               channelId={selectedChannelId}
+              generationState={generationState!}
               nextActionPlan={nextActionPlan}
               providerSettings={providerSettings}
               run={activeRun}

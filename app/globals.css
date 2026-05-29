@@ -606,6 +606,10 @@ button:disabled,
   color: var(--red);
 }
 
+.text-button.quiet {
+  background: transparent;
+}
+
 .icon-button.danger {
   border-color: #f0bbb8;
   background: var(--red-soft);
@@ -4230,6 +4234,10 @@ button:disabled,
   gap: 8px;
 }
 
+.asset-console-summary.expanded {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .asset-console-summary .text-button {
   grid-column: 1 / -1;
   justify-content: center;
@@ -4322,11 +4330,46 @@ button:disabled,
   gap: 7px;
 }
 
+.asset-work-section {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.asset-work-section.primary {
+  border-color: #b9d8c3;
+  background: #f3faf4;
+}
+
+.asset-work-section.failed {
+  border-color: #f0b9b4;
+  background: #fff5f4;
+}
+
+.asset-work-section.blocked,
+.asset-work-section.manual-only {
+  border-color: #ecd58c;
+  background: #fff9ea;
+}
+
+.asset-work-section.manual {
+  background: #fbfcfd;
+}
+
 .asset-action-section-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.asset-action-section-title > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
 }
 
 .asset-action-section-title strong {
@@ -4383,6 +4426,36 @@ button:disabled,
   padding-top: 8px;
 }
 
+.asset-action-row.media-work-row {
+  grid-template-columns: minmax(0, 1fr) auto minmax(220px, auto);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 10px;
+}
+
+.asset-action-row.media-work-row.compact {
+  grid-template-columns: minmax(0, 1fr) auto minmax(120px, auto);
+}
+
+.asset-row-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.asset-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.asset-row-actions .asset-action-note.compact {
+  flex-basis: 100%;
+  padding: 7px 9px;
+}
+
 .asset-action-row strong,
 .asset-action-row small {
   display: block;
@@ -4417,9 +4490,24 @@ button:disabled,
   color: var(--green);
 }
 
+.asset-status.done {
+  background: #eef4f1;
+  color: #2f6f4e;
+}
+
 .asset-status.blocked {
   background: var(--amber-soft);
   color: var(--amber);
+}
+
+.asset-status.failed {
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.asset-status.muted {
+  background: #eef1ef;
+  color: #607168;
 }
 
 .settings-message.compact {
@@ -7012,6 +7100,19 @@ button:disabled,
     grid-template-columns: 1fr;
   }
 
+  .asset-console-summary.expanded {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .asset-action-row.media-work-row,
+  .asset-action-row.media-work-row.compact {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-row-actions {
+    justify-content: flex-start;
+  }
+
   .channel-activation-banner {
     grid-template-columns: 1fr;
   }
@@ -8929,6 +9030,7 @@ body {
 .new-run-section.primary,
 .asset-console-settings,
 .asset-console-worklist,
+.asset-work-section,
 .asset-register,
 .asset-control-grid label,
 .asset-narration,
@@ -9002,6 +9104,40 @@ body {
 
 .shell .asset-action-note {
   color: #f0c174;
+}
+
+.shell .asset-work-section {
+  border-color: rgba(244, 239, 227, 0.16);
+  background:
+    linear-gradient(180deg, rgba(244, 239, 227, 0.075), rgba(244, 239, 227, 0.032)),
+    rgba(10, 17, 17, 0.86);
+}
+
+.shell .asset-work-section.primary {
+  border-color: rgba(155, 215, 167, 0.42);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.12), rgba(244, 239, 227, 0.035)),
+    rgba(6, 12, 12, 0.58);
+}
+
+.shell .asset-work-section.failed {
+  border-color: rgba(239, 143, 132, 0.42);
+  background:
+    linear-gradient(145deg, rgba(239, 143, 132, 0.1), rgba(244, 239, 227, 0.032)),
+    rgba(6, 12, 12, 0.58);
+}
+
+.shell .asset-work-section.blocked,
+.shell .asset-work-section.manual-only {
+  border-color: rgba(240, 193, 116, 0.42);
+  background:
+    linear-gradient(145deg, rgba(240, 193, 116, 0.1), rgba(244, 239, 227, 0.032)),
+    rgba(6, 12, 12, 0.58);
+}
+
+.shell .asset-action-row.media-work-row {
+  border-color: rgba(244, 239, 227, 0.12);
+  background: rgba(5, 10, 10, 0.48);
 }
 
 .source-mode-grid button,
@@ -9408,6 +9544,10 @@ body {
 .inspector .asset-console-summary span {
   border: 1px solid rgba(244, 239, 227, 0.14);
   background: rgba(244, 239, 227, 0.07);
+}
+
+.inspector .asset-console-summary.expanded {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .inspector .asset-console-summary small,

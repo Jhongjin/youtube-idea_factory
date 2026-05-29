@@ -436,6 +436,25 @@ export function getRunNextActionPlan({
     });
   }
 
+  if ((generationState.summary?.failed ?? 0) > 0) {
+    return step({
+      detail: `${generationState.summary?.failed ?? 0}개 항목이 제작 중 실패했습니다. 다시 만들 수 있게 열거나 수동 파일로 등록하세요.`,
+      headline: "실패 항목 재시도",
+      items: generationState.items
+        .filter((item) => item.status === "failed")
+        .slice(0, 3)
+        .map((item) => ({
+          detail: item.error?.trim() || "다시 만들기 전에 설정과 요청 내용을 확인하세요.",
+          status: "review" as const,
+          title: generationItemTitle(item),
+        })),
+      primaryActionId: undefined,
+      stageIndex: 9,
+      stageLabel: "미디어 만들기",
+      status: "review",
+    });
+  }
+
   if ((generationState.summary?.ready ?? 0) > 0) {
     return step({
       detail: `${generationState.summary?.ready ?? 0}개 항목을 만들거나 수동으로 등록할 수 있습니다.`,

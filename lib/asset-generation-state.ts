@@ -10,6 +10,7 @@ export type AssetGenerationStateItem = {
   expected_path: string;
   prompt?: string;
   scene_id?: string;
+  error?: string;
   blockers: string[];
 };
 
@@ -53,6 +54,7 @@ export async function getAssetGenerationState(runId: string): Promise<AssetGener
       expected_path: item.actual_path || item.expected_path,
       prompt: item.prompt,
       scene_id: item.scene_id,
+      error: item.error,
       blockers: queueBlockers.get(item.id) ?? [],
     })),
   };
