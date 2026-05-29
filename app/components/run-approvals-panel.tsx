@@ -1,24 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Loader2, Save, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, Save, ShieldCheck } from "lucide-react";
 import type { ApprovalGate, RunApprovals } from "@/lib/approvals";
 
-const gates: Array<{ description: string; id: ApprovalGate; label: string }> = [
+const gates: Array<{ description: string; id: ApprovalGate; label: string; next: string; scope: string }> = [
   {
-    description: "이미지, 영상, 음성 생성 비용을 허용합니다.",
+    description: "이미지, 영상, 음성 생성 비용 사용을 허용합니다.",
     id: "generation",
     label: "생성",
+    next: "미디어 작업판에서 승인된 항목을 만들 수 있습니다.",
+    scope: "렌더와 업로드는 별도 승인입니다.",
   },
   {
-    description: "최종 영상 조립과 렌더 비용을 허용합니다.",
+    description: "최종 영상 조립과 렌더 작업을 허용합니다.",
     id: "render",
     label: "영상 조립",
+    next: "렌더 작업 요청과 조립 핸드오프를 진행할 수 있습니다.",
+    scope: "YouTube 업로드는 별도 승인입니다.",
   },
   {
-    description: "YouTube 업로드와 예약 공개를 허용합니다.",
+    description: "YouTube 업로드 작업 생성을 허용합니다.",
     id: "publish",
     label: "업로드",
+    next: "제목, 설명, 태그, 공개 상태를 묶어 업로드 작업을 만들 수 있습니다.",
+    scope: "저장만으로 바로 게시되지는 않습니다.",
   },
 ];
 
@@ -68,6 +74,7 @@ export function RunApprovalsPanel({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const approvedCount = gates.filter((gate) => approvals[gate.id].approved).length;
 
   function updateGate(gate: ApprovalGate, patch: Partial<RunApprovals[ApprovalGate]>) {
     setSaved(false);
@@ -119,6 +126,13 @@ export function RunApprovalsPanel({
         <ShieldCheck size={16} />
       </div>
       <div className="panel-body">
+        <div className="approval-progress-strip">
+          <span>
+            <ShieldCheck size={14} />
+            {approvedCount}/{gates.length} 완료
+          </span>
+          <strong>{approvedCount === gates.length ? "모든 승인 체크됨" : "필요한 승인만 체크"}</strong>
+        </div>
         <div className="approval-list">
           {gates.map((gate) => {
             const approval = approvals[gate.id];
@@ -136,9 +150,14 @@ export function RunApprovalsPanel({
                     <span>
                       <strong>{gate.label}</strong>
                       <small>{gate.description}</small>
+                      <em>{gate.next}</em>
+                      <small>{gate.scope}</small>
                     </span>
                   </label>
-                  <span>{approval.approved ? "완료" : "대기"}</span>
+                  <span>
+                    {approval.approved ? <CheckCircle2 size={12} /> : <Clock3 size={12} />}
+                    {approval.approved ? "완료" : "대기"}
+                  </span>
                 </div>
                 {approval.approved ? (
                   <div className="approval-fields">

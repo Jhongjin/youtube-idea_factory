@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle, CheckCircle2, RefreshCw } from "lucide-react";
-import { operatorIssueCopy } from "@/lib/operator-copy";
+import { operatorIssueActionCopy, operatorIssueCopy } from "@/lib/operator-copy";
 import type { PackageValidationResult } from "@/lib/package-validation";
 
 const qaStatusCopy: Record<string, string> = {
@@ -63,7 +63,10 @@ export function PackageValidationPanel({
         {result.failures.length > 0 ? (
           <ul className="validation-failures">
             {result.failures.map((failure) => (
-              <li key={failure}>{operatorIssueCopy(failure)}</li>
+              <li key={failure}>
+                <strong>{operatorIssueCopy(failure)}</strong>
+                <small>{operatorIssueActionCopy(failure)}</small>
+              </li>
             ))}
           </ul>
         ) : null}

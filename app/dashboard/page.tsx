@@ -63,7 +63,7 @@ import { getAssetGenerationState, type AssetGenerationState } from "@/lib/asset-
 import { getRunArtifacts } from "@/lib/artifacts";
 import { getChannelMemoryIndex, type ChannelMemoryIndex } from "@/lib/channel-memory-index";
 import { listYouTubeChannels, type SafeYouTubeChannel } from "@/lib/channels";
-import { operatorIssueCopy } from "@/lib/operator-copy";
+import { operatorIssueActionCopy, operatorIssueCopy } from "@/lib/operator-copy";
 import { validateProductionPackage, type PackageValidationResult } from "@/lib/package-validation";
 import { getSafeProviderSettings } from "@/lib/provider-settings";
 import { providerRoles, type SafeProviderSettings } from "@/lib/provider-settings-shared";
@@ -1799,7 +1799,10 @@ function BlockersPanel({ blockers }: { blockers: string[] }) {
           {blockers.map((blocker) => (
             <li key={blocker}>
               <AlertTriangle size={15} color="#b7791f" />
-              <span>{operatorIssueCopy(blocker)}</span>
+              <span>
+                <strong>{operatorIssueCopy(blocker)}</strong>
+                <small>{operatorIssueActionCopy(blocker)}</small>
+              </span>
             </li>
           ))}
         </ul>
