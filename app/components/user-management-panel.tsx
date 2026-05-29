@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Save, UserPlus, Zap } from "lucide-react";
+import { CheckCircle2, LockKeyhole, Save, UserPlus, Zap } from "lucide-react";
 import type { AppUser, AppUserStatus } from "@/lib/users";
 import type { SessionRole } from "@/lib/session";
 
@@ -197,7 +197,7 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
                 </select>
               </label>
               <UserStatusField defaultStatus={user.status} disabled={user.id === "env-admin"} />
-              <label>
+              <label className="user-password-field">
                 <span>새 비밀번호</span>
                 <input
                   disabled={user.id === "env-admin"}
@@ -218,8 +218,8 @@ export function UserManagementPanel({ users }: { users: AppUser[] }) {
                     {approvingUserId === user.id ? "승인 중" : "승인"}
                   </button>
                 ) : null}
-                <button className="text-button" disabled={user.id === "env-admin"} type="submit">
-                  <Save size={15} />
+                <button className="text-button row-save-action" disabled={user.id === "env-admin"} type="submit">
+                  <LockKeyhole size={15} />
                   저장
                 </button>
               </div>

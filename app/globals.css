@@ -7665,9 +7665,15 @@ button:disabled,
 
 .user-row {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) repeat(4, minmax(120px, 0.7fr)) minmax(108px, auto);
+  grid-template-columns:
+    minmax(180px, 1fr)
+    minmax(120px, 0.7fr)
+    minmax(112px, 0.55fr)
+    minmax(138px, 0.65fr)
+    minmax(210px, 0.9fr)
+    minmax(104px, auto);
   gap: 10px;
-  align-items: end;
+  align-items: center;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.58);
@@ -7689,6 +7695,11 @@ button:disabled,
   display: grid;
   gap: 4px;
   align-self: center;
+}
+
+.user-row > label {
+  align-self: center;
+  min-width: 0;
 }
 
 .user-identity span,
@@ -7768,11 +7779,28 @@ button:disabled,
 
 .user-row-actions {
   display: grid;
+  align-self: center;
   gap: 7px;
 }
 
 .user-row-actions .text-button {
   white-space: nowrap;
+}
+
+.user-password-field input {
+  padding-right: 0.75rem;
+}
+
+.row-save-action {
+  border-color: rgba(47, 111, 78, 0.36);
+  background: rgba(47, 111, 78, 0.08);
+  color: #2f6f4e;
+}
+
+.row-save-action:hover {
+  border-color: rgba(47, 111, 78, 0.64);
+  background: rgba(47, 111, 78, 0.14);
+  color: #1f5f42;
 }
 
 .text-button.approve {
@@ -10237,6 +10265,21 @@ body {
   border-color: rgba(189, 240, 198, 0.76);
   background: rgba(155, 215, 167, 0.16);
   color: #d4ffd9;
+}
+
+.admin-page .row-save-action {
+  border-color: rgba(189, 240, 198, 0.3);
+  background: rgba(155, 215, 167, 0.075);
+  color: rgba(189, 240, 198, 0.88);
+}
+
+.admin-page .row-save-action:hover {
+  border-color: rgba(189, 240, 198, 0.72);
+  background: rgba(155, 215, 167, 0.13);
+  color: var(--neon-green);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.1),
+    0 0 18px rgba(155, 215, 167, 0.12);
 }
 
 .admin-page .channel-connect-cta,
