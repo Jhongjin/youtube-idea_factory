@@ -37,8 +37,14 @@ Five target audience options. For each: who they are, why they fit the source se
 Five tone options. For each: when to use it and what to avoid.
 ## Angle Recommendations
 Five original video angles. Each must transform source patterns into an original framing and include a differentiation note.
+## Title And Thumbnail Promise Options
+Five title/thumbnail promise directions based on the source pattern mix. Do not write final clickbait; describe the promise and the evidence needed.
 ## Recommended Script Structure
 One recommended structure with hook, first 30 seconds, body beats, retention checkpoints, credibility moments, and ending.
+## Evidence And Claim Use Rules
+Which claims can be used, which must stay in the claim ledger, and which should be avoided or reframed.
+## Do-Not-Copy Watchlist
+Reusable boundaries for wording, title syntax, thumbnail composition, scene order, unique anecdotes, and unverifiable superlatives.
 ## Channel Fit Filter
 How to filter the recommendations for this channel's brand, language, format, and audience.
 ## Open Questions
