@@ -229,13 +229,16 @@ export default async function LandingPage({
       <section className="marketing-section">
         <div className="section-heading">
           <h2 aria-label="AI가 빌드하고 당신이 컨펌하는, 가장 완벽한 유튜브 워크플로우">
-            <span>AI가 빌드하고 당신이 컨펌하는,</span>
+            <span>
+              <span className="highlight-word">AI</span>가 빌드하고 <span className="highlight-word">당신</span>이 컨펌하는,
+            </span>
             <span>가장 완벽한 유튜브 워크플로우</span>
           </h2>
           <div className="section-heading-copy">
             <p>
-              매주 상위 트렌드 영상을 분석해 대본 추출부터 스토리보드 작성까지 AI가 먼저 준비합니다.
-              단순 반복 작업은 시스템에 맡기고, 당신은 최종 컨펌과 채널 성장에 집중하세요.
+              매주 <strong>상위 트렌드 영상</strong>을 분석해 대본 추출부터 스토리보드 작성까지 AI가 먼저
+              준비합니다. 단순 반복 작업은 시스템에 맡기고, 당신은 <strong>최종 컨펌</strong>과{" "}
+              <strong>채널 성장</strong>에 집중하세요.
             </p>
             <div className="section-cta-row">
               <Link className="text-button primary" href={primaryHref}>

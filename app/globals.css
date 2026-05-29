@@ -5772,6 +5772,8 @@ button:disabled,
   font-weight: 860;
   line-height: 1.08;
   letter-spacing: 0;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
   text-wrap: balance;
 }
 
@@ -5786,6 +5788,8 @@ button:disabled,
   font-weight: 860;
   line-height: 1.08;
   letter-spacing: 0;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
   text-wrap: balance;
 }
 
@@ -6098,14 +6102,25 @@ button:disabled,
   margin-bottom: 30px;
 }
 
-.section-heading h2 span {
+.section-heading h2 > span {
   display: block;
+}
+
+.section-heading h2 .highlight-word {
+  display: inline;
+  color: var(--home-accent, #2f6f4e);
+  text-shadow: 0 0 18px rgba(47, 111, 78, 0.22);
 }
 
 .section-heading-copy {
   display: grid;
   gap: 18px;
   min-width: 0;
+}
+
+.section-heading-copy strong {
+  color: var(--home-ink, #101923);
+  font-weight: 900;
 }
 
 .section-cta-row {
@@ -8210,6 +8225,15 @@ button:disabled,
   color: #fbf6e8;
   font-size: clamp(42px, 5.2vw, 78px);
   line-height: 0.98;
+}
+
+.marketing-page .section-heading h2 .highlight-word,
+.marketing-page .section-heading-copy strong {
+  color: #bdf0c6;
+}
+
+.marketing-page .section-heading h2 .highlight-word {
+  text-shadow: 0 0 20px rgba(145, 232, 164, 0.2);
 }
 
 .feature-masonry {
