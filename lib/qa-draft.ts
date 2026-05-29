@@ -72,7 +72,7 @@ function bulletList(items: string[]) {
 
 function qaStatusCopy(status: "pass" | "blocked" | "needs_review") {
   const labels = {
-    blocked: "확인 필요",
+    blocked: "검토 및 승인 대기",
     needs_review: "검토 필요",
     pass: "통과",
   };
@@ -145,8 +145,8 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   }
 
   if (imagePrompts + videoPrompts === 0 || mediaPrompts.trim().length === 0) {
-    blockers.push("이미지와 영상 제작 요청서가 아직 준비되지 않았습니다.");
-    fixList.push("유료 생성 전에 이미지와 영상 제작 요청서를 먼저 확인하세요.");
+    blockers.push("이미지와 영상 에셋 생성 요청서가 아직 준비되지 않았습니다.");
+    fixList.push("유료 생성 전에 이미지와 영상 에셋 생성 요청서를 먼저 확인하세요.");
   }
 
   if (imagePrompts + videoPrompts > 0 && assetManifestItems === 0) {
@@ -160,7 +160,7 @@ export async function createQaDraft(runId: string): Promise<QaDraftResult> {
   }
 
   if (publishingPackage.trim().length === 0) {
-    blockers.push("업로드 글 초안이 아직 비어 있습니다.");
+    blockers.push("메타데이터 초안이 아직 비어 있습니다.");
   }
 
   if (missingTranscriptCount > 0) {

@@ -7,7 +7,7 @@ import type { PackageValidationResult } from "@/lib/package-validation";
 
 const qaStatusCopy: Record<string, string> = {
   pass: "통과",
-  blocked: "확인 필요",
+  blocked: "검토 및 승인 대기",
   needs_review: "검토 필요",
 };
 
@@ -48,7 +48,7 @@ export function PackageValidationPanel({
       <div className="panel-body">
         <div className={`validation-banner ${result.status}`}>
           {result.status === "pass" ? <CheckCircle2 size={17} /> : <AlertTriangle size={17} />}
-          <span>{result.status === "pass" ? "구조 통과" : "확인 필요"}</span>
+          <span>{result.status === "pass" ? "구조 통과" : "검토 및 승인 대기"}</span>
         </div>
         <div className="validation-grid">
           <span>소스</span>
@@ -57,7 +57,7 @@ export function PackageValidationPanel({
           <strong>{result.summary.claims}</strong>
           <span>씬</span>
           <strong>{result.summary.scenes}</strong>
-          <span>최종 확인</span>
+          <span>발행 전 컨펌</span>
           <strong>{qaStatusCopy[result.summary.qaStatus] ?? result.summary.qaStatus}</strong>
         </div>
         {result.failures.length > 0 ? (

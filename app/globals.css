@@ -38,6 +38,9 @@ body {
   font-family:
     "Geist", "Geist Sans", "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  font-kerning: normal;
+  text-rendering: optimizeLegibility;
 }
 
 .skip-link {
@@ -84,7 +87,7 @@ a {
 .shell {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: 248px minmax(0, 1fr) minmax(390px, 22vw);
+  grid-template-columns: 236px minmax(0, 1fr) minmax(330px, 19vw);
 }
 
 .sidebar {
@@ -854,6 +857,12 @@ button:disabled,
   background: #fbfbf8;
 }
 
+.guided-action-panel.compact {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
 .guided-step-intro {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -885,25 +894,29 @@ button:disabled,
 }
 
 .guided-action-main h3 {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1.18;
+}
+
+.guided-action-summary {
+  max-width: 72ch;
 }
 
 .guided-action-buttons {
   display: grid;
   gap: 10px;
-  margin-top: 14px;
+  margin-top: 0;
 }
 
 .guided-primary-cta {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, 260px);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 230px);
+  gap: 10px;
   align-items: center;
   border: 1px solid #b9d8c3;
-  border-radius: 12px;
+  border-radius: 8px;
   background: #eff8f1;
-  padding: 14px;
+  padding: 10px;
 }
 
 .guided-primary-cta.manual {
@@ -929,7 +942,7 @@ button:disabled,
 
 .guided-primary-copy strong {
   color: #172019;
-  font-size: 16px;
+  font-size: 13px;
   line-height: 1.25;
   text-wrap: pretty;
 }
@@ -1481,6 +1494,14 @@ button:disabled,
   gap: 8px;
 }
 
+.pipeline-panel .panel-body {
+  padding: 10px;
+}
+
+.pipeline-panel .stage-list {
+  gap: 7px;
+}
+
 .stage-row {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) minmax(132px, auto);
@@ -1502,9 +1523,23 @@ button:disabled,
   background: #f8fafc;
 }
 
+.pipeline-panel .stage-row {
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px 10px;
+  min-height: 58px;
+  align-items: start;
+  padding: 10px;
+}
+
 .stage-row.current {
   border-color: var(--blue);
   background: #edf4ff;
+}
+
+.pipeline-panel .stage-row.current {
+  border-color: #2f6f4e;
+  background: #eef8f1;
+  box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.12);
 }
 
 .stage-row.current .stage-index {
@@ -1555,6 +1590,11 @@ button:disabled,
   justify-content: flex-end;
   gap: 8px;
   min-width: 0;
+}
+
+.pipeline-panel .stage-row-action {
+  grid-column: 2;
+  justify-content: flex-start;
 }
 
 .stage-row-action > span {
@@ -4586,11 +4626,54 @@ button:disabled,
   gap: 4px;
 }
 
+.asset-row-info {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  min-width: 0;
+}
+
+.asset-thumb {
+  position: relative;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(47, 111, 78, 0.12), rgba(37, 99, 235, 0.07)),
+    var(--surface-2);
+  color: #2f6f4e;
+}
+
+.asset-thumb::after {
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(47, 111, 78, 0.16);
+  border-radius: 6px;
+  content: "";
+}
+
 .asset-row-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 7px;
+}
+
+.asset-row-actions .text-button.primary {
+  border-color: #2f6f4e;
+  background: #2f6f4e;
+  color: #ffffff;
+}
+
+.asset-row-actions .text-button.quiet {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--muted);
 }
 
 .asset-row-actions .asset-action-note.compact {
@@ -9200,6 +9283,11 @@ body {
   color: #0b1112;
 }
 
+.pipeline-panel .stage-row.current .stage-name,
+.pipeline-panel .stage-row.current .stage-row-action > span {
+  color: #bdf0c6;
+}
+
 .guided-step.pending em {
   background: rgba(244, 239, 227, 0.14);
   color: rgba(244, 239, 227, 0.74);
@@ -9236,6 +9324,16 @@ body {
   background:
     linear-gradient(145deg, rgba(155, 215, 167, 0.13), rgba(244, 239, 227, 0.035)),
     rgba(13, 21, 21, 0.8);
+}
+
+.pipeline-panel .stage-row.current {
+  border-color: rgba(189, 240, 198, 0.72);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.2), rgba(244, 239, 227, 0.035)),
+    rgba(13, 21, 21, 0.86);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.12),
+    0 0 24px rgba(155, 215, 167, 0.12);
 }
 
 .guided-tool-card > span {
@@ -9696,6 +9794,30 @@ body {
 .shell .asset-action-row.media-work-row {
   border-color: rgba(244, 239, 227, 0.12);
   background: rgba(5, 10, 10, 0.48);
+}
+
+.shell .asset-thumb {
+  border-color: rgba(244, 239, 227, 0.14);
+  background:
+    linear-gradient(135deg, rgba(155, 215, 167, 0.16), rgba(127, 183, 188, 0.1)),
+    rgba(244, 239, 227, 0.06);
+  color: #bdf0c6;
+}
+
+.shell .asset-thumb::after {
+  border-color: rgba(189, 240, 198, 0.18);
+}
+
+.shell .asset-row-actions .text-button.primary {
+  border-color: #bdf0c6;
+  background: #bdf0c6;
+  color: #0b1112;
+}
+
+.shell .asset-row-actions .text-button.quiet {
+  border-color: rgba(244, 239, 227, 0.14);
+  background: rgba(244, 239, 227, 0.035);
+  color: rgba(244, 239, 227, 0.72);
 }
 
 .shell .asset-prompt-editor {

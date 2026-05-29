@@ -39,7 +39,7 @@ export const phaseWorkQueue: WorkQueueItem[] = [
     status: "done",
     owner: "codex",
     canSkip: false,
-    reason: "스냅샷, 인사이트, A/B 로그, 채널 메모리를 한 번에 실행하는 버튼이 필요했습니다.",
+    reason: "스냅샷, 인사이트, A/B 로그, AI 채널 데이터베이스를 한 번에 실행하는 버튼이 필요했습니다.",
     nextAction: "프로덕션 배포 후 실제 영상 ID로 한 번 실행해 동작을 확인합니다.",
   },
   {

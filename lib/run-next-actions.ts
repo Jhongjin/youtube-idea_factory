@@ -313,12 +313,12 @@ export function getRunNextActionPlan({
   if (promptCount(pkg) === 0) {
     return step({
       detail: "스토리보드를 이미지와 영상 제작 요청으로 바꿉니다.",
-      headline: "미디어 요청서 만들기",
+      headline: "에셋 생성 요청서 만들기",
       items: [
         {
           detail: "생성 비용이 발생하기 전 만들 내용을 먼저 확인할 수 있게 정리합니다.",
           status: "pending",
-          title: "미디어 요청서",
+          title: "에셋 생성 요청서",
         },
       ],
       primaryActionId: "media-draft",
@@ -331,12 +331,12 @@ export function getRunNextActionPlan({
   if ((pkg.publishing_package.title_candidates?.length ?? 0) === 0) {
     return step({
       detail: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 작성합니다.",
-      headline: "업로드 글 초안 만들기",
+      headline: "메타데이터 초안 만들기",
       items: [
         {
           detail: "최종 업로드 전에 다시 확인하므로 지금은 초안만 만듭니다.",
           status: "pending",
-          title: "업로드 글",
+          title: "메타데이터",
         },
       ],
       primaryActionId: "publishing-draft",
@@ -365,7 +365,7 @@ export function getRunNextActionPlan({
 
   if (!generationState.manifestExists || !pkg.asset_manifest) {
     return step({
-      detail: "스토리보드와 미디어 요청서를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
+      detail: "스토리보드와 에셋 생성 요청서를 바탕으로 필요한 이미지, 영상, 음성 목록을 만듭니다.",
       headline: "필요한 자료 정리",
       items: [
         {
@@ -401,13 +401,13 @@ export function getRunNextActionPlan({
 
   if (!generationState.queueExists) {
     return step({
-      detail: "승인과 API 설정을 확인해서 바로 만들 항목과 멈춘 항목을 나눕니다.",
-      headline: "만들 항목 정리하기",
+      detail: "승인과 API 설정을 확인해서 AI가 만들 항목, 검토 대기 항목, 직접 업로드할 에셋을 나눕니다.",
+      headline: "제작 에셋 및 스크립트 확정",
       items: [
         {
-          detail: "버튼을 누르면 만들 항목, 멈춘 항목, 건너뛸 항목이 정리됩니다.",
+          detail: "버튼을 누르면 제작 목록, 검토 대기, 수동 업로드 항목이 정리됩니다.",
           status: "pending",
-          title: "생성 목록",
+          title: "AI 제작 목록",
         },
       ],
       primaryActionId: "generation-queue",

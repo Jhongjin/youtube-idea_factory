@@ -466,7 +466,7 @@ export function NewRunForm({
             <small>
               {selectedChannel
                 ? `${selectedChannel.youtube_handle ?? "핸들 미입력"} / ${selectedChannel.default_language ?? "ko"}`
-                : "전체 실행으로 시작하며 이후 채널 기준으로 다시 분류할 수 있습니다."}
+                : "전체 프로젝트로 시작하며 이후 채널 기준으로 다시 분류할 수 있습니다."}
             </small>
           </div>
           <div className="new-run-channel-badges">

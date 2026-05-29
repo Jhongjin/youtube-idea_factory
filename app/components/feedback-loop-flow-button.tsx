@@ -7,7 +7,7 @@ const steps = [
   { label: "성과 스냅샷", path: "snapshot" },
   { label: "피드백 인사이트", path: "insights" },
   { label: "A/B 로그", path: "learning-log" },
-  { label: "채널 메모리", path: "channel-memory" },
+  { label: "AI 채널 데이터베이스", path: "channel-memory" },
 ];
 
 export function FeedbackLoopFlowButton({ runId, videoId }: { runId: string; videoId?: string }) {

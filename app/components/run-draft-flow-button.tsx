@@ -5,12 +5,12 @@ import { Loader2, Rocket } from "lucide-react";
 
 const draftSteps = [
   { label: "분석", path: "analysis/draft" },
-  { label: "대본", path: "script/draft" },
-  { label: "스토리보드", path: "storyboard/draft" },
-  { label: "미디어", path: "media/draft" },
-  { label: "자산", path: "assets/manifest" },
-  { label: "배포", path: "publishing/draft" },
-  { label: "검수", path: "qa/draft" },
+  { label: "스크립트", path: "script/draft" },
+  { label: "연출 설계", path: "storyboard/draft" },
+  { label: "에셋 요청서", path: "media/draft" },
+  { label: "제작 목록", path: "assets/manifest" },
+  { label: "메타데이터", path: "publishing/draft" },
+  { label: "발행 컨펌", path: "qa/draft" },
 ] as const;
 
 export function RunDraftFlowButton({ runId }: { runId: string }) {
@@ -40,7 +40,7 @@ export function RunDraftFlowButton({ runId }: { runId: string }) {
     <div className="draft-action flow-action">
       <button className="text-button primary" disabled={loading} onClick={runFlow} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Rocket size={15} />}
-        {loading ? `${currentStep} 실행 중` : "초안 전체 실행"}
+        {loading ? `${currentStep} 실행 중` : "AI 초안 워크플로우 실행"}
       </button>
       {error ? <span>{error}</span> : null}
     </div>

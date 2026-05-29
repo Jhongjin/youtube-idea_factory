@@ -265,7 +265,7 @@ export function SourceReviewQueue({
           <span>소스 {sources.length}</span>
           <span>분석 {includedCount}</span>
           <span>자막 확보 {transcriptReadyCount}</span>
-          <span>확인 필요 {needsTranscriptCount}</span>
+          <span>자막 검토 {needsTranscriptCount}</span>
           <span>실패 {missingCount}</span>
           <span>분석 제외 {excludedCount}</span>
           <span>선택 {selectedCount}</span>

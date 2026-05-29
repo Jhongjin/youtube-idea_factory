@@ -74,21 +74,21 @@ export const artifactDefinitions: ArtifactDefinition[] = [
   {
     id: "media-prompts",
     filename: "06-media-prompts.md",
-    label: "미디어 요청서",
+    label: "에셋 생성 요청서",
     skill: "youtube-media-prompts",
     description: "이미지, 영상, 썸네일을 만들 때 쓸 요청 문장입니다.",
   },
   {
     id: "publishing",
     filename: "07-publishing-package.md",
-    label: "업로드 글",
+    label: "메타데이터 세팅",
     skill: "youtube-production-qa",
     description: "제목 후보, 설명문, 태그, 썸네일, 업로드 체크리스트입니다.",
   },
   {
     id: "qa",
     filename: "08-qa.md",
-    label: "최종 확인",
+    label: "발행 전 컨펌",
     skill: "youtube-production-qa",
     description: "남은 확인 항목, 주의할 점, 승인 체크리스트, 업로드 준비 상태입니다.",
   },
@@ -130,7 +130,7 @@ export const artifactDefinitions: ArtifactDefinition[] = [
   {
     id: "channel-memory-update",
     filename: "12-channel-memory-update.md",
-    label: "채널 메모리",
+    label: "AI 채널 데이터베이스",
     skill: "feedback-loop",
     description: "다음 제작에 가져갈 패턴과 주의 플래그입니다.",
   },

@@ -9,7 +9,7 @@ const statusLabel: Record<WorkerStageStatus, string> = {
   pending: "대기",
   queued: "큐 등록",
   running: "실행 중",
-  unknown: "확인 필요",
+  unknown: "상태 검토",
 };
 
 const statusClass: Record<WorkerStageStatus, "done" | "review" | "blocked" | "pending"> = {

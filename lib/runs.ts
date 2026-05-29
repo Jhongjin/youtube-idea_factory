@@ -175,37 +175,37 @@ export async function getRuns(): Promise<RunSummary[]> {
 export function getStageState(pkg: ProductionPackage) {
   return [
     {
-      name: "접수",
+      name: "기획 (아이디에이션)",
       meta: pkg.brief.topic,
       status: "done" as const,
     },
     {
-      name: "리서치",
+      name: "트렌드 소스 수집",
       meta: `소스 영상 ${pkg.sources.length}개`,
       status: pkg.sources.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "영상 분석",
+      name: "벤치마킹 분석",
       meta: "경쟁 영상 구조와 훅 분석",
-      status: "pending" as const,
+      status: pkg.claim_ledger.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "팩트체크",
+      name: "클레임 검증",
       meta: `클레임 ${pkg.claim_ledger.length}개`,
       status: pkg.claim_ledger.length > 0 ? ("review" as const) : ("blocked" as const),
     },
     {
-      name: "대본",
+      name: "AI 스크립트 작성",
       meta: pkg.script_plan.hook,
       status: pkg.script_plan.outline.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "스토리보드",
+      name: "영상 연출 설계",
       meta: `씬 ${pkg.storyboard.length}개`,
       status: pkg.storyboard.length > 0 ? ("review" as const) : ("pending" as const),
     },
     {
-      name: "미디어 요청서",
+      name: "에셋 생성 및 검토",
       meta: `이미지 ${pkg.media_prompts.image_prompts?.length ?? 0}개, 영상 ${
         pkg.media_prompts.video_prompts?.length ?? 0
       }개`,
@@ -217,7 +217,7 @@ export function getStageState(pkg: ProductionPackage) {
           : ("pending" as const),
     },
     {
-      name: "업로드 글",
+      name: "메타데이터 세팅",
       meta: `제목 후보 ${pkg.publishing_package.title_candidates?.length ?? 0}개`,
       status:
         (pkg.publishing_package.title_candidates?.length ?? 0) > 0
@@ -225,7 +225,7 @@ export function getStageState(pkg: ProductionPackage) {
           : ("pending" as const),
     },
     {
-      name: "최종 확인",
+      name: "유튜브 발행 및 컨펌",
       meta: `확인 항목 ${pkg.qa.blockers.length}개`,
       status:
         pkg.qa.status === "pass"

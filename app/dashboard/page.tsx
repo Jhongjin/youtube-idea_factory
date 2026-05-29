@@ -91,24 +91,24 @@ const skillItems = [
 
 const skillLabels: Record<string, string> = {
   "youtube-market-research": "시장 리서치",
-  "youtube-video-analysis": "영상 분석",
-  "youtube-fact-check": "팩트체크",
+  "youtube-video-analysis": "벤치마킹 분석",
+  "youtube-fact-check": "클레임 검증",
   "youtube-script-architect": "대본 설계",
-  "youtube-storyboard": "스토리보드",
-  "youtube-media-prompts": "미디어 요청서",
-  "youtube-production-qa": "최종 확인",
+  "youtube-storyboard": "영상 연출 설계",
+  "youtube-media-prompts": "에셋 생성 요청서",
+  "youtube-production-qa": "발행 전 컨펌",
 };
 
 const statusCopy = {
   done: "완료",
   review: "확인",
-  blocked: "확인 필요",
+  blocked: "검토 및 승인 대기",
   pending: "할 일",
 };
 
 const qaStatusCopy: Record<string, string> = {
   pass: "검수 통과",
-  blocked: "확인 필요",
+  blocked: "검토 및 승인 대기",
   needs_review: "검토 필요",
 };
 
@@ -123,27 +123,27 @@ const guidedStepDefinitions = [
   {
     description: "채널과 이번 영상 주제를 확인합니다.",
     key: "setup",
-    label: "채널/주제",
+    label: "기획",
   },
   {
     description: "후보 영상과 근거를 먼저 채웁니다.",
     key: "research",
-    label: "소스 찾기",
+    label: "트렌드 소스",
   },
   {
     description: "분석, 대본, 스토리보드를 만듭니다.",
     key: "draft",
-    label: "대본 만들기",
+    label: "AI 스크립트",
   },
   {
     description: "이미지, 영상, 음성 생성 준비를 합니다.",
     key: "production",
-    label: "미디어 만들기",
+    label: "에셋 검토",
   },
   {
-    description: "최종 확인, 편집, 영상 조립, 업로드를 진행합니다.",
+    description: "영상 조립, 메타데이터, 유튜브 발행 컨펌을 진행합니다.",
     key: "review",
-    label: "확인/업로드",
+    label: "발행 컨펌",
   },
 ] as const;
 
@@ -228,8 +228,8 @@ function getArtifactWorkspaceCopy(plan: RunNextActionPlan, step: GuidedStepKey) 
   }
   if (step === "review") {
     return {
-      description: "최종 확인에 필요한 결과만 먼저 보여줍니다.",
-      title: "최종 확인과 업로드 결과",
+      description: "유튜브 발행 전 컨펌에 필요한 결과만 먼저 보여줍니다.",
+      title: "유튜브 발행 및 컨펌 결과",
     };
   }
   return {
@@ -275,9 +275,9 @@ const actionGuides: Partial<
     title: "필요한 자료 정리",
   },
   "channel-memory": {
-    goal: "성과와 운영 메모를 다음 기획에 쓸 채널 기억으로 저장합니다.",
-    output: "채널 메모리에 반영됩니다.",
-    title: "채널 메모리",
+    goal: "성과와 운영 메모를 다음 기획에 쓸 AI 채널 데이터베이스로 저장합니다.",
+    output: "AI 채널 데이터베이스에 반영됩니다.",
+    title: "AI 채널 데이터베이스",
   },
   "draft-flow": {
     goal: "분석, 근거 목록, 대본 초안 틀을 한 번에 준비합니다.",
@@ -295,9 +295,9 @@ const actionGuides: Partial<
     title: "성과 인사이트",
   },
   "generation-queue": {
-    goal: "승인과 API 설정을 확인해 바로 만들 수 있는 항목을 나눕니다.",
-    output: "만들 수 있는 항목, 막힌 항목, 건너뛸 항목이 정리됩니다.",
-    title: "만들 항목 정리",
+    goal: "승인과 API 설정을 확인해 AI가 만들 항목과 직접 업로드할 에셋을 나눕니다.",
+    output: "AI 제작 목록, 검토 대기, 수동 업로드 항목이 정리됩니다.",
+    title: "제작 에셋 및 스크립트 확정",
   },
   "learning-log": {
     goal: "A/B 결과와 운영 판단을 다음 제작에 재사용할 기록으로 남깁니다.",
@@ -306,13 +306,13 @@ const actionGuides: Partial<
   },
   "local-render": {
     goal: "로컬 ffmpeg로 테스트 영상을 조립합니다.",
-    output: "조립 결과와 로그가 실행 기록에 남습니다.",
+    output: "조립 결과와 로그가 프로젝트 기록에 남습니다.",
     title: "로컬 조립",
   },
   "media-draft": {
     goal: "스토리보드를 이미지와 영상 제작 요청으로 바꿉니다.",
-    output: "이미지와 영상 생성 요청서가 저장됩니다.",
-    title: "미디어 요청서",
+    output: "이미지와 영상 에셋 생성 요청서가 저장됩니다.",
+    title: "에셋 생성 요청서",
   },
   "open-settings": {
     goal: "AI, 이미지, 영상, TTS, 편집 API 키와 모델을 점검합니다.",
@@ -327,7 +327,7 @@ const actionGuides: Partial<
   "publishing-draft": {
     goal: "제목 후보, 설명, 태그, 썸네일 문구를 먼저 만듭니다.",
     output: "업로드 전에 확인할 제목, 설명, 태그가 정리됩니다.",
-    title: "업로드 글 초안",
+    title: "메타데이터 초안",
   },
   "publishing-handoff": {
     goal: "최종 파일과 업로드 정보를 업로드 준비 목록으로 묶습니다.",
@@ -337,7 +337,7 @@ const actionGuides: Partial<
   "qa-draft": {
     goal: "구조, 근거, 승인, 업로드 위험을 한 번 더 검사합니다.",
     output: "남은 확인 항목이 정리됩니다.",
-    title: "최종 확인",
+    title: "발행 전 컨펌",
   },
   "render-job": {
     goal: "외부 작업자가 처리할 영상 조립 작업을 등록합니다.",
@@ -435,21 +435,15 @@ const advancedActionGroupsByStep: Record<
 };
 
 const pipelineStageTargets = [
-  { href: "#next-action", label: "현재 작업" },
-  { href: "#youtube-finder", label: "후보 검색" },
-  { href: "#artifact-video-analysis", label: "분석 탭" },
-  { href: "#artifact-script-patterns", label: "유형 탭" },
-  { href: "#artifact-claim-ledger", label: "근거 탭" },
-  { href: "#artifact-strategy-recommendations", label: "추천 탭" },
-  { href: "#artifact-script-plan", label: "대본 탭" },
-  { href: "#artifact-storyboard", label: "씬 탭" },
-  { href: "#artifact-media-prompts", label: "요청서 탭" },
-  { href: "#artifact-publishing", label: "업로드 탭" },
-  { href: "#artifact-qa", label: "확인 탭" },
-  { href: "#artifact-render-edl", label: "조립 계획" },
-  { href: "#artifact-youtube-upload-job", label: "업로드 작업" },
-  { href: "#artifact-feedback-insights", label: "피드백" },
-  { href: "#artifact-channel-memory-update", label: "채널 메모리" },
+  { href: "#next-action", label: "기획 보기" },
+  { href: "#youtube-finder", label: "소스 수집" },
+  { href: "#artifact-video-analysis", label: "분석 보기" },
+  { href: "#artifact-claim-ledger", label: "클레임 보기" },
+  { href: "#artifact-script-plan", label: "스크립트" },
+  { href: "#artifact-storyboard", label: "연출 설계" },
+  { href: "#media-workboard", label: "에셋 작업판" },
+  { href: "#artifact-publishing", label: "메타데이터" },
+  { href: "#artifact-youtube-upload-job", label: "발행 컨펌" },
 ];
 
 function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
@@ -661,7 +655,7 @@ function inspectorDecision({
   if (run.package.qa.blockers.length > 0 || plan.status === "blocked") {
     return {
       detail: "막힌 항목을 줄인 뒤 다시 검수하거나 다음 단계로 이동하세요.",
-      label: "확인 필요",
+      label: "검토 및 승인 대기",
       tone: "blocked",
     };
   }
@@ -729,7 +723,7 @@ function ChannelMemoryIndexPanel({ index }: { index: ChannelMemoryIndex }) {
   const topExperiment = index.next_experiments[0]?.text ?? "아직 누적 실험 메모리가 없습니다";
   return (
     <section className="nav-section channel-memory-index">
-      <h2>채널 메모리</h2>
+      <h2>AI 채널 데이터베이스</h2>
       <div className="memory-index-card">
         <div className="memory-index-heading">
           <Brain size={16} />
@@ -805,7 +799,7 @@ function OperatingChannelBar({
     : "채널 선택 권장";
   const selectedChannelLabel = selectedChannel
     ? `${selectedChannel.channel_name}${selectedChannel.youtube_handle ? ` / ${selectedChannel.youtube_handle}` : ""}`
-    : "전체 채널의 실행 기록을 보고 있습니다.";
+    : "전체 채널의 프로젝트를 보고 있습니다.";
   const channelUploadNudge = selectedChannel
     ? selectedChannel.status !== "active"
       ? {
@@ -827,7 +821,7 @@ function OperatingChannelBar({
     <section className="operating-channel-bar" aria-label="운영 채널 선택">
       <div className="operating-channel-primary">
         <p className="eyebrow">운영 채널</p>
-        <h2>{selectedChannel ? selectedChannel.brand_name : "전체 실행"}</h2>
+        <h2>{selectedChannel ? selectedChannel.brand_name : "전체 프로젝트"}</h2>
         <span>{selectedChannelLabel}</span>
       </div>
       <div className="operating-channel-meta">
@@ -853,7 +847,7 @@ function OperatingChannelBar({
             href={dashboardHref({ allChannels: true, step: activeStep })}
             role="listitem"
           >
-            <strong>전체 실행</strong>
+            <strong>전체 프로젝트</strong>
             <span>{allRuns.length}개</span>
           </Link>
           {channels.map((channel) => {
@@ -929,11 +923,12 @@ function GuidedActionPanel({
   const actionOutcome = currentGuide?.output ?? plan.detail;
   const useMediaWorkboard = !plan.primaryActionId && plan.stageLabel === "미디어 만들기";
   return (
-    <section className="panel guided-action-panel" id="next-action">
+    <section className="panel guided-action-panel compact" id="next-action">
       <div className="guided-action-main">
         <div>
-          <p className="eyebrow">지금 할 일</p>
+          <p className="eyebrow">현재 액션</p>
           <h3>{plan.headline}</h3>
+          <p className="guided-action-summary">{actionOutcome}</p>
         </div>
         <StatusPill status={plan.status} />
       </div>
@@ -945,7 +940,7 @@ function GuidedActionPanel({
               {plan.primaryActionId
                 ? actionOutcome
                 : useMediaWorkboard
-                  ? "바로 만들기, 수동 등록, 실패 재시도, 건너뛰기를 나눠 처리하세요."
+                  ? "바로 만들기, 직접 업로드, 실패 재시도, 제외 항목을 나눠 처리하세요."
                   : "필요한 확인을 저장하면 이어서 진행됩니다."}
             </strong>
           </div>
@@ -1074,10 +1069,6 @@ function GuidedRunWorkspace({
             runId={run.id}
             title={workspaceCopy.title}
           />
-          <details className="guided-secondary-panel">
-            <summary>필요하면 준비 상태 보기</summary>
-            <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
-          </details>
         </>
       ) : null}
 
@@ -1153,7 +1144,7 @@ function Sidebar({
         </div>
         <div>
           <h1>YouTube Idea Factory</h1>
-          <p>제작 운영</p>
+      <p>프로젝트 대시보드</p>
         </div>
       </div>
 
@@ -1169,7 +1160,7 @@ function Sidebar({
                 className={`channel-filter ${activeChannelId ? "" : "active"}`}
                 href={dashboardHref({ allChannels: true })}
               >
-                <strong>전체 실행</strong>
+              <strong>전체 프로젝트</strong>
                 <span>{totalRuns}개</span>
               </Link>
               {channels.map((channel) => {
@@ -1190,7 +1181,7 @@ function Sidebar({
             </div>
             <p className="channel-filter-note">
               {activeChannel
-                ? `${activeChannel.channel_name} 기준으로 실행 기록을 보고 있습니다.`
+                ? `${activeChannel.channel_name} 기준으로 프로젝트 기록을 보고 있습니다.`
                 : "상단 운영 채널 바에서 먼저 채널을 고르면 새 제작에도 반영됩니다."}
             </p>
           </div>
@@ -1198,7 +1189,7 @@ function Sidebar({
       ) : null}
 
       <section className="nav-section">
-        <h2>{activeChannel ? "채널 실행 기록" : "실행 기록"}</h2>
+        <h2>{activeChannel ? "채널별 진행 중인 프로젝트" : "진행 중인 프로젝트"}</h2>
         <div className="nav-list">
           {runs.slice(0, 5).map((run) => (
             <Link
@@ -1212,13 +1203,13 @@ function Sidebar({
               </span>
             </Link>
           ))}
-          {runs.length === 0 ? <p className="muted">이 채널의 실행 기록이 없습니다</p> : null}
+          {runs.length === 0 ? <p className="muted">이 채널의 진행 중인 프로젝트가 없습니다</p> : null}
         </div>
       </section>
 
       <details className="sidebar-disclosure">
         <summary>
-          <span>채널 메모리</span>
+          <span>AI 채널 데이터베이스</span>
           <strong>
             {memoryIndex.ready_update_count}/{memoryIndex.run_count} 준비
           </strong>
@@ -1240,7 +1231,7 @@ function Sidebar({
 
       <details className="sidebar-disclosure">
         <summary>
-          <span>자동화 도구</span>
+          <span>AI 워크플로우 엔진</span>
           <strong>{skillItems.length}개</strong>
         </summary>
         <div className="sidebar-disclosure-body">
@@ -1283,7 +1274,7 @@ function EmptyState({
       <div className="topbar">
         <div>
           <p className="eyebrow">1단계</p>
-          <h2>{channelName ? `${channelName} 제작 작업공간` : "제작 작업공간"}</h2>
+          <h2>{channelName ? `${channelName} 프로젝트 대시보드` : "프로젝트 대시보드"}</h2>
         </div>
       </div>
       <div className="empty-state">
@@ -1348,7 +1339,7 @@ const dashboardNoticeCopy: Record<
     tone: "success",
   },
   "sources-excluded": {
-    detail: "선택한 소스는 실행 기록에 보관되지만 분석 입력에서는 제외됩니다.",
+    detail: "선택한 소스는 프로젝트 기록에 보관되지만 분석 입력에서는 제외됩니다.",
     title: "선택 소스를 분석에서 제외했습니다.",
     tone: "success",
   },
@@ -1574,11 +1565,12 @@ function AdvancedActionMenu({
 function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionPlan; run: RunSummary }) {
   const stages = getStageState(run.package);
   const currentStageIndex = getCurrentPipelineStageIndex(nextActionPlan);
+  const currentStageLabel = String(currentStageIndex + 1).padStart(2, "0");
   return (
-    <section className="panel" id="pipeline-panel">
+    <section className="panel pipeline-panel" id="pipeline-panel">
       <div className="panel-header">
         <h3 className="panel-title">제작 단계</h3>
-        <span className="meta">{qaStatusCopy[run.package.qa.status] ?? run.package.qa.status}</span>
+        <span className="meta">현재 {currentStageLabel}</span>
       </div>
       <div className="panel-body">
         <div className="stage-list">
@@ -1598,7 +1590,7 @@ function PipelinePanel({ nextActionPlan, run }: { nextActionPlan: RunNextActionP
                   <p className="stage-meta">{stage.meta}</p>
                 </div>
                 <div className="stage-row-action">
-                  <span>{isCurrent ? "현재 단계" : target.label}</span>
+                  <span>{isCurrent ? "현재 위치" : target.label}</span>
                   <StatusPill status={stage.status} />
                 </div>
               </a>
@@ -2034,7 +2026,7 @@ function FeedbackPanel({ run }: { run: RunSummary }) {
             <span>{run.package.learning_log?.variants ?? 0}</span>
           </div>
           <div className="detail-row">
-            <span>채널 메모리</span>
+              <span>AI 채널 데이터베이스</span>
             <span>
               {run.package.channel_memory_update?.status
                 ? memoryStatusCopy[run.package.channel_memory_update.status] ??
@@ -2184,7 +2176,7 @@ function Inspector({
   return (
     <aside className="inspector">
       <div className="detail-stack">
-        <StageFocusPanel approvals={approvals} plan={nextActionPlan} run={run} validation={validation} />
+        <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
 
         {showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
 
@@ -2325,13 +2317,13 @@ export default async function Home({
           />
           <div className="topbar">
             <div>
-              <p className="eyebrow">제작 작업공간</p>
+              <p className="eyebrow">프로젝트 대시보드</p>
               <h2>{activeRun.package.brief.topic}</h2>
               <p className="muted">
                 {runChannelLabel(activeRun)} /{" "}
                 {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} /{" "}
                 {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} /{" "}
-                {activeRun.package.brief.target_audience || "대상 시청자 미정"}
+                {activeRun.package.brief.target_audience || "타겟 시청자 분석 중"}
               </p>
             </div>
             <div className="toolbar">

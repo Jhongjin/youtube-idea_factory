@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ListChecks, Loader2 } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 
 export function GenerationQueueButton({ runId }: { runId: string }) {
   const [loading, setLoading] = useState(false);
@@ -23,8 +23,8 @@ export function GenerationQueueButton({ runId }: { runId: string }) {
   return (
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={prepareQueue} type="button">
-        {loading ? <Loader2 className="spin" size={15} /> : <ListChecks size={15} />}
-        생성 항목 정리
+        {loading ? <Loader2 className="spin" size={15} /> : <Zap size={15} />}
+        AI 제작 목록 빌드하기
       </button>
       {error ? <span>{error}</span> : null}
     </div>

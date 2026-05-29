@@ -161,7 +161,7 @@ function sortedAssetPreview(items: AssetGenerationStateItem[], limit: number) {
 function assetStatusLabel(status: AssetGenerationStateItem["status"]) {
   if (status === "pending_generation") return "바로 만들기";
   if (status === "generated") return "완료";
-  if (status === "pending_approval") return "확인 필요";
+  if (status === "pending_approval") return "검토 및 승인 대기";
   if (status === "failed") return "실패";
   return "건너뜀";
 }
@@ -217,7 +217,7 @@ export function AssetGenerationConsole({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setMessage(body?.error ?? "수동 작업 파일을 만들지 못했습니다.");
+      setMessage(body?.error ?? "수동 업로드 파일을 반영하지 못했습니다.");
       setLoadingId("");
       return;
     }
@@ -462,12 +462,12 @@ export function AssetGenerationConsole({
     if (item.kind === "image" || item.kind === "thumbnail") return imageGenerationBlocker;
     if (item.kind === "video") return videoGenerationBlocker;
     if (item.kind === "voice") return voiceGenerationBlocker;
-    return "이 항목은 여기서 바로 만들 수 없습니다. 수동 등록으로 이어가세요.";
+    return "이 항목은 여기서 바로 만들 수 없습니다. 직접 제작한 에셋 업로드로 이어가세요.";
   };
 
   const selectForManualRegistration = (assetId: string) => {
     setRegisterAssetId(assetId);
-    setMessage("아래 수동 등록에서 파일 경로를 넣고 저장하세요.");
+    setMessage("아래 직접 제작한 에셋 업로드에서 파일 경로를 넣고 저장하세요.");
   };
 
   const runDirectGeneration = (item: AssetGenerationStateItem) => {
@@ -519,7 +519,7 @@ export function AssetGenerationConsole({
     const promptChanged = draft.trim() !== originalPrompt.trim();
     return (
       <details className="asset-prompt-editor">
-        <summary>요청문 보기/수정</summary>
+        <summary>AI 생성 프롬프트 수정</summary>
         <div className="asset-prompt-editor-body">
           <textarea
             aria-label={`${assetDisplayName(item)} 제작 요청문`}
@@ -553,16 +553,29 @@ export function AssetGenerationConsole({
   };
 
   const assetInfo = (item: AssetGenerationStateItem) => (
-    <div className="asset-row-copy">
-      <strong title={assetDebugTitle(item)}>{assetDisplayName(item)}</strong>
-      <small>{statusDetail(item)}</small>
-      {promptEditor(item)}
+    <div className="asset-row-info">
+      <span className={`asset-thumb ${item.kind}`} aria-hidden="true">
+        {item.kind === "video" ? (
+          <Video size={18} />
+        ) : item.kind === "voice" ? (
+          <Mic2 size={18} />
+        ) : item.kind === "image" || item.kind === "thumbnail" ? (
+          <ImageIcon size={18} />
+        ) : (
+          <FilePlus2 size={18} />
+        )}
+      </span>
+      <div className="asset-row-copy">
+        <strong title={assetDebugTitle(item)}>{assetDisplayName(item)}</strong>
+        <small>{statusDetail(item)}</small>
+        {promptEditor(item)}
+      </div>
     </div>
   );
 
   const manualSelectButton = (item: AssetGenerationStateItem) => (
     <button
-      className="text-button"
+      className="text-button primary"
       disabled={Boolean(loadingId)}
       onClick={() => selectForManualRegistration(item.id)}
       type="button"
@@ -628,7 +641,7 @@ export function AssetGenerationConsole({
           <strong>{summary.generated}</strong>
         </span>
         <span>
-          <small>확인 필요</small>
+          <small>검토 및 승인 대기</small>
           <strong>{summary.blocked}</strong>
         </span>
         <span>
@@ -644,7 +657,7 @@ export function AssetGenerationConsole({
       {!state.manifestExists ? <p className="form-error">필요한 미디어 목록이 아직 없습니다.</p> : null}
 
       {state.items.length === 0 ? (
-        <p className="asset-console-empty">아직 만들 항목이 없습니다. 먼저 미디어 요청서를 만들어 주세요.</p>
+        <p className="asset-console-empty">아직 만들 항목이 없습니다. 먼저 에셋 생성 요청서를 만들어 주세요.</p>
       ) : null}
 
       {readyDirectItems.length > 0 ? (
@@ -681,7 +694,7 @@ export function AssetGenerationConsole({
       <section className="asset-work-section manual" id="manual-asset-register">
         <div className="asset-action-section-title">
           <div>
-            <strong>수동 등록</strong>
+            <strong>직접 제작한 에셋 업로드</strong>
             <span>직접 만든 이미지, 영상, 음성, 자막, BGM을 등록합니다.</span>
           </div>
         </div>
@@ -722,7 +735,7 @@ export function AssetGenerationConsole({
           type="button"
         >
           {loadingId === "manual-handoff" ? <Loader2 className="spin" size={15} /> : <FilePlus2 size={15} />}
-          수동 작업 파일 만들기
+          수동 업로드 파일 반영
         </button>
       </section>
 
@@ -754,7 +767,7 @@ export function AssetGenerationConsole({
         <section className="asset-work-section blocked">
           <div className="asset-action-section-title">
             <div>
-              <strong>확인 필요</strong>
+              <strong>검토 및 승인 대기</strong>
               <span>승인, API 설정, 요청서 문제가 풀리면 만들 수 있습니다.</span>
             </div>
           </div>

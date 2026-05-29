@@ -15,7 +15,7 @@ export function ChannelMemoryButton({ runId }: { runId: string }) {
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "채널 메모리 업데이트에 실패했습니다.");
+      setError(body?.error ?? "AI 채널 데이터베이스 업데이트에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -26,7 +26,7 @@ export function ChannelMemoryButton({ runId }: { runId: string }) {
     <div className="draft-action">
       <button className="text-button" disabled={loading} onClick={createMemoryUpdate} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Brain size={15} />}
-        채널 메모리
+        AI 채널 데이터베이스
       </button>
       {error ? <span>{error}</span> : null}
     </div>

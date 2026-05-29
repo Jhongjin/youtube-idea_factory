@@ -6,11 +6,11 @@ const fieldLabels: Record<string, string> = {
   hook: "도입부",
   inclusion_reason: "선택 이유",
   language: "언어",
-  media_prompts: "미디어 요청서",
+  media_prompts: "에셋 생성 요청서",
   "media_prompts.image_prompts": "이미지 요청서",
   "media_prompts.video_prompts": "영상 요청서",
   outline: "대본 흐름",
-  publishing_package: "업로드 글",
+  publishing_package: "메타데이터",
   qa: "검수 정보",
   "qa.blockers": "검수 확인 항목",
   "qa.status": "검수 상태",
@@ -121,12 +121,12 @@ export function operatorIssueCopy(value: string) {
     "Competitor video analysis is not complete.": "소스 영상 분석이 아직 끝나지 않았습니다.",
     "Human approval is required before generation or publishing.":
       "생성이나 게시 전에는 사람 승인이 필요합니다.",
-    "Media prompts are not ready.": "이미지와 영상 제작 요청서가 아직 준비되지 않았습니다.",
+    "Media prompts are not ready.": "이미지와 영상 에셋 생성 요청서가 아직 준비되지 않았습니다.",
     "No source videos are attached to the run.": "소스 영상이 아직 없습니다.",
     "No supported claims are recorded yet.": "근거 확인이 끝난 주장이 아직 없습니다.",
     "Paid generation, final render, and YouTube upload still require explicit human approval.":
       "유료 생성, 최종 렌더, YouTube 업로드는 사람 승인 후 진행해야 합니다.",
-    "Publishing artifact is empty.": "업로드 글 초안이 아직 비어 있습니다.",
+    "Publishing artifact is empty.": "메타데이터 초안이 아직 비어 있습니다.",
     "Publishing package is missing title candidates or description.":
       "제목 후보나 설명문이 아직 부족합니다.",
     "Script plan is only a bootstrap placeholder.": "대본 초안이 아직 기본 틀 상태입니다.",
@@ -135,7 +135,7 @@ export function operatorIssueCopy(value: string) {
       "일부 이미지 제작 요청서 형식이 올바르지 않습니다.",
     "Sources panel: add missing manual transcripts or document why transcript review is not required.":
       "소스 영상 패널에서 누락된 자막을 채우거나, 자막 검토가 필요 없는 이유를 남기세요.",
-    "Storyboard and media prompts are not complete.": "스토리보드와 미디어 요청서가 아직 완성되지 않았습니다.",
+    "Storyboard and media prompts are not complete.": "스토리보드와 에셋 생성 요청서가 아직 완성되지 않았습니다.",
     "Storyboard has no scene cards.": "스토리보드 장면 카드가 아직 없습니다.",
     "package must be an object": "제작 기록 형식이 올바르지 않습니다.",
     "sources must contain at least one source video": "소스 영상을 1개 이상 추가해야 합니다.",
@@ -152,7 +152,7 @@ export function operatorIssueActionCopy(value: string) {
   }
 
   if (/claim ledger rows are marked do_not_use/i.test(text)) {
-    return "사용 금지 주장은 최종 대본과 업로드 글에서 제외하세요.";
+    return "사용 금지 주장은 최종 대본과 메타데이터에서 제외하세요.";
   }
 
   if (/source video transcript slot is not filled/i.test(text)) {
@@ -172,7 +172,7 @@ export function operatorIssueActionCopy(value: string) {
   }
 
   if (/^qa\.status must be one of/i.test(text)) {
-    return "검수 메모를 다시 만들고 상태가 통과, 확인 필요, 검토 필요 중 하나인지 확인하세요.";
+    return "검수 메모를 다시 만들고 상태가 통과, 검토 및 승인 대기, 검토 필요 중 하나인지 확인하세요.";
   }
 
   const actions: Record<string, string> = {
@@ -187,9 +187,9 @@ export function operatorIssueActionCopy(value: string) {
     "05-storyboard.md: draft and review scene cards before media generation.":
       "스토리보드를 만든 뒤 장면 카드가 실제 제작 순서대로 있는지 확인하세요.",
     "06-media-prompts.md: generate and review image/video prompts before paid generation.":
-      "4단계에서 미디어 요청서를 만들고 요청문을 확인하세요.",
+      "4단계에서 에셋 생성 요청서를 만들고 요청문을 확인하세요.",
     "07-publishing-package.md: draft title, description, tags, and thumbnail prompt.":
-      "5단계에서 업로드 글 초안을 만들고 제목, 설명, 태그를 채우세요.",
+      "5단계에서 메타데이터 초안을 만들고 제목, 설명, 태그를 채우세요.",
     "Add claims from analysis or transcript review.":
       "소스 분석 결과에서 영상에 쓸 주장만 골라 주장 목록에 추가하세요.",
     "Asset manifest is not built yet.": "4단계에서 만들 자료 목록을 다시 정리하세요.",
@@ -199,22 +199,22 @@ export function operatorIssueActionCopy(value: string) {
     "Competitor video analysis is not complete.": "3단계에서 TOP10 분석을 먼저 실행하세요.",
     "Human approval is required before generation or publishing.":
       "승인 패널에서 필요한 승인만 체크하고 승인자를 남기세요.",
-    "Media prompts are not ready.": "4단계에서 이미지/영상 요청서를 다시 만드세요.",
+    "Media prompts are not ready.": "4단계에서 이미지/영상 에셋 생성 요청서를 다시 만드세요.",
     "No source videos are attached to the run.": "2단계에서 소스 영상을 1개 이상 추가하세요.",
     "No supported claims are recorded yet.": "근거가 확인된 주장 1개 이상을 남기세요.",
     "Paid generation, final render, and YouTube upload still require explicit human approval.":
       "비용이나 게시가 걸린 단계는 승인자를 남긴 뒤 진행하세요.",
-    "Publishing artifact is empty.": "5단계에서 업로드 글 초안을 만드세요.",
+    "Publishing artifact is empty.": "5단계에서 메타데이터 초안을 만드세요.",
     "Publishing package is missing title candidates or description.":
       "제목 후보와 설명문을 채운 뒤 다시 검수하세요.",
     "Script plan is only a bootstrap placeholder.": "대본 초안을 생성하거나 직접 작성하세요.",
     "Script plan still contains pending placeholders.": "빈 자리 표시가 남은 문장을 실제 내레이션으로 바꾸세요.",
     "Some image prompt records are not structured objects.":
-      "미디어 요청서를 다시 만들거나 깨진 이미지 요청 항목을 삭제하세요.",
+      "에셋 생성 요청서를 다시 만들거나 깨진 이미지 요청 항목을 삭제하세요.",
     "Sources panel: add missing manual transcripts or document why transcript review is not required.":
       "자막이 없는 소스는 수동 입력하거나 분석 제외 처리하세요.",
     "Storyboard and media prompts are not complete.":
-      "스토리보드와 미디어 요청서를 순서대로 다시 생성하세요.",
+      "스토리보드와 에셋 생성 요청서를 순서대로 다시 생성하세요.",
     "Storyboard has no scene cards.": "스토리보드 생성 후 장면 카드가 있는지 확인하세요.",
     "package must be an object": "제작 패키지를 다시 생성하거나 관리자에게 파일 복구를 요청하세요.",
     "sources must contain at least one source video": "2단계에서 소스 영상을 1개 이상 추가하세요.",

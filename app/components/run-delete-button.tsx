@@ -16,7 +16,7 @@ export function RunDeleteButton({
   async function deleteRun() {
     setError("");
     const confirmed = window.confirm(
-      `"${topic}" 실행을 삭제할까요?\n\n이 작업은 실행 기록과 DB 산출물을 제거합니다.`,
+      `"${topic}" 프로젝트를 삭제할까요?\n\n이 작업은 프로젝트 기록과 DB 산출물을 제거합니다.`,
     );
     if (!confirmed) {
       return;
@@ -28,7 +28,7 @@ export function RunDeleteButton({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
-      setError(body?.error ?? "실행 삭제에 실패했습니다.");
+      setError(body?.error ?? "프로젝트 삭제에 실패했습니다.");
       setLoading(false);
       return;
     }
@@ -39,7 +39,7 @@ export function RunDeleteButton({
     <div className="run-delete-action">
       <button className="text-button danger" disabled={loading} onClick={deleteRun} type="button">
         {loading ? <Loader2 className="spin" size={15} /> : <Trash2 size={15} />}
-        실행 삭제
+        프로젝트 삭제
       </button>
       {error ? <p className="form-error">{error}</p> : null}
     </div>
