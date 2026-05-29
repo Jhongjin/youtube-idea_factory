@@ -4192,13 +4192,17 @@ button:disabled,
 
 .provider-fields {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 1rem;
 }
 
 .provider-fields label {
   display: grid;
-  gap: 5px;
+  grid-template-rows: auto minmax(44px, auto) auto;
+  align-items: end;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
 .provider-fields span {
@@ -4238,7 +4242,7 @@ button:disabled,
 }
 
 .provider-notes {
-  grid-column: 1 / -1;
+  grid-column: span 2 / span 2;
 }
 
 .provider-status {
@@ -11669,16 +11673,23 @@ body {
 .provider-profile-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  align-items: end;
+  gap: 1rem;
 }
 
 .provider-profile-fields label {
   display: grid;
-  gap: 5px;
+  grid-template-rows: auto minmax(44px, auto) auto;
+  align-items: end;
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .provider-fields label {
+  display: grid;
+  grid-template-rows: auto minmax(44px, auto) auto;
+  align-items: end;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -11694,6 +11705,7 @@ body {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  min-height: 44px;
 }
 
 .provider-model-field input,
