@@ -195,7 +195,11 @@ function AssetStatus({
             ? "muted"
             : "blocked";
   return (
-    <span className={`asset-status ${tone}`}>
+    <span
+      aria-live="polite"
+      className={`asset-status ${tone}`}
+      data-transition={transition ?? undefined}
+    >
       {isSkipped ? (
         <Circle size={12} />
       ) : isApprovalReady || tone === "ready" || tone === "done" ? (

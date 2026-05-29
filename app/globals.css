@@ -692,8 +692,12 @@ button:disabled,
   gap: 12px;
 }
 
+#media-workboard {
+  margin-bottom: 1rem;
+}
+
 #media-workboard + #artifact-workspace {
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .guided-step-nav {
@@ -4656,31 +4660,32 @@ button:disabled,
 
 .asset-action-row.media-work-row:hover,
 .asset-action-row.media-work-row:focus-within {
-  border-color: rgba(47, 111, 78, 0.32);
+  border-color: rgba(189, 240, 198, 0.62);
   background: #f8fbf9;
   box-shadow:
-    0 0 0 1px rgba(47, 111, 78, 0.08),
+    0 0 0 1px rgba(189, 240, 198, 0.26),
+    0 0 18px rgba(189, 240, 198, 0.16),
     0 10px 24px rgba(28, 39, 55, 0.08);
 }
 
 .asset-action-row.media-work-row.is-approved {
-  border-color: rgba(15, 159, 110, 0.34);
-  background: #f4fbf6;
-  box-shadow: 0 0 0 1px rgba(15, 159, 110, 0.08);
+  border-color: rgba(189, 240, 198, 0.78);
+  background: rgba(189, 240, 198, 0.18);
+  box-shadow: 0 0 0 1px rgba(189, 240, 198, 0.14);
 }
 
 .asset-action-row.media-work-row.is-approved:hover,
 .asset-action-row.media-work-row.is-approved:focus-within {
-  border-color: rgba(15, 159, 110, 0.46);
-  background: #effaf3;
+  border-color: rgba(189, 240, 198, 0.92);
+  background: rgba(189, 240, 198, 0.22);
   box-shadow:
-    0 0 0 1px rgba(15, 159, 110, 0.12),
-    0 12px 26px rgba(15, 159, 110, 0.1);
+    0 0 0 1px rgba(189, 240, 198, 0.18),
+    0 0 24px rgba(189, 240, 198, 0.18);
 }
 
 .asset-action-row.media-work-row.is-skipped {
-  border-color: #d4d9df;
-  background: #f2f4f6;
+  border-color: rgba(51, 65, 85, 0.22);
+  background: rgba(51, 65, 85, 0.05);
   box-shadow: none;
 }
 
@@ -4748,10 +4753,12 @@ button:disabled,
 }
 
 .asset-row-actions .text-button.primary:hover {
-  border-color: #3c8a62;
-  background: #3c8a62;
+  border-color: #d5ffdc;
+  background: #3fa46f;
   color: #ffffff;
-  box-shadow: 0 0 0 1px rgba(47, 111, 78, 0.18);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.26),
+    0 0 18px rgba(189, 240, 198, 0.24);
 }
 
 .asset-row-actions .text-button.quiet {
@@ -4763,9 +4770,9 @@ button:disabled,
 }
 
 .asset-row-actions .text-button.quiet:hover {
-  border-color: #aab8ae;
-  background: rgba(101, 115, 134, 0.06);
-  color: #334155;
+  border-color: rgba(51, 65, 85, 0.5);
+  background: rgba(51, 65, 85, 0.08);
+  color: #0f172a;
 }
 
 .asset-row-actions .asset-action-note.compact {
@@ -4872,9 +4879,10 @@ button:disabled,
 }
 
 .asset-status.ready.approved {
-  border-color: rgba(15, 159, 110, 0.28);
-  background: rgba(15, 159, 110, 0.12);
-  color: var(--green);
+  border-color: var(--neon-green);
+  background: var(--neon-green);
+  color: #0b1112;
+  box-shadow: 0 0 18px rgba(189, 240, 198, 0.16);
 }
 
 .asset-status.done {
@@ -4898,9 +4906,9 @@ button:disabled,
 }
 
 .asset-status.muted.skipped {
-  border-color: #d4d9df;
-  background: #eef1ef;
-  color: #607168;
+  border-color: rgba(51, 65, 85, 0.5);
+  background: transparent;
+  color: rgba(51, 65, 85, 0.5);
 }
 
 .settings-message.compact {
@@ -5282,7 +5290,7 @@ button:disabled,
   font-family:
     "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 
@@ -5341,7 +5349,7 @@ button:disabled,
   font-family:
     "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace;
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.6;
   outline: none;
   padding: 16px;
   resize: vertical;
@@ -5358,12 +5366,12 @@ button:disabled,
   color: var(--muted);
   font-size: 12px;
   font-weight: 750;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .artifact-footer strong {
   color: var(--red);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 .empty-state {
@@ -10072,7 +10080,7 @@ body {
 .shell .asset-row-actions .text-button.quiet:hover {
   border-color: rgba(244, 239, 227, 0.34);
   background: rgba(244, 239, 227, 0.045);
-  color: rgba(244, 239, 227, 0.88);
+  color: #ffffff;
 }
 
 .shell .asset-action-row strong.asset-kind-label.voice,
@@ -10083,16 +10091,16 @@ body {
 }
 
 .shell .asset-status.ready.approved {
-  border-color: rgba(189, 240, 198, 0.44);
-  background: rgba(189, 240, 198, 0.14);
-  color: var(--neon-green);
-  box-shadow: 0 0 18px rgba(189, 240, 198, 0.1);
+  border-color: var(--neon-green);
+  background: var(--neon-green);
+  color: #0b1112;
+  box-shadow: 0 0 20px rgba(189, 240, 198, 0.2);
 }
 
 .shell .asset-status.muted.skipped {
-  border-color: rgba(244, 239, 227, 0.18);
-  background: rgba(244, 239, 227, 0.07);
-  color: rgba(244, 239, 227, 0.62);
+  border-color: rgba(148, 163, 184, 0.5);
+  background: transparent;
+  color: rgba(148, 163, 184, 0.5);
 }
 
 .shell .asset-prompt-editor {
