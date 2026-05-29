@@ -199,6 +199,7 @@ export function AssetGenerationConsole({
   const [quality, setQuality] = useState<"low" | "medium" | "high" | "auto">("low");
   const [voice, setVoice] = useState("alloy");
   const [selectedProviders, setSelectedProviders] = useState<Record<string, string>>({});
+  const [promptDrafts, setPromptDrafts] = useState<Record<string, string>>({});
   const [instructions, setInstructions] = useState("");
   const [narration, setNarration] = useState(defaultNarration);
   const [registerAssetId, setRegisterAssetId] = useState(
@@ -344,6 +345,31 @@ export function AssetGenerationConsole({
     window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=production`;
   }
 
+  async function saveAssetPrompt(assetId: string) {
+    setMessage("");
+    const prompt = promptDrafts[assetId]?.trim() ?? "";
+    if (!prompt) {
+      setMessage("제작 요청문을 입력하세요.");
+      return;
+    }
+    setLoadingId(`prompt:${assetId}`);
+    const response = await fetch(`/api/runs/${runId}/assets/prompt`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        assetId,
+        prompt,
+      }),
+    });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: string } | null;
+      setMessage(body?.error ?? "제작 요청문 저장에 실패했습니다.");
+      setLoadingId("");
+      return;
+    }
+    window.location.href = `/dashboard?run=${encodeURIComponent(runId)}&step=production`;
+  }
+
   async function generateVoice(assetId: string) {
     setMessage("");
     const providerBlocker = directGenerationBlocker("tts");
@@ -479,10 +505,58 @@ export function AssetGenerationConsole({
   const statusDetail = (item: AssetGenerationStateItem) =>
     item.error?.trim() || item.blockers.map(blockerCopy).join(", ") || "파일을 직접 등록하거나 건너뛸 수 있습니다.";
 
+  const canEditPrompt = (item: AssetGenerationStateItem) =>
+    item.status !== "generated" && (item.kind === "image" || item.kind === "thumbnail" || item.kind === "video");
+
+  const promptDraftValue = (item: AssetGenerationStateItem) => promptDrafts[item.id] ?? item.prompt ?? "";
+
+  const promptEditor = (item: AssetGenerationStateItem) => {
+    if (!canEditPrompt(item)) {
+      return null;
+    }
+    const draft = promptDraftValue(item);
+    const originalPrompt = item.prompt ?? "";
+    const promptChanged = draft.trim() !== originalPrompt.trim();
+    return (
+      <details className="asset-prompt-editor">
+        <summary>요청문 보기/수정</summary>
+        <div className="asset-prompt-editor-body">
+          <textarea
+            aria-label={`${assetDisplayName(item)} 제작 요청문`}
+            onChange={(event) =>
+              setPromptDrafts((current) => ({
+                ...current,
+                [item.id]: event.target.value,
+              }))
+            }
+            rows={4}
+            value={draft}
+          />
+          <div className="asset-prompt-meta">
+            {item.aspect_ratio ? <span>비율 {item.aspect_ratio}</span> : null}
+            {item.duration_seconds ? <span>{item.duration_seconds}초</span> : null}
+            {item.negative_prompt ? <span>제외 요청 있음</span> : null}
+            {item.safety_notes ? <span>검수 메모 있음</span> : null}
+          </div>
+          <button
+            className="text-button"
+            disabled={!draft.trim() || !promptChanged || Boolean(loadingId)}
+            onClick={() => saveAssetPrompt(item.id)}
+            type="button"
+          >
+            {loadingId === `prompt:${item.id}` ? <Loader2 className="spin" size={15} /> : <CheckCircle2 size={15} />}
+            요청문 저장
+          </button>
+        </div>
+      </details>
+    );
+  };
+
   const assetInfo = (item: AssetGenerationStateItem) => (
     <div className="asset-row-copy">
       <strong title={assetDebugTitle(item)}>{assetDisplayName(item)}</strong>
       <small>{statusDetail(item)}</small>
+      {promptEditor(item)}
     </div>
   );
 

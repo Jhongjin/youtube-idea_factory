@@ -4456,6 +4456,60 @@ button:disabled,
   padding: 7px 9px;
 }
 
+.asset-prompt-editor {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+}
+
+.asset-prompt-editor summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 9px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.asset-prompt-editor summary::-webkit-details-marker {
+  display: none;
+}
+
+.asset-prompt-editor-body {
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  padding: 9px;
+}
+
+.asset-prompt-editor textarea {
+  width: 100%;
+  min-height: 96px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 8px 9px;
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.asset-prompt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.asset-prompt-meta span {
+  border-radius: 999px;
+  background: rgba(47, 111, 78, 0.1);
+  color: #2f6f4e;
+  padding: 4px 7px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .asset-action-row strong,
 .asset-action-row small {
   display: block;
@@ -9138,6 +9192,26 @@ body {
 .shell .asset-action-row.media-work-row {
   border-color: rgba(244, 239, 227, 0.12);
   background: rgba(5, 10, 10, 0.48);
+}
+
+.shell .asset-prompt-editor {
+  border-color: rgba(244, 239, 227, 0.12);
+  background: rgba(244, 239, 227, 0.055);
+}
+
+.shell .asset-prompt-editor-body {
+  border-color: rgba(244, 239, 227, 0.12);
+}
+
+.shell .asset-prompt-editor textarea {
+  border-color: rgba(244, 239, 227, 0.16);
+  background: rgba(5, 10, 10, 0.54);
+  color: #fff8ea;
+}
+
+.shell .asset-prompt-meta span {
+  background: rgba(155, 215, 167, 0.13);
+  color: #bdf0c6;
 }
 
 .source-mode-grid button,

@@ -9,6 +9,10 @@ export type AssetGenerationStateItem = {
   status: AssetManifestItem["status"];
   expected_path: string;
   prompt?: string;
+  negative_prompt?: string;
+  aspect_ratio?: string;
+  duration_seconds?: number;
+  safety_notes?: string;
   scene_id?: string;
   error?: string;
   blockers: string[];
@@ -53,6 +57,10 @@ export async function getAssetGenerationState(runId: string): Promise<AssetGener
       status: item.status,
       expected_path: item.actual_path || item.expected_path,
       prompt: item.prompt,
+      negative_prompt: item.negative_prompt,
+      aspect_ratio: item.aspect_ratio,
+      duration_seconds: item.duration_seconds,
+      safety_notes: item.safety_notes,
       scene_id: item.scene_id,
       error: item.error,
       blockers: queueBlockers.get(item.id) ?? [],
