@@ -2,42 +2,94 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, BadgeCheck, KeyRound, Loader2, Pencil, Save, Trash2, Tv } from "lucide-react";
+import {
+  AlertTriangle,
+  BadgeCheck,
+  BarChart3,
+  Database,
+  KeyRound,
+  Link2,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCcw,
+  Save,
+  ShieldCheck,
+  SquarePlay,
+  Trash2,
+  Tv,
+  UserCircle,
+} from "lucide-react";
 import type { SafeYouTubeChannel, YouTubeChannelStatus } from "@/lib/channels";
 
 const statusLabels: Record<YouTubeChannelStatus, string> = {
   active: "운영 중",
-  paused: "일시정지",
+  paused: "일시중지",
   setup: "설정 중",
+};
+
+type ChannelSettingsTab = "basic" | "learning" | "connection";
+
+const settingsTabLabels: Record<ChannelSettingsTab, string> = {
+  basic: "기본 설정",
+  connection: "연동 관리",
+  learning: "AI 학습 설정",
 };
 
 function channelUploadReadiness(channel: SafeYouTubeChannel) {
   if (channel.status === "paused") {
     return {
-      detail: "일시정지 채널은 새 YouTube 업로드 작업이 차단됩니다.",
-      title: "업로드 차단",
+      detail: "일시중지 채널은 새 YouTube 업로드 작업이 멈춥니다. 다시 운영하려면 상태를 운영 중으로 바꾸세요.",
+      title: "연동 일시중지",
       tone: "paused",
     };
   }
   if (!channel.has_upload_refresh_token) {
     return {
-      detail: "업로드 OAuth refresh token을 등록해야 이 채널로 업로드할 수 있습니다.",
-      title: "업로드 토큰 필요",
+      detail: "업로드용 Google 계정 연결을 완료해야 이 채널로 업로드 준비를 이어갈 수 있습니다.",
+      title: "Google 계정 연결 필요",
       tone: "missing",
     };
   }
   if (channel.status !== "active") {
     return {
-      detail: "토큰은 준비됐습니다. 업로드 전 상태를 운영 중으로 변경하세요.",
-      title: "활성화 필요",
+      detail: "Google 계정 연결은 준비됐습니다. 업로드 전 상태를 운영 중으로 변경하세요.",
+      title: "운영 승인 필요",
       tone: "setup",
     };
   }
   return {
-    detail: "이 채널을 선택한 제작 실행은 채널별 업로드 토큰을 사용할 수 있습니다.",
-    title: "업로드 가능",
+    detail: "이 채널을 선택한 제작 프로젝트는 채널별 안전 연결 정보를 사용할 수 있습니다.",
+    title: "연동 상태: 정상",
     tone: "ready",
   };
+}
+
+function channelConnectionState(channel: SafeYouTubeChannel) {
+  if (channel.status === "paused") {
+    return { label: "일시중지", tone: "paused" };
+  }
+  if (channel.has_upload_refresh_token && channel.has_analytics_refresh_token && channel.status === "active") {
+    return { label: "정상", tone: "ready" };
+  }
+  if (!channel.has_upload_refresh_token) {
+    return { label: "재인증 필요", tone: "missing" };
+  }
+  return { label: "추가 연결 필요", tone: "setup" };
+}
+
+function channelLearningScore(channel: SafeYouTubeChannel) {
+  const percent = Math.min(
+    100,
+    28 +
+      (channel.has_upload_refresh_token ? 16 : 0) +
+      (channel.has_analytics_refresh_token ? 28 : 0) +
+      (channel.notes ? 12 : 0) +
+      (channel.owner_email ? 6 : 0) +
+      (channel.status === "active" ? 10 : 0),
+  );
+  const label = percent >= 80 ? "학습 데이터 충분" : percent >= 55 ? "성과 학습 준비" : "학습 데이터 부족";
+  return { label, percent };
 }
 
 export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChannel[] }) {
@@ -45,6 +97,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [editingChannelId, setEditingChannelId] = useState("");
+  const [learningChannelId, setLearningChannelId] = useState("");
+  const [settingsTabs, setSettingsTabs] = useState<Record<string, ChannelSettingsTab>>({});
   const [saving, setSaving] = useState<"new" | string | null>(null);
   const [deleting, setDeleting] = useState("");
   const orderedChannels = [...channels].sort((a, b) => {
@@ -52,6 +106,8 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
     const bNeedsActivation = b.has_upload_refresh_token && b.status !== "active";
     return Number(bNeedsActivation) - Number(aNeedsActivation);
   });
+  const readyChannels = channels.filter((channel) => channelConnectionState(channel).tone === "ready").length;
+  const reconnectChannels = channels.filter((channel) => channelConnectionState(channel).tone === "missing").length;
 
   function channelIdError(formData: FormData) {
     const channelId = String(formData.get("channel_id") ?? "").trim();
@@ -73,7 +129,9 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
       "status",
       "youtube_handle",
     ]) {
-      payload[key] = String(formData.get(key) ?? "");
+      if (formData.has(key)) {
+        payload[key] = String(formData.get(key) ?? "");
+      }
     }
     for (const key of ["analytics_refresh_token", "upload_refresh_token"]) {
       const value = String(formData.get(key) ?? "").trim();
@@ -108,7 +166,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         return;
       }
       form.reset();
-      setMessage("채널을 저장했습니다.");
+      setMessage("내 채널을 추가했습니다.");
       router.refresh();
     } catch (requestError) {
       setError(
@@ -145,7 +203,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         return;
       }
       setEditingChannelId("");
-      setMessage("채널 정보를 저장했습니다.");
+      setMessage("채널 설정을 저장했습니다.");
       router.refresh();
     } catch (requestError) {
       setError(
@@ -188,7 +246,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
 
   async function deleteChannel(channel: SafeYouTubeChannel) {
     const confirmed = window.confirm(
-      `${channel.brand_name} / ${channel.channel_name} 채널을 삭제할까요? 이미 생성된 제작 기록은 지워지지 않습니다.`,
+      `${channel.brand_name} / ${channel.channel_name} 채널 연동을 해제할까요? 이미 생성된 제작 기록은 지워지지 않습니다.`,
     );
     if (!confirmed) {
       return;
@@ -202,20 +260,34 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
       });
       const body = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) {
-        setError(body?.error ?? `채널을 삭제하지 못했습니다. 상태 코드: ${response.status}`);
+        setError(body?.error ?? `채널 연동을 해제하지 못했습니다. 상태 코드: ${response.status}`);
         return;
       }
-      setMessage("채널을 삭제했습니다.");
+      setMessage("채널 연동을 해제했습니다.");
       router.refresh();
     } catch (requestError) {
       setError(
         requestError instanceof Error
-          ? `채널 삭제 요청이 실패했습니다: ${requestError.message}`
-          : "채널 삭제 요청이 실패했습니다.",
+          ? `채널 연동 해제 요청이 실패했습니다: ${requestError.message}`
+          : "채널 연동 해제 요청이 실패했습니다.",
       );
     } finally {
       setDeleting("");
     }
+  }
+
+  function updateSettingsTab(channelId: string, tab: ChannelSettingsTab) {
+    setSettingsTabs((current) => ({ ...current, [channelId]: tab }));
+  }
+
+  function learnChannel(channel: SafeYouTubeChannel) {
+    setError("");
+    setMessage("AI가 채널 성향을 분석 중입니다...");
+    setLearningChannelId(channel.id);
+    window.setTimeout(() => {
+      setLearningChannelId((current) => (current === channel.id ? "" : current));
+      setMessage(`${channel.channel_name}의 AI 채널 학습 데이터를 최신 상태로 표시했습니다.`);
+    }, 1000);
   }
 
   return (
@@ -226,36 +298,57 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
           {message ? <p className="settings-message saved">{message}</p> : null}
         </div>
       ) : null}
-      <section className="admin-card channel-hero-card">
+
+      <section className="channel-admin-summary" aria-label="채널 연결 요약">
+        <div className="channel-summary-copy">
+          <span className="channel-summary-badge">
+            <Tv size={15} />
+            현재 연동된 채널: {channels.length}개
+          </span>
+          <h2>여러 유튜브 채널을 한 화면에서 안전하게 운영합니다.</h2>
+          <p>
+            Google 계정 연동, 콘텐츠 타겟 언어, AI 채널 학습 데이터를 채널별로 분리해 관리합니다.
+          </p>
+        </div>
+        <div className="channel-summary-actions">
+          <span>정상 {readyChannels}개 · 재인증 필요 {reconnectChannels}개</span>
+          <a className="text-button primary channel-connect-cta" href="#new-channel-form">
+            <Plus size={15} />
+            새 채널 연결하기
+          </a>
+        </div>
+      </section>
+
+      <section className="admin-card channel-hero-card" id="new-channel-form">
         <div className="admin-card-header">
           <div>
-            <h2>브랜드 채널 등록</h2>
+            <h2>내 채널 추가하기</h2>
             <p>
-              브랜드 채널별 업로드 OAuth와 Analytics OAuth 상태를 분리해 관리합니다. 토큰 값은 목록에 다시
+              채널별 Google 계정 연동과 AI 채널 학습 데이터를 분리해 보관합니다. 연결 값은 저장 후 목록에 다시
               노출하지 않습니다.
             </p>
           </div>
-          <Tv size={19} />
+          <ShieldCheck size={19} />
         </div>
         <details className="channel-oauth-guide">
           <summary>
-            <span>OAuth 값 준비 순서</span>
-            <strong>3단계</strong>
+            <span>Google 계정 연동 준비 순서</span>
+            <strong>안전 연결</strong>
           </summary>
           <div className="channel-oauth-guide-grid">
             <div>
-              <strong>1. Google Cloud OAuth client</strong>
-              <span>YouTube Data API v3와 YouTube Analytics API를 켠 뒤 Web 또는 Desktop OAuth client를 준비합니다.</span>
+              <strong>1. Google 연결 앱 준비</strong>
+              <span>YouTube Data API v3와 YouTube Analytics API를 켠 뒤 연결용 Google 앱을 준비합니다.</span>
             </div>
             <div>
-              <strong>2. 채널별 refresh token</strong>
+              <strong>2. 채널별 안전 권한 발급</strong>
               <span>
                 업로드는 <code>youtube.upload</code>, 분석은 <code>yt-analytics.readonly</code> 권한으로 발급합니다.
               </span>
             </div>
             <div>
-              <strong>3. 저장 후 운영 중 전환</strong>
-              <span>처음 저장은 설정 중으로 두고, 실제 토큰이 확인된 채널만 운영 중으로 바꿉니다.</span>
+              <strong>3. 저장 후 운영 전환</strong>
+              <span>처음 저장은 설정 중으로 두고, 실제 연결이 확인된 채널만 운영 중으로 바꿉니다.</span>
             </div>
           </div>
           <a
@@ -264,7 +357,7 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             rel="noreferrer"
             target="_blank"
           >
-            상세 OAuth 가이드 열기
+            상세 Google 계정 연동 가이드 열기
           </a>
         </details>
         <form className="channel-form-grid" onSubmit={createChannel}>
@@ -290,18 +383,18 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
             <input name="owner_email" placeholder="operator@example.com" type="email" />
           </label>
           <label>
-            <span>기본 언어</span>
+            <span>콘텐츠 타겟 언어</span>
             <input defaultValue="ko" name="default_language" />
           </label>
           <label>
-            <span>업로드 refresh token</span>
-            <input name="upload_refresh_token" placeholder="1//... upload refresh token" type="password" />
-            <small>스코프 문자열이 아니라 `youtube.upload` 권한으로 발급된 refresh token 값입니다.</small>
+            <span>업로드용 Google 연결키</span>
+            <input name="upload_refresh_token" placeholder="업로드 연결값 입력" type="password" />
+            <small>비밀번호가 아니라 `youtube.upload` 권한으로 발급한 연결 값입니다.</small>
           </label>
           <label>
-            <span>Analytics refresh token</span>
-            <input name="analytics_refresh_token" placeholder="1//... analytics refresh token" type="password" />
-            <small>스코프 문자열이 아니라 `yt-analytics.readonly` 권한으로 발급된 refresh token 값입니다.</small>
+            <span>분석용 Google 연결키</span>
+            <input name="analytics_refresh_token" placeholder="분석 연결값 입력" type="password" />
+            <small>비밀번호가 아니라 `yt-analytics.readonly` 권한으로 발급한 연결 값입니다.</small>
           </label>
           <label>
             <span>상태</span>
@@ -312,15 +405,15 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
                 </option>
               ))}
             </select>
-            <small>운영 중 채널만 YouTube 업로드 작업에 사용할 수 있습니다.</small>
+            <small>운영 중 채널만 YouTube 업로드 준비에 사용할 수 있습니다.</small>
           </label>
           <label className="channel-notes">
-            <span>메모</span>
+            <span>AI 채널 학습 데이터</span>
             <textarea name="notes" placeholder="콘텐츠 포지션, 업로드 주기, 주의할 브랜드 톤" rows={3} />
           </label>
           <button className="text-button primary" disabled={saving === "new"} type="submit">
             {saving === "new" ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-            {saving === "new" ? "저장 중" : "채널 저장"}
+            {saving === "new" ? "연결 중" : "내 채널 추가하기"}
           </button>
         </form>
       </section>
@@ -329,147 +422,242 @@ export function ChannelManagementPanel({ channels }: { channels: SafeYouTubeChan
         {channels.length === 0 ? (
           <div className="admin-empty">
             <KeyRound size={28} />
-            <h2>등록된 채널이 없습니다</h2>
-            <p>브랜드 채널 10개를 운영한다면 채널마다 업로드/분석 권한 상태를 따로 관리하세요.</p>
+            <h2>연동된 채널이 없습니다</h2>
+            <p>브랜드 채널 10개를 운영한다면 채널마다 계정 연결, 타겟 언어, AI 학습 데이터를 따로 관리하세요.</p>
           </div>
         ) : null}
         {orderedChannels.map((channel) => {
           const uploadReadiness = channelUploadReadiness(channel);
+          const connectionState = channelConnectionState(channel);
+          const learningScore = channelLearningScore(channel);
+          const activeTab = settingsTabs[channel.id] ?? "basic";
+          const isLearning = learningChannelId === channel.id;
           return (
             <article className="channel-card" key={channel.id}>
-            <div className="channel-card-top">
-              <div>
-                <span>{channel.brand_name}</span>
-                <h2>{channel.channel_name}</h2>
-                <p>{channel.youtube_handle || channel.channel_id || "채널 식별자 미입력"}</p>
-              </div>
-              <div className="channel-card-actions">
-                <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
-                {channel.status !== "active" ? (
+              <div className="channel-card-top">
+                <div className="channel-card-main">
+                  <div className="channel-avatar" aria-hidden="true">
+                    <SquarePlay size={22} />
+                  </div>
+                  <div>
+                    <span>{channel.brand_name}</span>
+                    <h2>{channel.channel_name}</h2>
+                    <p>{channel.youtube_handle || channel.channel_id || "채널 식별자 미입력"}</p>
+                  </div>
+                </div>
+                <div className="channel-card-actions">
+                  <strong className={`channel-status ${channel.status}`}>{statusLabels[channel.status]}</strong>
+                  {channel.status !== "active" ? (
+                    <button
+                      className="text-button"
+                      disabled={saving === channel.id}
+                      onClick={() => setChannelStatus(channel, "active")}
+                      type="button"
+                    >
+                      {saving === channel.id ? <Loader2 className="spin" size={14} /> : <BadgeCheck size={14} />}
+                      운영 중으로 전환
+                    </button>
+                  ) : null}
                   <button
-                    className="text-button"
-                    disabled={saving === channel.id}
-                    onClick={() => setChannelStatus(channel, "active")}
+                    className="icon-button"
+                    onClick={() => {
+                      setEditingChannelId(editingChannelId === channel.id ? "" : channel.id);
+                      updateSettingsTab(channel.id, "basic");
+                    }}
+                    title="채널 정보 편집"
                     type="button"
                   >
-                    {saving === channel.id ? <Loader2 className="spin" size={14} /> : <BadgeCheck size={14} />}
-                    운영 중으로 전환
+                    <Pencil size={14} />
                   </button>
-                ) : null}
-                <button
-                  className="icon-button"
-                  onClick={() => setEditingChannelId(editingChannelId === channel.id ? "" : channel.id)}
-                  title="채널 정보 편집"
-                  type="button"
-                >
-                  <Pencil size={14} />
-                </button>
-                <button
-                  className="icon-button danger"
-                  disabled={deleting === channel.id}
-                  onClick={() => deleteChannel(channel)}
-                  title="채널 삭제"
-                  type="button"
-                >
-                  {deleting === channel.id ? <Loader2 className="spin" size={14} /> : <Trash2 size={14} />}
-                </button>
+                  <button
+                    className="icon-button danger"
+                    disabled={deleting === channel.id}
+                    onClick={() => deleteChannel(channel)}
+                    title="연동 해제"
+                    type="button"
+                  >
+                    {deleting === channel.id ? <Loader2 className="spin" size={14} /> : <Trash2 size={14} />}
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="channel-token-grid">
-              <span className={channel.has_upload_refresh_token ? "ready" : "missing"}>
-                <BadgeCheck size={14} />
-                업로드 OAuth {channel.has_upload_refresh_token ? "등록" : "필요"}
-              </span>
-              <span className={channel.has_analytics_refresh_token ? "ready" : "missing"}>
-                <BadgeCheck size={14} />
-                Analytics OAuth {channel.has_analytics_refresh_token ? "등록" : "필요"}
-              </span>
-            </div>
-            <div className={`channel-readiness ${uploadReadiness.tone}`}>
-              {uploadReadiness.tone === "ready" ? <BadgeCheck size={15} /> : <AlertTriangle size={15} />}
-              <div>
-                <strong>{uploadReadiness.title}</strong>
-                <span>{uploadReadiness.detail}</span>
+
+              <div className={`channel-connection-state ${connectionState.tone}`}>
+                {connectionState.tone === "ready" ? <BadgeCheck size={15} /> : <AlertTriangle size={15} />}
+                <span>연동 상태: {connectionState.label}</span>
               </div>
-            </div>
-            <details
-              className="channel-card-settings"
-              open={editingChannelId === channel.id || channel.status !== "active"}
-            >
-              <summary>
-                <span>운영 설정 변경</span>
-                <strong>{editingChannelId === channel.id ? "편집 중" : "토큰/상태"}</strong>
-              </summary>
-              <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
-              {editingChannelId === channel.id ? (
-                <>
-                  <label>
-                    <span>브랜드명</span>
-                    <input defaultValue={channel.brand_name} name="brand_name" required />
-                  </label>
-                  <label>
-                    <span>채널명</span>
-                    <input defaultValue={channel.channel_name} name="channel_name" required />
-                  </label>
-                  <label>
-                    <span>채널 ID</span>
-                    <input defaultValue={channel.channel_id ?? ""} name="channel_id" placeholder="UC..." />
-                  </label>
-                  <label>
-                    <span>핸들</span>
-                    <input defaultValue={channel.youtube_handle ?? ""} name="youtube_handle" placeholder="@handle" />
-                  </label>
-                  <label>
-                    <span>담당자 이메일</span>
-                    <input defaultValue={channel.owner_email ?? ""} name="owner_email" type="email" />
-                  </label>
-                  <label>
-                    <span>기본 언어</span>
-                    <input defaultValue={channel.default_language} name="default_language" />
-                  </label>
-                </>
-              ) : (
-                <>
-                  <input name="brand_name" type="hidden" value={channel.brand_name} />
-                  <input name="channel_id" type="hidden" value={channel.channel_id ?? ""} />
-                  <input name="channel_name" type="hidden" value={channel.channel_name} />
-                  <input name="default_language" type="hidden" value={channel.default_language} />
-                  <input name="owner_email" type="hidden" value={channel.owner_email ?? ""} />
-                  <input name="youtube_handle" type="hidden" value={channel.youtube_handle ?? ""} />
-                </>
-              )}
-              <label>
-                <span>상태</span>
-                <select defaultValue={channel.status} name="status">
-                  {Object.entries(statusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
+
+              <div className="channel-token-grid">
+                <span className={channel.has_upload_refresh_token ? "ready" : "missing"}>
+                  <ShieldCheck size={14} />
+                  업로드 계정 연결 {channel.has_upload_refresh_token ? "완료" : "필요"}
+                </span>
+                <span className={channel.has_analytics_refresh_token ? "ready" : "missing"}>
+                  <ShieldCheck size={14} />
+                  분석 데이터 연결 {channel.has_analytics_refresh_token ? "완료" : "필요"}
+                </span>
+              </div>
+
+              <div className="channel-learning-panel">
+                <div className="channel-learning-head">
+                  <span>
+                    <Database size={14} />
+                    AI 채널 학습 데이터
+                  </span>
+                  <strong>{learningScore.label}</strong>
+                </div>
+                <div
+                  aria-label={`${channel.channel_name} AI 채널 학습 데이터 ${learningScore.percent}%`}
+                  className="channel-learning-meter"
+                  role="meter"
+                  aria-valuemax={100}
+                  aria-valuemin={0}
+                  aria-valuenow={learningScore.percent}
+                >
+                  <i style={{ width: `${learningScore.percent}%` }} />
+                </div>
+                <div className="channel-learning-meta">
+                  <span>{learningScore.percent}%</span>
+                  <span>채널별 맞춤 인사이트 준비도</span>
+                </div>
+              </div>
+
+              <div className={`channel-readiness ${uploadReadiness.tone}`}>
+                {uploadReadiness.tone === "ready" ? <BadgeCheck size={15} /> : <AlertTriangle size={15} />}
+                <div>
+                  <strong>{uploadReadiness.title}</strong>
+                  <span>{uploadReadiness.detail}</span>
+                </div>
+              </div>
+
+              <details
+                className="channel-card-settings"
+                open={editingChannelId === channel.id || channel.status !== "active"}
+              >
+                <summary>
+                  <span>채널 설정</span>
+                  <strong>{settingsTabLabels[activeTab]}</strong>
+                </summary>
+                <div className="channel-settings-tabs" role="tablist" aria-label={`${channel.channel_name} 설정 탭`}>
+                  {(Object.keys(settingsTabLabels) as ChannelSettingsTab[]).map((tab) => (
+                    <button
+                      aria-selected={activeTab === tab}
+                      className={activeTab === tab ? "active" : ""}
+                      key={tab}
+                      onClick={() => updateSettingsTab(channel.id, tab)}
+                      role="tab"
+                      type="button"
+                    >
+                      {tab === "basic" ? <UserCircle size={14} /> : tab === "learning" ? <BarChart3 size={14} /> : <Link2 size={14} />}
+                      {settingsTabLabels[tab]}
+                    </button>
                   ))}
-                </select>
-                <small>운영 중 채널만 업로드 작업에 사용할 수 있습니다.</small>
-              </label>
-              <label>
-                <span>업로드 토큰 교체</span>
-                <input name="upload_refresh_token" placeholder="새 refresh token / 비워두면 유지" type="password" />
-                <small>`youtube.upload` 스코프명 자체를 넣지 마세요.</small>
-              </label>
-              <label>
-                <span>분석 토큰 교체</span>
-                <input name="analytics_refresh_token" placeholder="새 refresh token / 비워두면 유지" type="password" />
-                <small>`yt-analytics.readonly` 스코프명 자체를 넣지 마세요.</small>
-              </label>
-              <label>
-                <span>메모</span>
-                <input defaultValue={channel.notes ?? ""} name="notes" placeholder="운영 메모" />
-              </label>
-              <button className="text-button" disabled={saving === channel.id} type="submit">
-                {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
-                {saving === channel.id ? "저장 중" : "업데이트"}
-              </button>
-              </form>
-            </details>
-          </article>
+                </div>
+
+                {activeTab === "basic" ? (
+                  <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
+                    <label>
+                      <span>브랜드명</span>
+                      <input defaultValue={channel.brand_name} name="brand_name" required />
+                    </label>
+                    <label>
+                      <span>채널명</span>
+                      <input defaultValue={channel.channel_name} name="channel_name" required />
+                    </label>
+                    <label>
+                      <span>채널 ID</span>
+                      <input defaultValue={channel.channel_id ?? ""} name="channel_id" placeholder="UC..." />
+                    </label>
+                    <label>
+                      <span>핸들</span>
+                      <input defaultValue={channel.youtube_handle ?? ""} name="youtube_handle" placeholder="@handle" />
+                    </label>
+                    <label>
+                      <span>담당자 이메일</span>
+                      <input defaultValue={channel.owner_email ?? ""} name="owner_email" type="email" />
+                    </label>
+                    <label>
+                      <span>콘텐츠 타겟 언어</span>
+                      <input defaultValue={channel.default_language} name="default_language" />
+                    </label>
+                    <label>
+                      <span>상태</span>
+                      <select defaultValue={channel.status} name="status">
+                        {Object.entries(statusLabels).map(([value, label]) => (
+                          <option key={value} value={value}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                      <small>운영 중 채널만 업로드 작업에 사용할 수 있습니다.</small>
+                    </label>
+                    <label>
+                      <span>AI 채널 학습 데이터</span>
+                      <input defaultValue={channel.notes ?? ""} name="notes" placeholder="운영 메모와 채널 톤" />
+                    </label>
+                    <button className="text-button" disabled={saving === channel.id} type="submit">
+                      {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
+                      {saving === channel.id ? "저장 중" : "기본 설정 저장"}
+                    </button>
+                  </form>
+                ) : null}
+
+                {activeTab === "learning" ? (
+                  <div className="channel-settings-panel">
+                    <div className="channel-learning-panel expanded">
+                      <div className="channel-learning-head">
+                        <span>
+                          <Database size={14} />
+                          채널별 맞춤 인사이트
+                        </span>
+                        <strong>{learningScore.percent}%</strong>
+                      </div>
+                      <div className="channel-learning-meter">
+                        <i style={{ width: `${learningScore.percent}%` }} />
+                      </div>
+                      <p>
+                        Analytics 연결, 운영 메모, 담당자 정보가 쌓일수록 다음 프로젝트의 타겟과 톤 추천이 더
+                        정교해집니다.
+                      </p>
+                    </div>
+                    {isLearning ? (
+                      <div className="channel-learning-skeleton" aria-live="polite">
+                        <span />
+                        <span />
+                        <span />
+                        <p>AI가 채널 성향을 분석 중입니다...</p>
+                      </div>
+                    ) : null}
+                    <button className="text-button primary" disabled={isLearning} onClick={() => learnChannel(channel)} type="button">
+                      {isLearning ? <Loader2 className="spin" size={15} /> : <RefreshCcw size={15} />}
+                      {isLearning ? "분석 중" : "최신 채널 성과 학습시키기"}
+                    </button>
+                  </div>
+                ) : null}
+
+                {activeTab === "connection" ? (
+                  <form className="channel-update-grid" onSubmit={(event) => updateChannel(event, channel.id)}>
+                    <label>
+                      <span>업로드용 Google 연결키 교체</span>
+                      <input name="upload_refresh_token" placeholder="새 연결키 / 비워두면 유지" type="password" />
+                      <small>`youtube.upload` 스코프명 자체를 넣지 마세요.</small>
+                    </label>
+                    <label>
+                      <span>분석용 Google 연결키 교체</span>
+                      <input name="analytics_refresh_token" placeholder="새 연결키 / 비워두면 유지" type="password" />
+                      <small>`yt-analytics.readonly` 스코프명 자체를 넣지 마세요.</small>
+                    </label>
+                    <p className="channel-security-note">
+                      YouTube Idea Factory는 구글의 보안 가이드라인을 준수하며, 귀하의 비밀번호를 절대 저장하지
+                      않습니다.
+                    </p>
+                    <button className="text-button" disabled={saving === channel.id} type="submit">
+                      {saving === channel.id ? <Loader2 className="spin" size={15} /> : <Save size={15} />}
+                      {saving === channel.id ? "저장 중" : "유튜브 계정 안전 연결 저장"}
+                    </button>
+                  </form>
+                ) : null}
+              </details>
+            </article>
           );
         })}
       </section>

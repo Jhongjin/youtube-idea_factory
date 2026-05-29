@@ -32,7 +32,7 @@ export default async function ChannelsPage() {
         </Link>
         <div>
           <Link className="text-button" href="/dashboard">
-            작업장
+            대시보드
           </Link>
           <Link className="text-button" href="/settings">
             API 설정
@@ -42,25 +42,25 @@ export default async function ChannelsPage() {
 
       <section className="admin-hero channel-admin-hero">
         <div>
-          <p className="hero-kicker">Channel authority map</p>
-          <h1>채널 권한 관리</h1>
+          <p className="hero-kicker">Channel control center</p>
+          <h1>채널 관리</h1>
           <p>
-            {user.name} 관리자가 브랜드별 업로드 토큰, Analytics 토큰, 운영 상태를 한 화면에서 관리합니다.
-            운영 중인 채널만 업로드 작업에 사용할 수 있습니다.
+            {user.name} 관리자가 브랜드별 Google 계정 연동, AI 채널 학습 데이터, 운영 상태를 한 화면에서
+            관리합니다. 운영 중인 채널만 업로드 준비에 사용할 수 있습니다.
           </p>
         </div>
         <div className="admin-hero-stats">
           <span>
             <Users size={16} />
-            채널 {channels.length}
+            현재 연동된 채널 {channels.length}
           </span>
           <span>
             <ShieldCheck size={16} />
-            업로드 {activeUploadReady}/{uploadReady}
+            업로드 연결 {activeUploadReady}/{uploadReady}
           </span>
           <span>
             <ShieldCheck size={16} />
-            분석 {analyticsReady}
+            성과 데이터 {analyticsReady}
           </span>
         </div>
       </section>
@@ -71,8 +71,8 @@ export default async function ChannelsPage() {
         <section className="channel-activation-banner warning">
           <ShieldCheck size={18} />
           <div>
-            <strong>업로드 토큰이 있는 채널 {activationNeeded}개가 아직 운영 중이 아닙니다.</strong>
-            <span>채널별 업로드 작업은 상태가 운영 중인 채널만 사용할 수 있습니다.</span>
+            <strong>업로드 연결이 있는 채널 {activationNeeded}개가 아직 운영 중이 아닙니다.</strong>
+            <span>채널별 업로드 준비는 상태가 운영 중인 채널만 사용할 수 있습니다.</span>
           </div>
           <Link className="text-button" href="#channel-list">
             전환할 채널 보기
@@ -83,10 +83,10 @@ export default async function ChannelsPage() {
           <ShieldCheck size={18} />
           <div>
             <strong>업로드 가능한 채널 {activeUploadReady}개가 운영 중입니다.</strong>
-            <span>선택된 제작 실행은 채널별 업로드 refresh token을 사용할 수 있습니다.</span>
+            <span>선택된 프로젝트는 채널별 Google 계정 안전 연결을 사용할 수 있습니다.</span>
           </div>
           <Link className="text-button" href="/dashboard">
-            작업장으로 이동
+            대시보드로 이동
           </Link>
         </section>
       ) : null}

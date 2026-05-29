@@ -7022,6 +7022,75 @@ button:disabled,
   gap: 8px;
 }
 
+.channel-admin-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  order: 0;
+  border: 1px solid rgba(16, 32, 39, 0.1);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 48px rgba(31, 45, 61, 0.07);
+  padding: 18px 20px;
+}
+
+.channel-summary-copy {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+}
+
+.channel-summary-copy h2,
+.channel-summary-copy p {
+  margin: 0;
+}
+
+.channel-summary-copy h2 {
+  color: #172019;
+  font-size: 22px;
+  line-height: 1.18;
+}
+
+.channel-summary-copy p {
+  color: #526173;
+  font-size: 13px;
+  font-weight: 740;
+  line-height: 1.45;
+}
+
+.channel-summary-badge,
+.channel-summary-actions > span {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  gap: 7px;
+  border-radius: 999px;
+  background: #eef4f1;
+  color: #2f6f4e;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.channel-connect-cta {
+  border-color: #2f6f4e;
+  background: #2f6f4e;
+  color: #ffffff;
+}
+
+.channel-connect-cta:hover {
+  border-color: #3d8b63;
+  background: #3d8b63;
+}
+
 .account-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -7079,6 +7148,69 @@ button:disabled,
 .channel-card,
 .admin-empty {
   padding: 20px;
+}
+
+.channel-card {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.channel-card:hover,
+.channel-card:focus-within {
+  border-color: rgba(47, 111, 78, 0.28);
+  box-shadow:
+    0 0 0 1px rgba(47, 111, 78, 0.08),
+    0 20px 56px rgba(31, 45, 61, 0.1);
+  transform: translateY(-2px) scale(1.005);
+}
+
+.channel-card-main {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 12px;
+}
+
+.channel-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 1px solid rgba(47, 111, 78, 0.18);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.75), transparent 1.5rem),
+    #eaf6ef;
+  color: #2f6f4e;
+}
+
+.channel-card-main > div:last-child {
+  min-width: 0;
+}
+
+.channel-card-main h2,
+.channel-card-main p {
+  margin: 0;
+}
+
+.channel-card-main h2 {
+  color: #172019;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.channel-card-main p {
+  overflow: hidden;
+  color: #526173;
+  font-size: 12px;
+  font-weight: 780;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .schema-notice {
@@ -7556,6 +7688,100 @@ button:disabled,
   color: var(--red);
 }
 
+.channel-connection-state {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(47, 111, 78, 0.22);
+  border-radius: 999px;
+  background: var(--green-soft);
+  color: var(--green);
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-connection-state.setup {
+  border-color: #f1dba8;
+  background: var(--amber-soft);
+  color: #8a650f;
+}
+
+.channel-connection-state.missing {
+  border-color: #f4b4b4;
+  background: var(--red-soft);
+  color: var(--red);
+}
+
+.channel-connection-state.paused {
+  border-color: #d8dee8;
+  background: var(--surface-2);
+  color: #59677a;
+}
+
+.channel-learning-panel {
+  display: grid;
+  gap: 9px;
+  border: 1px solid #dbe8df;
+  border-radius: 12px;
+  background: #f8fcf9;
+  margin: 0 0 14px;
+  padding: 12px;
+}
+
+.channel-learning-panel.expanded {
+  margin: 0;
+}
+
+.channel-learning-head,
+.channel-learning-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.channel-learning-head span,
+.channel-learning-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.channel-learning-head span {
+  color: #2f6f4e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-learning-head strong {
+  color: #172019;
+  font-size: 12px;
+}
+
+.channel-learning-meter {
+  position: relative;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2ebe4;
+}
+
+.channel-learning-meter i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2f6f4e, #69b384);
+  box-shadow: 0 0 14px rgba(47, 111, 78, 0.2);
+}
+
+.channel-learning-meta span {
+  color: #607084;
+  font-size: 11px;
+  font-weight: 850;
+}
+
 .channel-readiness {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -7653,6 +7879,109 @@ button:disabled,
   border-bottom: 1px solid #e0e7ef;
 }
 
+.channel-settings-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-bottom: 1px solid #e0e7ef;
+  padding: 10px 12px;
+}
+
+.channel-settings-tabs button {
+  display: inline-flex;
+  min-height: 34px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d8e4dc;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #59677a;
+  padding: 0 11px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.channel-settings-tabs button:hover {
+  border-color: #9ed4b9;
+  background: #f4fbf6;
+  color: #2f6f4e;
+}
+
+.channel-settings-tabs button.active {
+  border-color: #2f6f4e;
+  background: #2f6f4e;
+  color: #ffffff;
+}
+
+.channel-settings-panel {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.channel-settings-panel p {
+  margin: 0;
+  color: #526173;
+  font-size: 12px;
+  font-weight: 740;
+  line-height: 1.55;
+}
+
+.channel-learning-skeleton {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbe8df;
+  border-radius: 12px;
+  background: #f8fcf9;
+  padding: 12px;
+}
+
+.channel-learning-skeleton span {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e4eee7, #f6fbf7, #e4eee7);
+  background-size: 200% 100%;
+  animation: channelSkeletonPulse 1.1s ease-in-out infinite;
+}
+
+.channel-learning-skeleton span:nth-child(2) {
+  width: 82%;
+}
+
+.channel-learning-skeleton span:nth-child(3) {
+  width: 58%;
+}
+
+.channel-learning-skeleton p {
+  color: #2f6f4e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.channel-security-note {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  border: 1px solid #dbe8df;
+  border-radius: 10px;
+  background: #f4fbf6;
+  color: #2f6f4e;
+  margin: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
 .channel-card-settings .channel-update-grid {
   padding: 12px;
 }
@@ -7709,6 +8038,16 @@ button:disabled,
   to {
     opacity: 0.98;
     transform: perspective(1400px) rotateY(-7deg) rotateX(2deg) translateX(2%);
+  }
+}
+
+@keyframes channelSkeletonPulse {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
   }
 }
 
@@ -7812,6 +8151,7 @@ button:disabled,
 
   .feature-masonry,
   .admin-form-grid,
+  .channel-admin-summary,
   .channel-form-grid,
   .channel-oauth-guide-grid,
   .admin-pending-row,
@@ -7835,6 +8175,11 @@ button:disabled,
 
   .channel-activation-banner {
     grid-template-columns: 1fr;
+  }
+
+  .channel-summary-actions,
+  .channel-card-actions {
+    justify-content: flex-start;
   }
 
   .feature-tile,
@@ -7878,6 +8223,22 @@ button:disabled,
   .admin-nav {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .channel-card-top,
+  .channel-learning-head,
+  .channel-learning-meta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .channel-summary-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .channel-connect-cta {
+    justify-content: center;
   }
 
   .marketing-nav {
@@ -9170,6 +9531,10 @@ body {
 .provider-readiness-card div > span,
 .admin-card-header p,
 .channel-card p,
+.channel-card-main p,
+.channel-settings-panel p,
+.channel-summary-copy p,
+.channel-learning-meta span,
 .admin-empty p,
 .admin-pending-row span,
 .account-hero p,
@@ -9269,6 +9634,7 @@ body {
 .focus-inspector-panel,
 .account-action-card,
 .admin-card,
+.channel-admin-summary,
 .channel-card,
 .admin-empty,
 .provider-readiness-card,
@@ -9276,6 +9642,9 @@ body {
 .provider-card,
 .settings-summary,
 .provider-config-details,
+.channel-learning-panel,
+.channel-learning-skeleton,
+.channel-settings-panel,
 .channel-card-settings {
   border-color: var(--line);
   border-radius: 8px;
@@ -9298,7 +9667,8 @@ body {
 .source-table th,
 .source-table td,
 .provider-config-details[open] summary,
-.channel-card-settings[open] summary {
+.channel-card-settings[open] summary,
+.channel-settings-tabs {
   border-color: var(--line);
 }
 
@@ -9324,9 +9694,11 @@ body {
 .provider-setup-strip div,
 .admin-pending-row,
 .channel-readiness,
+.channel-connection-state,
 .channel-token-status,
 .channel-oauth-guide,
 .channel-activation-banner,
+.channel-security-note,
 .dashboard-notice,
 .operating-channel-nudge {
   border-color: var(--line);
@@ -9350,7 +9722,10 @@ body {
 .channel-card-settings summary span,
 .admin-pending-row strong,
 .channel-readiness strong,
-.channel-token-status strong {
+.channel-token-status strong,
+.channel-card-main h2,
+.channel-summary-copy h2,
+.channel-learning-head strong {
   color: #fbf6e8;
 }
 
@@ -9360,9 +9735,108 @@ body {
 .admin-count,
 .admin-hero-stats span,
 .provider-config-details summary strong,
-.channel-card-settings summary strong {
+.channel-card-settings summary strong,
+.channel-summary-badge,
+.channel-summary-actions > span {
   background: rgba(155, 215, 167, 0.13);
   color: var(--green);
+}
+
+.admin-page .channel-connect-cta,
+.admin-page .channel-settings-tabs button.active {
+  border-color: rgba(189, 240, 198, 0.78);
+  background: var(--neon-green);
+  color: #0b1112;
+}
+
+.admin-page .channel-connect-cta:hover,
+.admin-page .channel-settings-tabs button.active:hover {
+  border-color: rgba(255, 255, 255, 0.82);
+  background: #d4ffd9;
+  color: #0b1112;
+}
+
+.admin-page .channel-card:hover,
+.admin-page .channel-card:focus-within {
+  border-color: rgba(189, 240, 198, 0.54);
+  background:
+    linear-gradient(145deg, rgba(155, 215, 167, 0.1), rgba(244, 239, 227, 0.04)),
+    rgba(13, 21, 21, 0.9);
+  box-shadow:
+    0 0 0 1px rgba(189, 240, 198, 0.12),
+    0 0 28px rgba(155, 215, 167, 0.12),
+    var(--shadow);
+}
+
+.admin-page .channel-avatar {
+  border-color: rgba(189, 240, 198, 0.28);
+  background:
+    radial-gradient(circle at 32% 24%, rgba(189, 240, 198, 0.22), transparent 1.35rem),
+    rgba(155, 215, 167, 0.08);
+  color: var(--neon-green);
+}
+
+.admin-page .channel-connection-state.ready,
+.admin-page .channel-token-grid .ready {
+  border-color: rgba(189, 240, 198, 0.46);
+  background: rgba(155, 215, 167, 0.13);
+  color: var(--neon-green);
+}
+
+.admin-page .channel-connection-state.setup {
+  border-color: rgba(240, 193, 116, 0.46);
+  background: rgba(240, 193, 116, 0.12);
+  color: #f0c174;
+}
+
+.admin-page .channel-connection-state.missing,
+.admin-page .channel-token-grid .missing {
+  border-color: rgba(239, 146, 116, 0.42);
+  background: rgba(239, 146, 116, 0.13);
+  color: #ffc9ba;
+}
+
+.admin-page .channel-connection-state.paused {
+  border-color: rgba(148, 163, 184, 0.32);
+  background: rgba(148, 163, 184, 0.08);
+  color: rgba(244, 239, 227, 0.62);
+}
+
+.admin-page .channel-learning-head span,
+.admin-page .channel-learning-skeleton p,
+.admin-page .channel-security-note {
+  color: var(--neon-green);
+}
+
+.admin-page .channel-learning-meter {
+  background: rgba(244, 239, 227, 0.12);
+}
+
+.admin-page .channel-learning-meter i {
+  background: linear-gradient(90deg, var(--green), var(--neon-green));
+  box-shadow: 0 0 18px rgba(189, 240, 198, 0.2);
+}
+
+.admin-page .channel-settings-tabs button {
+  border-color: rgba(244, 239, 227, 0.14);
+  background: rgba(244, 239, 227, 0.065);
+  color: rgba(244, 239, 227, 0.74);
+}
+
+.admin-page .channel-settings-tabs button:hover {
+  border-color: rgba(189, 240, 198, 0.42);
+  background: rgba(155, 215, 167, 0.1);
+  color: var(--neon-green);
+}
+
+.admin-page .channel-learning-skeleton span {
+  background: linear-gradient(
+    90deg,
+    rgba(244, 239, 227, 0.08),
+    rgba(189, 240, 198, 0.18),
+    rgba(244, 239, 227, 0.08)
+  );
+  background-size: 200% 100%;
 }
 
 .operating-channel-option:hover,
@@ -10309,6 +10783,10 @@ body {
 .admin-page .channel-card p,
 .admin-page .admin-empty p {
   color: rgba(244, 239, 227, 0.76);
+}
+
+.admin-page .channel-card .channel-security-note {
+  color: var(--neon-green);
 }
 
 .settings-page .provider-fields input,
