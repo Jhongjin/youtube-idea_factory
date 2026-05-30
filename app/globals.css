@@ -4198,6 +4198,7 @@ button:disabled,
 }
 
 .provider-fields label {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(44px, auto) auto;
   align-items: end;
@@ -11678,6 +11679,7 @@ body {
 }
 
 .provider-profile-fields label {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(44px, auto) auto;
   align-items: end;
@@ -11686,6 +11688,7 @@ body {
 }
 
 .provider-fields label {
+  position: relative;
   display: grid;
   grid-template-rows: auto minmax(44px, auto) auto;
   align-items: end;
@@ -11727,6 +11730,22 @@ body {
   line-height: 1.35;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.provider-fields label > small:not(.field-error),
+.provider-profile-fields label > small:not(.field-error) {
+  position: absolute;
+  top: 0;
+  right: 0;
+  max-width: 68%;
+  overflow: hidden;
+  color: rgba(244, 239, 227, 0.54);
+  font-size: 10px;
+  line-height: 1.2;
+  pointer-events: none;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .provider-fields .field-error,
