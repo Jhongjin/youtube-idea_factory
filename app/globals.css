@@ -4205,6 +4205,18 @@ button:disabled,
   min-width: 0;
 }
 
+.provider-credential-row {
+  align-items: end;
+}
+
+.provider-credential-row > label {
+  align-self: end;
+}
+
+.provider-credential-row input {
+  align-self: end;
+}
+
 .provider-fields label,
 .provider-profile-fields label {
   position: relative;
@@ -4270,8 +4282,13 @@ button:disabled,
   resize: vertical;
 }
 
-.provider-notes {
+.provider-notes,
+.provider-full-row {
   grid-column: 1 / -1;
+  width: 100%;
+}
+
+.provider-full-row textarea {
   width: 100%;
 }
 
@@ -11716,10 +11733,8 @@ body {
 }
 
 .provider-model-field {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 40px;
-  align-items: center;
-  gap: 8px;
+  position: relative;
+  display: block;
   min-width: 0;
   min-height: 44px;
 }
@@ -11733,8 +11748,23 @@ body {
 }
 
 .provider-model-field .icon-button {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
   min-width: 40px;
   min-height: 40px;
+}
+
+.provider-model-field.with-refresh input,
+.provider-model-field.with-refresh select {
+  padding-right: 54px;
+}
+
+.settings-page .provider-model-field.with-refresh select {
+  background-position:
+    calc(100% - 55px) 50%,
+    calc(100% - 50px) 50%;
 }
 
 .provider-fields small,

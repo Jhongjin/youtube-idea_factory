@@ -278,7 +278,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       normalizedValue && !options.some((model) => model.id === normalizedValue),
     );
     return (
-      <div className="provider-model-field">
+      <div className={`provider-model-field${canRefresh ? " with-refresh" : ""}`}>
         <input name={name} type="hidden" value={normalizedValue} />
         {options.length > 0 ? (
           <select
@@ -549,7 +549,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       />
                     </label>
                   </div>
-                  <div className="provider-field-row">
+                  <div className="provider-field-row provider-credential-row">
                     <label>
                       <span>보안 API 키</span>
                       <input
@@ -569,7 +569,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       />
                     </label>
                   </div>
-                  <label className="provider-notes">
+                  <label className="provider-notes provider-full-row">
                     <span>운영 메모</span>
                     <textarea
                       name={`${id}.notes`}
@@ -672,7 +672,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               />
                             </label>
                           </div>
-                          <div className="provider-field-row">
+                          <div className="provider-field-row provider-credential-row">
                             <label>
                               <span>보안 API 키</span>
                               <input
@@ -692,7 +692,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               />
                             </label>
                           </div>
-                          <label className="provider-profile-notes">
+                          <label className="provider-profile-notes provider-full-row">
                             <span>운영 메모</span>
                             <textarea
                               name={`profile.${profile.id}.notes`}
