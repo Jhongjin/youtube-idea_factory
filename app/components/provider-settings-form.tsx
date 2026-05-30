@@ -333,7 +333,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     );
   }
 
-  function ModelFieldFeedback({
+  function ModelFieldCaption({
     profileId,
     provider,
     hasSavedApiKey,
@@ -350,19 +350,26 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
     const missingSavedKey =
       supportsLiveRefresh && requiresSavedKeyForModelRefresh(provider) && !hasSavedApiKey;
 
-    return (
-      <div className="provider-field-feedback">
-        <small className="provider-model-help">
-          {missingSavedKey
-            ? "API 키를 먼저 저장하면 역할에 맞는 모델만 불러옵니다."
-            : supportsLiveRefresh
-              ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
-              : options.length > 0
-                ? "API별 권장 모델 목록입니다."
-                : "모델 목록 API가 없으면 직접 입력합니다. 로그인형 도구는 SSO 연결 큐로 남깁니다."}
+    const message = missingSavedKey
+      ? "API 키 저장 후 모델 새로고침"
+      : supportsLiveRefresh
+        ? "저장된 키 기준 새로고침"
+        : options.length > 0
+          ? "권장 모델 목록"
+          : "직접 입력 또는 SSO 연결 큐";
+
+    if (modelCatalogErrors[key]) {
+      return (
+        <small className="field-error provider-model-help" title={modelCatalogErrors[key]}>
+          {modelCatalogErrors[key]}
         </small>
-        {modelCatalogErrors[key] ? <small className="field-error">{modelCatalogErrors[key]}</small> : null}
-      </div>
+      );
+    }
+
+    return (
+      <small className="provider-model-help" title={message}>
+        {message}
+      </small>
     );
   }
 
@@ -523,7 +530,14 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       </select>
                     </label>
                     <label>
-                      <span>모델 / 프리셋</span>
+                      <span className="provider-label-line">
+                        <span>모델 / 프리셋</span>
+                        <ModelFieldCaption
+                          hasSavedApiKey={setting.hasApiKey}
+                          provider={setting.provider}
+                          role={id}
+                        />
+                      </span>
                       <ModelField
                         name={`${id}.model`}
                         onChange={(value) => updateRole(id, { model: value })}
@@ -535,11 +549,6 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                       />
                     </label>
                   </div>
-                  <ModelFieldFeedback
-                    hasSavedApiKey={setting.hasApiKey}
-                    provider={setting.provider}
-                    role={id}
-                  />
                   <div className="provider-field-row">
                     <label>
                       <span>보안 API 키</span>
@@ -642,7 +651,15 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               </select>
                             </label>
                             <label>
-                              <span>모델 / 워크플로</span>
+                              <span className="provider-label-line">
+                                <span>모델 / 워크플로</span>
+                                <ModelFieldCaption
+                                  hasSavedApiKey={profile.hasApiKey}
+                                  profileId={profile.id}
+                                  provider={profile.provider}
+                                  role={profile.role}
+                                />
+                              </span>
                               <ModelField
                                 name={`profile.${profile.id}.model`}
                                 onChange={(value) => updateProfile(profile.id, { model: value })}
@@ -655,12 +672,6 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                               />
                             </label>
                           </div>
-                          <ModelFieldFeedback
-                            hasSavedApiKey={profile.hasApiKey}
-                            profileId={profile.id}
-                            provider={profile.provider}
-                            role={profile.role}
-                          />
                           <div className="provider-field-row">
                             <label>
                               <span>보안 API 키</span>
@@ -683,10 +694,11 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                           </div>
                           <label className="provider-profile-notes">
                             <span>운영 메모</span>
-                            <input
+                            <textarea
                               name={`profile.${profile.id}.notes`}
                               onChange={(event) => updateProfile(profile.id, { notes: event.target.value })}
                               placeholder="비용, 용도, 채널 제한"
+                              rows={2}
                               value={profile.notes}
                             />
                           </label>

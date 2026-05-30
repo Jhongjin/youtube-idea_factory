@@ -4215,6 +4215,19 @@ button:disabled,
   min-width: 0;
 }
 
+.provider-label-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.provider-label-line > span {
+  flex: 0 0 auto;
+}
+
 .provider-fields span {
   color: var(--muted);
   font-size: 12px;
@@ -4252,12 +4265,14 @@ button:disabled,
   padding-right: 36px;
 }
 
-.provider-fields textarea {
+.provider-fields textarea,
+.provider-profile-fields textarea {
   resize: vertical;
 }
 
 .provider-notes {
   grid-column: 1 / -1;
+  width: 100%;
 }
 
 .provider-status {
@@ -11505,7 +11520,8 @@ body {
 }
 
 .settings-page .provider-fields input::placeholder,
-.settings-page .provider-profile-fields input::placeholder {
+.settings-page .provider-profile-fields input::placeholder,
+.settings-page .provider-profile-fields textarea::placeholder {
   color: rgba(244, 239, 227, 0.48);
 }
 
@@ -11567,6 +11583,7 @@ body {
 .settings-page .provider-fields textarea,
 .settings-page .provider-profile-fields input,
 .settings-page .provider-profile-fields select,
+.settings-page .provider-profile-fields textarea,
 .admin-page .channel-form-grid input,
 .admin-page .channel-form-grid select,
 .admin-page .channel-form-grid textarea,
@@ -11720,17 +11737,6 @@ body {
   min-height: 40px;
 }
 
-.provider-field-feedback {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  min-width: 0;
-  margin-top: -0.45rem;
-  text-align: right;
-}
-
 .provider-fields small,
 .provider-profile-fields small {
   color: rgba(244, 239, 227, 0.62);
@@ -11742,10 +11748,15 @@ body {
 }
 
 .provider-model-help {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
   color: rgba(244, 239, 227, 0.54);
-  font-size: 10.5px;
-  line-height: 1.35;
-  white-space: normal;
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .provider-fields .field-error,
@@ -11757,6 +11768,7 @@ body {
 
 .provider-profile-notes {
   grid-column: 1 / -1;
+  width: 100%;
 }
 
 .generation-provider-selector {
@@ -12114,8 +12126,13 @@ body {
     flex-direction: column;
   }
 
-  .provider-field-feedback {
-    justify-content: flex-start;
+  .provider-label-line {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .provider-model-help {
+    max-width: 100%;
     text-align: left;
   }
 }
