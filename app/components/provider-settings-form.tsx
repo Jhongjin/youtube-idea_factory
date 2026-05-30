@@ -278,70 +278,91 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       normalizedValue && !options.some((model) => model.id === normalizedValue),
     );
     return (
-      <>
-        <div className="provider-model-field">
-          <input name={name} type="hidden" value={normalizedValue} />
-          {options.length > 0 ? (
-            <select
-              aria-label="모델 선택"
-              className="provider-model-select"
-              onChange={(event) => onChange(event.target.value)}
-              value={normalizedValue}
-            >
-              <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
-              {hasCurrentModel ? (
-                <option value={normalizedValue}>{cleanSelectLabel(`${normalizedValue} (직접 입력)`)}</option>
-              ) : null}
-              {options.map((model) => (
-                <option key={model.id} value={model.id}>
-                  {modelOptionLabel(model)}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              aria-autocomplete="none"
-              autoCapitalize="none"
-              autoComplete="new-password"
-              autoCorrect="off"
-              data-1p-ignore="true"
-              data-form-type="other"
-              data-lpignore="true"
-              onChange={(event) => onChange(event.target.value)}
-              placeholder={placeholder}
-              spellCheck={false}
-              value={normalizedValue}
-            />
-          )}
-          {canRefresh ? (
-            <button
-              className="icon-button"
-              disabled={loading || missingSavedKey}
-              onClick={() => refreshModelCatalog(role, provider, profileId)}
-              title={
-                missingSavedKey
-                  ? "API 키를 저장한 뒤 모델 목록을 새로고침할 수 있습니다"
-                  : supportsLiveRefresh
-                    ? "저장된 API 키로 역할별 모델 목록 새로고침"
-                    : "내장 모델 목록 다시 불러오기"
-              }
-              type="button"
-            >
-              {loading ? <Loader2 className="spin" size={14} /> : <RefreshCw size={14} />}
-            </button>
-          ) : null}
-        </div>
-        <small>
+      <div className="provider-model-field">
+        <input name={name} type="hidden" value={normalizedValue} />
+        {options.length > 0 ? (
+          <select
+            aria-label="모델 선택"
+            className="provider-model-select"
+            onChange={(event) => onChange(event.target.value)}
+            value={normalizedValue}
+          >
+            <option value="">{looksLikeAutofilledAccount(value) ? "모델을 다시 선택하세요" : placeholder}</option>
+            {hasCurrentModel ? (
+              <option value={normalizedValue}>{cleanSelectLabel(`${normalizedValue} (직접 입력)`)}</option>
+            ) : null}
+            {options.map((model) => (
+              <option key={model.id} value={model.id}>
+                {modelOptionLabel(model)}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            aria-autocomplete="none"
+            autoCapitalize="none"
+            autoComplete="new-password"
+            autoCorrect="off"
+            data-1p-ignore="true"
+            data-form-type="other"
+            data-lpignore="true"
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            spellCheck={false}
+            value={normalizedValue}
+          />
+        )}
+        {canRefresh ? (
+          <button
+            className="icon-button"
+            disabled={loading || missingSavedKey}
+            onClick={() => refreshModelCatalog(role, provider, profileId)}
+            title={
+              missingSavedKey
+                ? "API 키를 저장한 뒤 모델 목록을 새로고침할 수 있습니다"
+                : supportsLiveRefresh
+                  ? "저장된 API 키로 역할별 모델 목록 새로고침"
+                  : "내장 모델 목록 다시 불러오기"
+            }
+            type="button"
+          >
+            {loading ? <Loader2 className="spin" size={14} /> : <RefreshCw size={14} />}
+          </button>
+        ) : null}
+      </div>
+    );
+  }
+
+  function ModelFieldFeedback({
+    profileId,
+    provider,
+    hasSavedApiKey,
+    role,
+  }: {
+    hasSavedApiKey: boolean;
+    profileId?: string;
+    provider: string;
+    role: ProviderRoleId;
+  }) {
+    const key = modelCatalogKey(role, provider, profileId);
+    const options = modelOptions(role, provider, profileId);
+    const supportsLiveRefresh = supportsLiveProviderModelRefresh(provider);
+    const missingSavedKey =
+      supportsLiveRefresh && requiresSavedKeyForModelRefresh(provider) && !hasSavedApiKey;
+
+    return (
+      <div className="provider-field-feedback">
+        <small className="provider-model-help">
           {missingSavedKey
-            ? "API 키를 먼저 저장하면 이 역할에 맞는 모델만 새로고침합니다."
+            ? "API 키를 먼저 저장하면 역할에 맞는 모델만 불러옵니다."
             : supportsLiveRefresh
-            ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
-            : options.length > 0
-              ? "API별 권장 모델 목록입니다."
-              : "모델 목록 API가 없으면 직접 입력합니다. 로그인형 도구는 SSO 연결 큐로 남깁니다."}
+              ? "저장된 키 기준으로 모델 목록을 새로고침합니다."
+              : options.length > 0
+                ? "API별 권장 모델 목록입니다."
+                : "모델 목록 API가 없으면 직접 입력합니다. 로그인형 도구는 SSO 연결 큐로 남깁니다."}
         </small>
         {modelCatalogErrors[key] ? <small className="field-error">{modelCatalogErrors[key]}</small> : null}
-      </>
+      </div>
     );
   }
 
@@ -483,53 +504,62 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                   <strong>{setting.enabled ? "가동 중" : "접힘"}</strong>
                 </summary>
                 <div className="provider-fields">
-                  <label>
-                    <span>AI 엔진</span>
-                    <select
-                      name={`${id}.provider`}
-                      onChange={(event) => updateRole(id, { model: "", provider: event.target.value })}
-                      value={setting.provider}
-                    >
-                      {providers.map((provider) => {
-                        const capability = getProviderCapability(id, provider);
-                        return (
-                          <option key={provider} value={provider}>
-                            {providerOptionLabel(provider, capability.status)}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </label>
-                  <label>
-                    <span>모델 / 프리셋</span>
-                    <ModelField
-                      name={`${id}.model`}
-                      onChange={(value) => updateRole(id, { model: value })}
-                      placeholder="모델 또는 워크플로우 선택"
-                      hasSavedApiKey={setting.hasApiKey}
-                      provider={setting.provider}
-                      role={id}
-                      value={setting.model}
-                    />
-                  </label>
-                  <label>
-                    <span>보안 API 키</span>
-                    <input
-                      autoComplete="off"
-                      name={`${id}.apiKey`}
-                      placeholder={apiKeyPlaceholder(setting.provider, setting.hasApiKey)}
-                      type="password"
-                    />
-                  </label>
-                  <label>
-                    <span>커스텀 엔드포인트</span>
-                    <input
-                      name={`${id}.baseUrl`}
-                      onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
-                      placeholder="선택 사항: 커스텀 엔드포인트"
-                      value={setting.baseUrl}
-                    />
-                  </label>
+                  <div className="provider-field-row">
+                    <label>
+                      <span>AI 엔진</span>
+                      <select
+                        name={`${id}.provider`}
+                        onChange={(event) => updateRole(id, { model: "", provider: event.target.value })}
+                        value={setting.provider}
+                      >
+                        {providers.map((provider) => {
+                          const capability = getProviderCapability(id, provider);
+                          return (
+                            <option key={provider} value={provider}>
+                              {providerOptionLabel(provider, capability.status)}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </label>
+                    <label>
+                      <span>모델 / 프리셋</span>
+                      <ModelField
+                        name={`${id}.model`}
+                        onChange={(value) => updateRole(id, { model: value })}
+                        placeholder="모델 또는 워크플로우 선택"
+                        hasSavedApiKey={setting.hasApiKey}
+                        provider={setting.provider}
+                        role={id}
+                        value={setting.model}
+                      />
+                    </label>
+                  </div>
+                  <ModelFieldFeedback
+                    hasSavedApiKey={setting.hasApiKey}
+                    provider={setting.provider}
+                    role={id}
+                  />
+                  <div className="provider-field-row">
+                    <label>
+                      <span>보안 API 키</span>
+                      <input
+                        autoComplete="off"
+                        name={`${id}.apiKey`}
+                        placeholder={apiKeyPlaceholder(setting.provider, setting.hasApiKey)}
+                        type="password"
+                      />
+                    </label>
+                    <label>
+                      <span>커스텀 엔드포인트</span>
+                      <input
+                        name={`${id}.baseUrl`}
+                        onChange={(event) => updateRole(id, { baseUrl: event.target.value })}
+                        placeholder="선택 사항: 커스텀 엔드포인트"
+                        value={setting.baseUrl}
+                      />
+                    </label>
+                  </div>
                   <label className="provider-notes">
                     <span>운영 메모</span>
                     <textarea
@@ -591,56 +621,66 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
                           </button>
                         </div>
                         <div className="provider-profile-fields">
-                          <label>
-                            <span>AI 엔진</span>
-                            <select
-                              name={`profile.${profile.id}.provider`}
-                              onChange={(event) =>
-                                updateProfile(profile.id, { model: "", provider: event.target.value })
-                              }
-                              value={profile.provider}
-                            >
-                              {providers.map((provider) => {
-                                const itemCapability = getProviderCapability(id, provider);
-                                return (
-                                  <option key={provider} value={provider}>
-                                    {providerOptionLabel(provider, itemCapability.status)}
-                                  </option>
-                                );
-                              })}
-                            </select>
-                          </label>
-                          <label>
-                            <span>모델 / 워크플로</span>
-                            <ModelField
-                              name={`profile.${profile.id}.model`}
-                              onChange={(value) => updateProfile(profile.id, { model: value })}
-                              placeholder="모델 또는 워크플로우 선택"
-                              hasSavedApiKey={profile.hasApiKey}
-                              profileId={profile.id}
-                              provider={profile.provider}
-                              role={profile.role}
-                              value={profile.model}
-                            />
-                          </label>
-                          <label>
-                            <span>보안 API 키</span>
-                            <input
-                              autoComplete="off"
-                              name={`profile.${profile.id}.apiKey`}
-                              placeholder={apiKeyPlaceholder(profile.provider, profile.hasApiKey)}
-                              type="password"
-                            />
-                          </label>
-                          <label>
-                            <span>커스텀 엔드포인트</span>
-                            <input
-                              name={`profile.${profile.id}.baseUrl`}
-                              onChange={(event) => updateProfile(profile.id, { baseUrl: event.target.value })}
-                              placeholder="선택 사항"
-                              value={profile.baseUrl}
-                            />
-                          </label>
+                          <div className="provider-field-row">
+                            <label>
+                              <span>AI 엔진</span>
+                              <select
+                                name={`profile.${profile.id}.provider`}
+                                onChange={(event) =>
+                                  updateProfile(profile.id, { model: "", provider: event.target.value })
+                                }
+                                value={profile.provider}
+                              >
+                                {providers.map((provider) => {
+                                  const itemCapability = getProviderCapability(id, provider);
+                                  return (
+                                    <option key={provider} value={provider}>
+                                      {providerOptionLabel(provider, itemCapability.status)}
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                            </label>
+                            <label>
+                              <span>모델 / 워크플로</span>
+                              <ModelField
+                                name={`profile.${profile.id}.model`}
+                                onChange={(value) => updateProfile(profile.id, { model: value })}
+                                placeholder="모델 또는 워크플로우 선택"
+                                hasSavedApiKey={profile.hasApiKey}
+                                profileId={profile.id}
+                                provider={profile.provider}
+                                role={profile.role}
+                                value={profile.model}
+                              />
+                            </label>
+                          </div>
+                          <ModelFieldFeedback
+                            hasSavedApiKey={profile.hasApiKey}
+                            profileId={profile.id}
+                            provider={profile.provider}
+                            role={profile.role}
+                          />
+                          <div className="provider-field-row">
+                            <label>
+                              <span>보안 API 키</span>
+                              <input
+                                autoComplete="off"
+                                name={`profile.${profile.id}.apiKey`}
+                                placeholder={apiKeyPlaceholder(profile.provider, profile.hasApiKey)}
+                                type="password"
+                              />
+                            </label>
+                            <label>
+                              <span>커스텀 엔드포인트</span>
+                              <input
+                                name={`profile.${profile.id}.baseUrl`}
+                                onChange={(event) => updateProfile(profile.id, { baseUrl: event.target.value })}
+                                placeholder="선택 사항"
+                                value={profile.baseUrl}
+                              />
+                            </label>
+                          </div>
                           <label className="provider-profile-notes">
                             <span>운영 메모</span>
                             <input
