@@ -33,6 +33,10 @@ def env_value(name: str, file_values: dict[str, str]) -> str:
     return os.environ.get(name, "").strip() or file_values.get(name, "").strip()
 
 
+def first_env_value(names: tuple[str, ...], file_values: dict[str, str]) -> str:
+    return next((value for name in names if (value := env_value(name, file_values))), "")
+
+
 def has_admin_token(file_values: dict[str, str]) -> bool:
     return any(
         env_value(name, file_values)
@@ -69,6 +73,26 @@ def vercel_config_failures() -> list[str]:
     return failures
 
 
+def vercel_link_failures(expected_project_id: str) -> list[str]:
+    if not expected_project_id:
+        return []
+    path = ROOT / ".vercel" / "project.json"
+    if not path.exists():
+        return [
+            "Vercel project is not linked; link a disposable staging copy to the expected project before deployment."
+        ]
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"Invalid .vercel/project.json: {exc}"]
+    actual_project_id = str(config.get("projectId", "")).strip()
+    if actual_project_id != expected_project_id:
+        return [
+            "Linked Vercel project does not match EXPECTED_VERCEL_PROJECT_ID; production deployment is blocked."
+        ]
+    return []
+
+
 def supabase_schema_failures() -> list[str]:
     path = ROOT / "docs" / "templates" / "supabase-schema.sql"
     if not path.exists():
@@ -93,6 +117,11 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default="main",
         help="Git branch that Vercel treats as production.",
     )
+    parser.add_argument(
+        "--expected-vercel-project-id",
+        default="",
+        help="Fail closed unless .vercel/project.json is linked to this exact project ID.",
+    )
     return parser.parse_args(argv)
 
 
@@ -100,6 +129,10 @@ def main(argv: list[str]) -> int:
     args = parse_args(argv)
     file_values = read_env_files()
     storage_mode = env_value("APP_STORAGE_MODE", file_values) or "local"
+    expected_vercel_project_id = (
+        args.expected_vercel_project_id
+        or env_value("EXPECTED_VERCEL_PROJECT_ID", file_values)
+    )
     branch = current_branch()
     blockers: list[str] = []
     warnings: list[str] = []
@@ -107,6 +140,8 @@ def main(argv: list[str]) -> int:
     required_files = [
         "docs/DEPLOYMENT.md",
         "docs/templates/supabase-schema.sql",
+        "docs/templates/supabase-auth-schema.sql",
+        "docs/templates/supabase-orca-control-plane.sql",
         "app/api/health/deployment/route.ts",
         "proxy.ts",
     ]
@@ -114,6 +149,8 @@ def main(argv: list[str]) -> int:
         if not (ROOT / relative).exists():
             blockers.append(f"Missing deployment file: {relative}")
     blockers.extend(vercel_config_failures())
+    if args.target == "vercel":
+        blockers.extend(vercel_link_failures(expected_vercel_project_id))
     blockers.extend(supabase_schema_failures())
 
     if args.target == "vercel" and storage_mode == "local":
@@ -124,13 +161,24 @@ def main(argv: list[str]) -> int:
     if storage_mode == "supabase":
         if not env_value("NEXT_PUBLIC_SUPABASE_URL", file_values):
             blockers.append("NEXT_PUBLIC_SUPABASE_URL is missing")
-        if not env_value("SUPABASE_SERVICE_ROLE_KEY", file_values):
-            blockers.append("SUPABASE_SERVICE_ROLE_KEY is missing")
+        if not first_env_value(
+            ("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY"), file_values
+        ):
+            blockers.append(
+                "SUPABASE_SECRET_KEY is missing (legacy SUPABASE_SERVICE_ROLE_KEY is also accepted)"
+            )
 
-    service_key = env_value("SUPABASE_SERVICE_ROLE_KEY", file_values)
-    anon_key = env_value("NEXT_PUBLIC_SUPABASE_ANON_KEY", file_values)
-    if service_key and service_key == anon_key:
-        blockers.append("SUPABASE_SERVICE_ROLE_KEY must not equal NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    server_key = first_env_value(
+        ("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY"), file_values
+    )
+    public_key = first_env_value(
+        ("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+        file_values,
+    )
+    if server_key and server_key == public_key:
+        blockers.append(
+            "The Supabase server key must not equal the browser-safe publishable/anon key"
+        )
 
     if not env_value("YOUTUBE_API_KEY", file_values):
         warnings.append("YOUTUBE_API_KEY is missing; YouTube Finder needs env or provider settings.")

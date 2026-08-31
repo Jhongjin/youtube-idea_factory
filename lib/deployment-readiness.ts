@@ -47,8 +47,12 @@ export type DeploymentReadiness = {
   };
   supabase: {
     publicUrl: boolean;
+    publishableKey: boolean;
     anonKey: boolean;
+    publicKeyMode: "publishable" | "legacy-anon" | "none";
+    secretKey: boolean;
     serviceRoleKey: boolean;
+    serverKeyMode: "secret" | "legacy-service-role" | "none";
     readyForServerAdapters: boolean;
     durableRunStateEnabled: boolean;
     providerSettingsEnabled: boolean;
@@ -61,6 +65,9 @@ export type DeploymentReadiness = {
       appUsers: boolean;
       youtubeChannels: boolean;
       workerJobs: boolean;
+      orcaChannelPolicies: boolean;
+      orcaRuns: boolean;
+      orcaQueueJobs: boolean;
     };
   };
   providers: {
@@ -257,6 +264,12 @@ async function hasSupabaseTable(table: string) {
 
 export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   const appStorageMode = process.env.APP_STORAGE_MODE?.trim() || "local";
+  const publishableKey = firstNonEmptyEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
+  const legacyAnonKey = firstNonEmptyEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const secretKey = firstNonEmptyEnv("SUPABASE_SECRET_KEY");
+  const legacyServiceRoleKey = firstNonEmptyEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const publicKey = publishableKey || legacyAnonKey;
+  const serverKey = secretKey || legacyServiceRoleKey;
   const schema = {
     checked: false,
     productionRuns: false,
@@ -266,18 +279,28 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     appUsers: false,
     youtubeChannels: false,
     workerJobs: false,
+    orcaChannelPolicies: false,
+    orcaRuns: false,
+    orcaQueueJobs: false,
   };
   const supabase = {
     publicUrl: hasEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    anonKey: hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    serviceRoleKey: hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    publishableKey: Boolean(publishableKey),
+    anonKey: Boolean(legacyAnonKey),
+    publicKeyMode: publishableKey ? "publishable" as const : legacyAnonKey ? "legacy-anon" as const : "none" as const,
+    secretKey: Boolean(secretKey),
+    serviceRoleKey: Boolean(legacyServiceRoleKey),
+    serverKeyMode: secretKey ? "secret" as const : legacyServiceRoleKey ? "legacy-service-role" as const : "none" as const,
     readyForServerAdapters:
-      hasEnv("NEXT_PUBLIC_SUPABASE_URL") && hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
+      hasEnv("NEXT_PUBLIC_SUPABASE_URL") && Boolean(serverKey),
     durableRunStateEnabled: false,
     providerSettingsEnabled: false,
     schema,
   };
   const vercel = Boolean(process.env.VERCEL);
+  const orcaControlPlaneMode =
+    process.env.ORCA_CONTROL_PLANE_MODE?.trim().toLowerCase() ||
+    (vercel ? "supabase" : "gate");
   const envAdminCredential =
     hasEnv("DASHBOARD_ADMIN_PASSWORD") ||
     hasEnv("DASHBOARD_ADMIN_TOKEN") ||
@@ -299,7 +322,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
     blockers.push("APP_STORAGE_MODE=local is not durable on Vercel serverless runtime.");
   }
   if (appStorageMode === "supabase" && !supabase.readyForServerAdapters) {
-    blockers.push("Supabase server adapter mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+    blockers.push("Supabase server adapter mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).");
   }
   if (appStorageMode === "supabase" && supabase.readyForServerAdapters) {
     try {
@@ -311,6 +334,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
         appUsers,
         youtubeChannels,
         workerJobs,
+        orcaChannelPolicies,
+        orcaRuns,
+        orcaQueueJobs,
       ] =
         await Promise.all([
           hasSupabaseTable("production_runs"),
@@ -320,6 +346,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
           hasSupabaseTable("app_users"),
           hasSupabaseTable("youtube_channels"),
           hasSupabaseTable("worker_jobs"),
+          hasSupabaseTable("orca_channel_policies"),
+          hasSupabaseTable("orca_runs"),
+          hasSupabaseTable("orca_queue_jobs"),
         ]);
       schema.checked = true;
       schema.productionRuns = productionRuns;
@@ -329,6 +358,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       schema.appUsers = appUsers;
       schema.youtubeChannels = youtubeChannels;
       schema.workerJobs = workerJobs;
+      schema.orcaChannelPolicies = orcaChannelPolicies;
+      schema.orcaRuns = orcaRuns;
+      schema.orcaQueueJobs = orcaQueueJobs;
       supabase.durableRunStateEnabled = productionRuns && runArtifacts && runApprovals;
       supabase.providerSettingsEnabled = providerSettings;
       if (!productionRuns || !runArtifacts || !runApprovals || !providerSettings) {
@@ -340,6 +372,9 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       if (!appUsers || !youtubeChannels) {
         warnings.push("Supabase auth/channel tables are missing. Run docs/templates/supabase-auth-schema.sql for persistent login and channel management.");
       }
+      if (orcaControlPlaneMode === "supabase" && (!orcaChannelPolicies || !orcaRuns || !orcaQueueJobs)) {
+        blockers.push("Supabase Orca mirror schema is missing. Run docs/templates/supabase-orca-control-plane.sql before enabling ORCA_CONTROL_PLANE_MODE=supabase.");
+      }
       if (vercel && !envAdminCredential && appUsers) {
         warnings.push("Production login relies on persistent app_users records; keep at least one active admin user.");
       }
@@ -348,8 +383,8 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
       blockers.push(`Supabase schema check failed: ${message.slice(0, 180)}`);
     }
   }
-  if (hasEnv("SUPABASE_SERVICE_ROLE_KEY") && process.env.SUPABASE_SERVICE_ROLE_KEY === process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    blockers.push("SUPABASE_SERVICE_ROLE_KEY must not equal NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+  if (serverKey && publicKey && serverKey === publicKey) {
+    blockers.push("The Supabase server key must not equal the browser-safe publishable/anon key.");
   }
   const providerSettings = await getProviderSettings().catch(() => null);
   const providerRoleReadiness = Object.fromEntries(
@@ -370,8 +405,8 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
   if (!youtubeApiKey) {
     warnings.push("YOUTUBE_API_KEY is missing; YouTube Finder will need the dashboard provider settings or env var.");
   }
-  if (!hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY")) {
-    warnings.push("NEXT_PUBLIC_SUPABASE_ANON_KEY is missing; browser-side Supabase features should remain disabled.");
+  if (!publicKey) {
+    warnings.push("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (or legacy NEXT_PUBLIC_SUPABASE_ANON_KEY) is missing; browser-side Supabase features should remain disabled.");
   }
   if (appStorageMode === "supabase") {
     warnings.push("Unattended render and YouTube upload jobs require external workers with ffmpeg and YouTube OAuth credentials.");
@@ -441,7 +476,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
           "ffmpeg available on worker PATH",
           "APP_STORAGE_MODE=supabase",
           "NEXT_PUBLIC_SUPABASE_URL",
-          "SUPABASE_SERVICE_ROLE_KEY",
+          "SUPABASE_SECRET_KEY or legacy SUPABASE_SERVICE_ROLE_KEY",
           "SUPABASE_ASSETS_BUCKET",
         ],
       },
@@ -469,7 +504,7 @@ export async function getDeploymentReadiness(): Promise<DeploymentReadiness> {
         requirements: [
           "APP_STORAGE_MODE=supabase",
           "NEXT_PUBLIC_SUPABASE_URL",
-          "SUPABASE_SERVICE_ROLE_KEY",
+          "SUPABASE_SECRET_KEY or legacy SUPABASE_SERVICE_ROLE_KEY",
           "SUPABASE_ASSETS_BUCKET",
           "YOUTUBE_OAUTH_CLIENT_ID",
           "YOUTUBE_OAUTH_CLIENT_SECRET",

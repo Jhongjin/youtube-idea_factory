@@ -110,9 +110,9 @@ function localArtifactFile(runId, artifactPath) {
 
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
-    throw new Error("Supabase worker mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error("Supabase worker mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).");
   }
   return {
     bucket: process.env.SUPABASE_ASSETS_BUCKET?.trim() || defaultBucket,
@@ -129,7 +129,7 @@ async function supabaseRequest(pathSuffix, init = {}) {
       ...init,
       headers: {
         apikey: key,
-        Authorization: `Bearer ${key}`,
+        ...(key.startsWith("sb_") ? {} : { Authorization: `Bearer ${key}` }),
         ...(init.headers ?? {}),
       },
     });

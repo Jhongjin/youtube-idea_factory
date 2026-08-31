@@ -40,9 +40,10 @@ Recommended production environment variables:
 
 ```text
 APP_STORAGE_MODE=supabase
+ORCA_CONTROL_PLANE_MODE=supabase
 NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-SUPABASE_SERVICE_ROLE_KEY=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+SUPABASE_SECRET_KEY=...
 SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_API_KEY=...
 DASHBOARD_ADMIN_TOKEN=...
@@ -56,7 +57,7 @@ External YouTube upload worker variables:
 ```text
 APP_STORAGE_MODE=supabase
 NEXT_PUBLIC_SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...
+SUPABASE_SECRET_KEY=...
 SUPABASE_ASSETS_BUCKET=youtube-assets
 YOUTUBE_OAUTH_CLIENT_ID=...
 YOUTUBE_OAUTH_CLIENT_SECRET=...
@@ -79,13 +80,23 @@ If `DASHBOARD_ADMIN_TOKEN` is missing on Vercel, mutating API routes return a lo
 Use Supabase for durable run state, approvals, provider settings, logs, and media storage pointers. The seed schema lives at:
 
 - `docs/templates/supabase-schema.sql`
+- `docs/templates/supabase-auth-schema.sql`
+- `docs/templates/supabase-orca-control-plane.sql`
+
+Apply the Orca control-plane schema after the base schema because it reuses the shared
+`public.set_updated_at()` trigger function. The Orca tables have RLS enabled and no public policies;
+the Vercel server and local sync worker access them only with `SUPABASE_SECRET_KEY`.
+
+When `ORCA_CONTROL_PLANE_MODE=supabase`, `/orca` reads synchronized policy, run, and queue snapshots
+instead of trying to call `127.0.0.1:4317` from Vercel. This remote view is deliberately read-only.
+Job-contract creation, provider execution, render, and publishing remain on the local Orca host.
 
 Initial policy:
 
 1. Apply the schema in Supabase SQL Editor after review.
 2. Keep row level security enabled.
 3. Do not add public table policies until the auth model is decided.
-4. Use `SUPABASE_SERVICE_ROLE_KEY` only from server-side adapters.
+4. Use `SUPABASE_SECRET_KEY` only from server-side adapters. The legacy `SUPABASE_SERVICE_ROLE_KEY` remains a temporary fallback during migration.
 5. Treat `provider_settings.api_key` as server-only secret material. Move to Supabase Vault or a dedicated secrets manager before multi-user operation.
 6. Store generated image/TTS binaries in Supabase Storage. By default the server adapters use the private `youtube-assets` bucket unless `SUPABASE_ASSETS_BUCKET` is set.
 
@@ -127,8 +138,26 @@ rows from `worker_jobs` and keep the queue status in sync with the JSON job arti
 Local CLI:
 
 ```powershell
+$env:EXPECTED_VERCEL_PROJECT_ID="<personal Vercel project ID>"
 python .\scripts\check_deployment_ready.py --target vercel
 ```
+
+When `EXPECTED_VERCEL_PROJECT_ID` is set, the check fails closed unless
+`.vercel/project.json` points to that exact project. For a dirty working tree or a
+folder linked to an older Vercel project, make a disposable staging copy that
+excludes `.git`, `.next`, `node_modules`, and `.vercel`, link that copy to the
+personal project, and run the check again. Do not relink the original working
+folder merely to make the guard pass.
+
+Create and optionally validate that secret-free disposable copy with:
+
+```powershell
+.\scripts\prepare-vercel-staging.ps1 -Validate
+```
+
+The staging allowlist copies application source and deployment documentation but
+excludes `.env*`, `.git`, `.vercel`, local dependencies/build output, `runs`, and
+`artifacts`. The script never deletes or relinks the original working folder.
 
 Runtime API:
 

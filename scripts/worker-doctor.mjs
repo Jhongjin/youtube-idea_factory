@@ -43,7 +43,7 @@ function hasEnv(name) {
 
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
     return null;
   }
@@ -53,12 +53,14 @@ function supabaseConfig() {
 async function supabaseRequest(pathSuffix) {
   const config = supabaseConfig();
   if (!config) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required.");
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY) are required.");
   }
   const response = await fetch(`${config.url}/${pathSuffix}`, {
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${config.key}`,
+      ...(config.key.startsWith("sb_")
+        ? {}
+        : { Authorization: `Bearer ${config.key}` }),
       apikey: config.key,
     },
   });
@@ -178,11 +180,11 @@ async function main() {
   const supabaseEnv = {
     anonKey: hasEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
     assetsBucket: hasEnv("SUPABASE_ASSETS_BUCKET"),
-    serviceRoleKey: hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    serverKey: hasEnv("SUPABASE_SECRET_KEY") || hasEnv("SUPABASE_SERVICE_ROLE_KEY"),
     url: hasEnv("NEXT_PUBLIC_SUPABASE_URL"),
   };
   const supabaseReady =
-    storageMode === "local" || (supabaseEnv.url && supabaseEnv.serviceRoleKey && queue.ok);
+    storageMode === "local" || (supabaseEnv.url && supabaseEnv.serverKey && queue.ok);
   const uploadRefreshReady = oauth.globalRefreshToken || uploadTokens.active > 0;
   const renderReady = ffmpeg.ok && supabaseReady;
   const uploadReady = supabaseReady && oauth.clientId && oauth.clientSecret && uploadRefreshReady;
@@ -204,9 +206,9 @@ async function main() {
     printCheck("worker queue", queue);
     if (storageMode === "supabase") {
       printCheck("Supabase URL", { ok: supabaseEnv.url, detail: supabaseEnv.url ? "set" : "missing" });
-      printCheck("Supabase service role", {
-        ok: supabaseEnv.serviceRoleKey,
-        detail: supabaseEnv.serviceRoleKey ? "set" : "missing",
+      printCheck("Supabase server key", {
+        ok: supabaseEnv.serverKey,
+        detail: supabaseEnv.serverKey ? "set" : "missing",
       });
       printCheck("Supabase assets bucket", {
         ok: supabaseEnv.assetsBucket,

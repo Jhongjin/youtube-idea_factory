@@ -1,6 +1,7 @@
 -- YouTube Idea Factory Supabase seed schema.
 -- Apply in Supabase SQL Editor after reviewing project auth requirements.
--- MVP policy: no public table policies. Server adapters should use SUPABASE_SERVICE_ROLE_KEY.
+-- MVP policy: no public table policies. Server adapters should use SUPABASE_SECRET_KEY
+-- (or the legacy SUPABASE_SERVICE_ROLE_KEY fallback during migration).
 
 create table if not exists public.production_runs (
   id text primary key,
@@ -103,6 +104,7 @@ on conflict (id) do nothing;
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   new.updated_at = now();

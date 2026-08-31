@@ -8,19 +8,22 @@ type SupabaseRestOptions = {
 export function hasSupabaseServerConfig() {
   return Boolean(
     process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim(),
+      (process.env.SUPABASE_SECRET_KEY?.trim() ||
+        process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()),
   );
 }
 
 function getSupabaseServerConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!url || !serviceRoleKey) {
+  const serverKey =
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !serverKey) {
     throw new Error(
-      "Supabase storage requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+      "Supabase storage requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).",
     );
   }
-  return { serviceRoleKey, url: url.replace(/\/+$/, "") };
+  return { serverKey, url: url.replace(/\/+$/, "") };
 }
 
 export function supabaseEq(value: string) {
@@ -36,7 +39,7 @@ export async function supabaseRest<T>(
   table: string,
   options: SupabaseRestOptions = {},
 ): Promise<T> {
-  const { serviceRoleKey, url } = getSupabaseServerConfig();
+  const { serverKey, url } = getSupabaseServerConfig();
   const endpoint = new URL(`${url}/rest/v1/${table}`);
   for (const [key, value] of Object.entries(options.query ?? {})) {
     if (value !== undefined) {
@@ -48,9 +51,11 @@ export async function supabaseRest<T>(
     method: options.method ?? "GET",
     headers: {
       Accept: "application/json",
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...(serverKey.startsWith("sb_")
+        ? {}
+        : { Authorization: `Bearer ${serverKey}` }),
       "Content-Type": "application/json",
-      apikey: serviceRoleKey,
+      apikey: serverKey,
       ...(options.prefer ? { Prefer: options.prefer } : {}),
     },
     body: options.body === undefined ? undefined : JSON.stringify(options.body),

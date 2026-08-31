@@ -47,7 +47,7 @@ It also prints a short next-action block. If a run exists but `Recent worker job
 working in the dashboard until render or upload jobs are explicitly queued from the run page.
 
 If this command reports `Supabase request failed`, first confirm the current PowerShell window has
-`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set. If worker commands only work when
+`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY` fallback) set. If worker commands only work when
 `NODE_TLS_REJECT_UNAUTHORIZED=0` is set, fix the local Windows/Node certificate trust path before
 running unattended workers.
 

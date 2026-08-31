@@ -49,6 +49,7 @@ function isSessionProtectedApi(pathname: string) {
     pathname.startsWith("/api/admin/") ||
     pathname.startsWith("/api/analytics/") ||
     pathname.startsWith("/api/ops/") ||
+    pathname.startsWith("/api/orca/") ||
     pathname.startsWith("/api/runs") ||
     pathname.startsWith("/api/settings/") ||
     pathname.startsWith("/api/youtube/")
@@ -113,5 +114,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  // Health checks must remain available while the authenticated API proxy is
+  // still compiling during a cold local start.
+  matcher: ["/api/((?!health/).*)"],
 };

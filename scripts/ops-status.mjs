@@ -31,9 +31,9 @@ function parseArgs(argv) {
 
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
-    throw new Error("Supabase mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error("Supabase mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).");
   }
   if (!/^https?:\/\//.test(url)) {
     throw new Error("NEXT_PUBLIC_SUPABASE_URL must start with https://.");
@@ -48,7 +48,7 @@ async function supabaseRequest(pathSuffix) {
     response = await fetch(`${url}/${pathSuffix}`, {
       headers: {
         Accept: "application/json",
-        Authorization: `Bearer ${key}`,
+        ...(key.startsWith("sb_") ? {} : { Authorization: `Bearer ${key}` }),
         apikey: key,
       },
     });

@@ -84,7 +84,10 @@ function assertSafeRunId(runId: string) {
 }
 
 function privacyStatus(value?: string): "private" | "unlisted" | "public" {
-  return value === "unlisted" || value === "public" ? value : "private";
+  if (value && value !== "private") {
+    throw new Error("Initial YouTube upload must remain private. Public or unlisted publication requires a separate publication approval job.");
+  }
+  return "private";
 }
 
 function normalizeScheduledAt(value?: string) {
@@ -92,14 +95,7 @@ function normalizeScheduledAt(value?: string) {
   if (!trimmed) {
     return "";
   }
-  const scheduled = new Date(trimmed);
-  if (Number.isNaN(scheduled.getTime())) {
-    throw new Error("Scheduled publish time is invalid.");
-  }
-  if (scheduled.getTime() <= Date.now()) {
-    throw new Error("Scheduled publish time must be in the future.");
-  }
-  return scheduled.toISOString();
+  throw new Error("Scheduled publication requires a separate publication approval job after private upload.");
 }
 
 function workerCommands(runId: string) {
@@ -131,7 +127,7 @@ export async function createYouTubeUploadJob(
   ]);
   const now = new Date().toISOString();
   const scheduledAt = normalizeScheduledAt(request.scheduledAt);
-  const effectivePrivacyStatus = scheduledAt ? "private" : privacyStatus(request.privacyStatus);
+  const effectivePrivacyStatus = privacyStatus(request.privacyStatus);
   const commands = workerCommands(runId);
   const packageChannel = pkg.brief.channel;
   const uploadChannel = packageChannel?.id ? await getYouTubeChannel(packageChannel.id) : null;
@@ -206,9 +202,7 @@ export async function createYouTubeUploadJob(
       },
       notes: [
         "Run the dry-run command on the worker host before real upload.",
-        scheduledAt
-          ? "Scheduled uploads are sent to YouTube as private first."
-          : "Privacy status is applied exactly as queued.",
+        "This job only uploads privately. Public, unlisted, or scheduled publication is a separate approval and worker action.",
       ],
     },
   };

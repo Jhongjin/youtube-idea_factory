@@ -123,9 +123,9 @@ function localArtifactFile(runId, artifactPath) {
 
 function supabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()?.replace(/\/+$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  const key = process.env.SUPABASE_SECRET_KEY?.trim() || process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
   if (!url || !key) {
-    throw new Error("Supabase worker mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.");
+    throw new Error("Supabase worker mode requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).");
   }
   return {
     bucket: process.env.SUPABASE_ASSETS_BUCKET?.trim() || defaultBucket,
@@ -142,7 +142,7 @@ async function supabaseRequest(pathSuffix, init = {}) {
       ...init,
       headers: {
         apikey: key,
-        Authorization: `Bearer ${key}`,
+        ...(key.startsWith("sb_") ? {} : { Authorization: `Bearer ${key}` }),
         ...(init.headers ?? {}),
       },
     });
@@ -714,6 +714,12 @@ async function runUploadJob({ args, runId, storageMode }) {
   const dryRun = args["dry-run"] === "true";
   let job = await readRunJson(storageMode, runId, "youtube-upload-job.json");
   let pkg = await readRunJson(storageMode, runId, "production-package.json");
+  if (job?.metadata?.privacy_status !== "private") {
+    throw new Error("Initial upload worker accepts private privacy_status only. Visibility changes require the separate publication worker.");
+  }
+  if (String(job?.metadata?.scheduled_at || "").trim()) {
+    throw new Error("Initial upload worker rejects scheduled publication. Scheduling requires the separate publication worker.");
+  }
   if (!dryRun && job.status !== "queued" && args.force !== "true") {
     throw new Error(`Upload job status must be queued. Current status: ${job.status}`);
   }

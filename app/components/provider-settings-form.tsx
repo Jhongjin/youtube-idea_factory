@@ -123,6 +123,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
   const enabledCount =
     roleList.filter((role) => role.setting.enabled).length +
     settings.profiles.filter((profile) => profile.enabled).length;
+  const totalEngineSlots = roleList.length + settings.profiles.length;
   const keyCount =
     roleList.filter((role) => role.setting.hasApiKey).length +
     settings.profiles.filter((profile) => profile.hasApiKey).length;
@@ -438,7 +439,7 @@ export function ProviderSettingsForm({ initialSettings }: { initialSettings: Saf
       <section className="provider-setup-strip" aria-label="API 설정 요약">
         <div>
           <span>활성 엔진</span>
-          <strong>{enabledCount}/{roleList.length}</strong>
+          <strong>{enabledCount}/{totalEngineSlots}</strong>
         </div>
         <div>
           <span>보안 저장 키</span>

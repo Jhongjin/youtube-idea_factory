@@ -35,6 +35,21 @@ create table if not exists public.youtube_channels (
 create index if not exists youtube_channels_status_idx on public.youtube_channels(status);
 create index if not exists youtube_channels_brand_idx on public.youtube_channels(brand_name);
 
+drop trigger if exists set_app_users_updated_at on public.app_users;
+create trigger set_app_users_updated_at
+before update on public.app_users
+for each row execute function public.set_updated_at();
+
+drop trigger if exists set_youtube_channels_updated_at on public.youtube_channels;
+create trigger set_youtube_channels_updated_at
+before update on public.youtube_channels
+for each row execute function public.set_updated_at();
+
+-- These tables contain password hashes and OAuth refresh tokens. Keep them
+-- inaccessible to browser roles; server adapters use the service role.
+alter table public.app_users enable row level security;
+alter table public.youtube_channels enable row level security;
+
 comment on table public.app_users is
   'Dashboard login users. Password hashes are written by the app server through the Supabase service role.';
 

@@ -13,15 +13,17 @@ const defaultBucket = "youtube-assets";
 
 function getSupabaseStorageConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-  if (!url || !serviceRoleKey) {
+  const serverKey =
+    process.env.SUPABASE_SECRET_KEY?.trim() ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!url || !serverKey) {
     throw new Error(
-      "Supabase Storage requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+      "Supabase Storage requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or legacy SUPABASE_SERVICE_ROLE_KEY).",
     );
   }
   return {
     bucket: process.env.SUPABASE_ASSETS_BUCKET?.trim() || defaultBucket,
-    serviceRoleKey,
+    serverKey,
     url: url.replace(/\/+$/, ""),
   };
 }
@@ -85,13 +87,15 @@ async function supabaseStorageRequest(
   pathSuffix: string,
   init: RequestInit & { okStatuses?: number[] } = {},
 ) {
-  const { serviceRoleKey, url } = getSupabaseStorageConfig();
+  const { serverKey, url } = getSupabaseStorageConfig();
   const { okStatuses, ...fetchInit } = init;
   const response = await fetch(`${url}/storage/v1/${pathSuffix}`, {
     ...fetchInit,
     headers: {
-      Authorization: `Bearer ${serviceRoleKey}`,
-      apikey: serviceRoleKey,
+      ...(serverKey.startsWith("sb_")
+        ? {}
+        : { Authorization: `Bearer ${serverKey}` }),
+      apikey: serverKey,
       ...(init.headers ?? {}),
     },
   });

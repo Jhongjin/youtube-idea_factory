@@ -258,7 +258,7 @@ npm run render:worker -- --next --confirm RUN_RENDER_WORKER --storage supabase
 npm run render:worker -- --poll --confirm RUN_RENDER_WORKER --storage supabase --interval-seconds 15
 ```
 
-For Supabase-backed production runs, run the worker in an environment that has `APP_STORAGE_MODE=supabase`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_ASSETS_BUCKET`.
+For Supabase-backed production runs, run the worker in an environment that has `APP_STORAGE_MODE=supabase`, `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` (or the legacy `SUPABASE_SERVICE_ROLE_KEY` fallback), and `SUPABASE_ASSETS_BUCKET`.
 
 ## Draft Publishing
 

@@ -24,7 +24,7 @@ For Supabase-backed production runs, the worker also needs server-side storage a
 ```powershell
 $env:APP_STORAGE_MODE="supabase"
 $env:NEXT_PUBLIC_SUPABASE_URL="..."
-$env:SUPABASE_SERVICE_ROLE_KEY="..."
+$env:SUPABASE_SECRET_KEY="..."
 $env:SUPABASE_ASSETS_BUCKET="youtube-assets"
 ```
 

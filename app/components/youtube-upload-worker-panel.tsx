@@ -6,7 +6,7 @@ import { CheckCircle2, Clipboard, Terminal } from "lucide-react";
 const envVars = [
   "APP_STORAGE_MODE",
   "NEXT_PUBLIC_SUPABASE_URL",
-  "SUPABASE_SERVICE_ROLE_KEY",
+  "SUPABASE_SECRET_KEY",
   "SUPABASE_ASSETS_BUCKET",
   "YOUTUBE_OAUTH_CLIENT_ID",
   "YOUTUBE_OAUTH_CLIENT_SECRET",
