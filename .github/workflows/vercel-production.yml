@@ -19,7 +19,6 @@ jobs:
     timeout-minutes: 30
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_SCOPE: jdgd9053-cpus-projects
       VERCEL_PROJECT: youtube-idea-factory
 
     steps:
@@ -39,13 +38,13 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Link the personal Vercel project
-        run: vercel link --yes --project "$VERCEL_PROJECT" --scope "$VERCEL_SCOPE"
+        run: vercel link --yes --project "$VERCEL_PROJECT"
 
       - name: Pull Production configuration
-        run: vercel pull --yes --environment=production --scope "$VERCEL_SCOPE"
+        run: vercel pull --yes --environment=production
 
       - name: Build the Production artifact
-        run: vercel build --prod --scope "$VERCEL_SCOPE"
+        run: vercel build --prod
 
       - name: Deploy the verified artifact
-        run: vercel deploy --prebuilt --prod --yes --scope "$VERCEL_SCOPE"
+        run: vercel deploy --prebuilt --prod --yes
