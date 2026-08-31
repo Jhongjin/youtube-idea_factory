@@ -177,14 +177,19 @@ export function SourceReviewQueue({
       setError("재시도할 실패 소스가 없습니다.");
       return;
     }
-    const confirmation = window.prompt(
-      `${fetchTranscriptConfirmToken}를 입력하면 ${selectedCount > 0 ? `선택한 ${selectedCount}개` : failedOnly ? "실패한 소스" : "자막이 없는 전체 소스"}의 자막을 순차 수집합니다.${transcriptMode === "auto" ? " 자동 방식은 공개 자막이 없으면 생성 비용이 발생할 수 있습니다." : " 공개 자막만 사용합니다."}`,
-    );
-    if (confirmation === null) {
-      return;
-    }
-    if (confirmation !== fetchTranscriptConfirmToken) {
-      setError(`배치 자막 가져오기에는 ${fetchTranscriptConfirmToken}가 필요합니다.`);
+    const targetCopy = selectedCount > 0 ? `선택한 ${selectedCount}개` : failedOnly ? "실패한 소스" : "자막이 없는 전체 소스";
+    if (transcriptMode === "auto") {
+      const confirmation = window.prompt(
+        `${fetchTranscriptConfirmToken}를 입력하면 ${targetCopy}의 자막을 순차 수집합니다. 공개 자막이 없으면 생성 비용이 발생할 수 있습니다.`,
+      );
+      if (confirmation === null) {
+        return;
+      }
+      if (confirmation !== fetchTranscriptConfirmToken) {
+        setError(`자동 자막 가져오기에는 ${fetchTranscriptConfirmToken}가 필요합니다.`);
+        return;
+      }
+    } else if (!window.confirm(`${targetCopy}에서 비용이 들지 않는 공개 자막만 가져올까요?`)) {
       return;
     }
 
@@ -224,14 +229,7 @@ export function SourceReviewQueue({
 
   async function fetchTranscript(source: SourceVideo) {
     const key = sourceKey(source);
-    const confirmation = window.prompt(
-      `${fetchTranscriptConfirmToken}를 입력하면 이 소스의 공개 자막을 가져옵니다. 공개 자막만 사용하므로 생성 비용은 발생하지 않습니다.`,
-    );
-    if (confirmation === null) {
-      return;
-    }
-    if (confirmation !== fetchTranscriptConfirmToken) {
-      setError(`자막 가져오기에는 ${fetchTranscriptConfirmToken}가 필요합니다.`);
+    if (!window.confirm("이 소스에서 비용이 들지 않는 공개 자막만 가져올까요?")) {
       return;
     }
 
