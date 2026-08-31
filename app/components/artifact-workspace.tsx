@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Check, FileText, Save } from "lucide-react";
 import type { RunArtifact } from "@/lib/artifacts";
 
@@ -148,9 +148,13 @@ export function ArtifactWorkspace({
   }
 
   const activeContent = contents[activeArtifact.id] ?? "";
+  const deferredActiveContent = useDeferredValue(activeContent);
   const originalContent = savedContents[activeArtifact.id] ?? activeArtifact.content;
   const isDirty = activeContent !== originalContent;
-  const preview = getArtifactPreview(activeContent, activeArtifact.label);
+  const preview = useMemo(
+    () => getArtifactPreview(deferredActiveContent, activeArtifact.label),
+    [activeArtifact.label, deferredActiveContent],
+  );
 
   async function saveArtifact() {
     setSaveState("saving");
@@ -262,11 +266,11 @@ export function ArtifactWorkspace({
               <span>원문 보기</span>
               <strong>
                 {activeArtifact.size > 0
-                  ? `${activeArtifact.size.toLocaleString()}바이트`
+                  ? `${activeArtifact.size.toLocaleString("ko-KR")}바이트`
                   : "비어 있음"}
               </strong>
             </summary>
-            <pre>{activeContent.trim() || "아직 저장된 내용이 없습니다."}</pre>
+            <pre>{deferredActiveContent.trim() || "아직 저장된 내용이 없습니다."}</pre>
           </details>
           <details className="artifact-edit-disclosure">
             <summary>
