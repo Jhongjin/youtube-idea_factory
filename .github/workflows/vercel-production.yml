@@ -19,7 +19,8 @@ jobs:
     timeout-minutes: 30
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_PROJECT: youtube-idea-factory
+      VERCEL_ORG_ID: team_pyGSWhxVi7lzHfu3BUc5yIGt
+      VERCEL_PROJECT_ID: prj_8e2ZWJZtIudKrtgOKpUpaswxNDTP
 
     steps:
       - name: Check out source
@@ -37,8 +38,8 @@ jobs:
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: Link the personal Vercel project
-        run: vercel link --yes --project "$VERCEL_PROJECT"
+      - name: Pin the personal Vercel project
+        run: node -e "const fs=require('fs'); fs.mkdirSync('.vercel',{recursive:true}); fs.writeFileSync('.vercel/project.json',JSON.stringify({orgId:process.env.VERCEL_ORG_ID,projectId:process.env.VERCEL_PROJECT_ID}))"
 
       - name: Pull Production configuration
         run: vercel pull --yes --environment=production
