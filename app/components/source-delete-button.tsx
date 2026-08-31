@@ -44,6 +44,15 @@ export function SourceDeleteButton({
       return;
     }
 
+    if (mode === "all") {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("step", "research");
+      nextUrl.searchParams.set("notice", "sources-deleted");
+      nextUrl.hash = "youtube-finder";
+      window.location.assign(nextUrl.toString());
+      return;
+    }
+
     window.location.reload();
   }
 

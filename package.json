@@ -6,6 +6,7 @@
     "dev": "node scripts/next-realpath.cjs dev",
     "build": "node scripts/next-realpath.cjs build",
     "start": "node scripts/next-realpath.cjs start",
+    "test": "node --experimental-strip-types --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/*.test.mts",
     "ops:status": "node scripts/ops-status.mjs",
     "ops:worker-doctor": "node scripts/worker-doctor.mjs",
     "render:worker": "node scripts/render-worker.mjs",

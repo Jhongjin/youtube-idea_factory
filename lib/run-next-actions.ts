@@ -4,6 +4,7 @@ import { operatorIssueCopy } from "@/lib/operator-copy";
 import type { PackageValidationResult } from "@/lib/package-validation";
 import type { ProductionPackage } from "@/lib/runs";
 import type { RunWorkerStatus } from "@/lib/worker-status";
+import { getInitialWorkflowGate } from "@/lib/workflow-navigation";
 
 export type RunNextActionStatus = "done" | "review" | "blocked" | "pending";
 
@@ -164,19 +165,8 @@ export function getRunNextActionPlan({
   validation: PackageValidationResult;
   workerStatus: RunWorkerStatus;
 }): RunNextActionPlan {
-  if (validation.status === "fail") {
-    return step({
-      detail: `${validation.failures.length}개 구조 문제가 남아 있습니다.`,
-      headline: "실행 자료 보정",
-      items: firstFailures(validation),
-      primaryActionId: "qa-draft",
-      stageIndex: 1,
-      stageLabel: "자료 보정",
-      status: "blocked",
-    });
-  }
-
-  if (pkg.sources.length === 0) {
+  const initialGate = getInitialWorkflowGate(pkg.sources.length, validation.status);
+  if (initialGate === "research") {
     return step({
       detail: "소스 영상이 있어야 분석, 대본, 검수 흐름이 안정적으로 이어집니다.",
       headline: "소스 영상 수집",
@@ -191,6 +181,18 @@ export function getRunNextActionPlan({
       stageIndex: 1,
       stageLabel: "리서치",
       status: "pending",
+    });
+  }
+
+  if (initialGate === "validation") {
+    return step({
+      detail: `${validation.failures.length}개 구조 문제가 남아 있습니다.`,
+      headline: "실행 자료 보정",
+      items: firstFailures(validation),
+      primaryActionId: "qa-draft",
+      stageIndex: 1,
+      stageLabel: "자료 보정",
+      status: "blocked",
     });
   }
 

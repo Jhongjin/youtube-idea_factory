@@ -77,6 +77,7 @@ import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 import { getAppStorageMode } from "@/lib/storage-mode";
 import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
+import { parseGuidedStep, type GuidedStepKey } from "@/lib/workflow-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -147,8 +148,6 @@ const guidedStepDefinitions = [
     label: "발행 컨펌",
   },
 ] as const;
-
-type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
 
 function guidedStepIndex(stepKey: GuidedStepKey) {
   return guidedStepDefinitions.findIndex((step) => step.key === stepKey);
@@ -1322,6 +1321,11 @@ const dashboardNoticeCopy: Record<
     title: "후보 영상을 소스로 추가했습니다.",
     tone: "success",
   },
+  "sources-deleted": {
+    detail: "소스 목록을 비웠습니다. 유튜브 파인더에서 새 후보를 다시 검색할 수 있습니다.",
+    title: "소스 영상을 모두 삭제했습니다.",
+    tone: "success",
+  },
   "sources-deduped": {
     detail: "중복 URL과 video ID를 기준으로 소스 목록을 정리했습니다.",
     title: "중복 소스를 제거했습니다.",
@@ -2247,7 +2251,7 @@ export default async function Home({
       : null;
   const selectedChannelId = activeChannelId || runChannelId(activeRun);
   const currentStep = defaultGuidedStep(nextActionPlan);
-  const activeStep = currentStep;
+  const activeStep = parseGuidedStep(params.step) ?? currentStep;
 
   return (
     <div className="shell">
