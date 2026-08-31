@@ -1,4 +1,5 @@
 import { generateLlmText } from "@/lib/llm-adapter";
+import { mergeCuratedClaimLedger } from "@/lib/claim-ledger-merge";
 import { readRunFileIfExists, readRunJson, writeRunFile, writeRunJson } from "@/lib/run-store";
 import type { ProductionPackage, SourceVideo } from "@/lib/runs";
 
@@ -113,6 +114,7 @@ Rules:
 - Do not copy competitor wording, title structure, thumbnail composition, or distinctive scene order.
 - For claim ledger rows, use only these statuses: supported, needs_evidence, opinion, high_risk, do_not_use.
 - Do not mark a claim as supported unless the provided source/transcript context directly supports it and an evidence URL/source is present.
+- Preserve existing supported rows with evidence URLs and existing do_not_use rows verbatim.
 - If evidence is incomplete, use needs_evidence or opinion.
 - Do not invent views, dates, claims, quotes, studies, or external facts.
 - Keep final script, media generation, render, and publishing behind human approval.
@@ -198,10 +200,11 @@ export async function refineAnalysisWithLlm(
   if (!refinedAnalysis || !refinedClaimLedger) {
     throw new Error("LLM response did not include both required file markers.");
   }
+  const mergedClaimLedger = mergeCuratedClaimLedger(claimLedger, refinedClaimLedger);
 
   const generatedAt = new Date().toISOString();
   const record = `\n\n---\n\nLLM refinement record:\n\n- Generated at: ${generatedAt}\n- Provider: ${result.provider}\n- Model: ${result.model}\n- Response ID: ${result.responseId ?? ""}\n- Human review required before script, media generation, render, or publishing.\n`;
-  const claims = parseClaimLedger(refinedClaimLedger);
+  const claims = parseClaimLedger(mergedClaimLedger);
   pkg.claim_ledger = claims;
   pkg.script_plan = {
     ...pkg.script_plan,
@@ -210,7 +213,7 @@ export async function refineAnalysisWithLlm(
 
   await Promise.all([
     writeRunFile(runId, "02-video-analysis.md", `${refinedAnalysis}${record}`),
-    writeRunFile(runId, "03-claim-ledger.md", `${refinedClaimLedger}${record}`),
+    writeRunFile(runId, "03-claim-ledger.md", `${mergedClaimLedger}${record}`),
     writeRunJson(runId, "production-package.json", pkg),
   ]);
 
