@@ -1,0 +1,51 @@
+name: Deploy Production to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_SCOPE: jdgd9053-cpus-projects
+      VERCEL_PROJECT: youtube-idea-factory
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Link the personal Vercel project
+        run: vercel link --yes --project "$VERCEL_PROJECT" --scope "$VERCEL_SCOPE"
+
+      - name: Pull Production configuration
+        run: vercel pull --yes --environment=production --scope "$VERCEL_SCOPE"
+
+      - name: Build the Production artifact
+        run: vercel build --prod --scope "$VERCEL_SCOPE"
+
+      - name: Deploy the verified artifact
+        run: vercel deploy --prebuilt --prod --yes --scope "$VERCEL_SCOPE"
