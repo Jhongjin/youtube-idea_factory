@@ -202,8 +202,9 @@ export function ArtifactWorkspace({
             <span>{showAllArtifacts || !hasFocusFilter ? "모든 결과" : "현재 결과"}</span>
             <strong>{visibleArtifacts.length}개</strong>
           </div>
-          {visibleArtifacts.map((artifact) => (
+          {visibleArtifacts.map((artifact, index) => (
             <button
+              aria-controls={`artifact-panel-${artifact.id}`}
               aria-selected={artifact.id === activeArtifact.id}
               className={`artifact-tab ${artifact.id === activeArtifact.id ? "active" : ""}`}
               id={`artifact-${artifact.id}`}
@@ -213,7 +214,31 @@ export function ArtifactWorkspace({
                 setSaveState("idle");
                 setError("");
               }}
+              onKeyDown={(event) => {
+                if (!["ArrowDown", "ArrowLeft", "ArrowRight", "ArrowUp", "Home", "End"].includes(event.key)) {
+                  return;
+                }
+                event.preventDefault();
+                const lastIndex = visibleArtifacts.length - 1;
+                const nextIndex =
+                  event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? lastIndex
+                      : event.key === "ArrowRight" || event.key === "ArrowDown"
+                        ? (index + 1) % visibleArtifacts.length
+                        : (index - 1 + visibleArtifacts.length) % visibleArtifacts.length;
+                const nextArtifact = visibleArtifacts[nextIndex];
+                if (!nextArtifact) {
+                  return;
+                }
+                setActiveId(nextArtifact.id);
+                window.requestAnimationFrame(() => {
+                  document.getElementById(`artifact-${nextArtifact.id}`)?.focus();
+                });
+              }}
               role="tab"
+              tabIndex={artifact.id === activeArtifact.id ? 0 : -1}
               type="button"
             >
               <FileText size={15} />
@@ -237,7 +262,12 @@ export function ArtifactWorkspace({
           ) : null}
         </div>
 
-        <div className="artifact-editor">
+        <div
+          aria-labelledby={`artifact-${activeArtifact.id}`}
+          className="artifact-editor"
+          id={`artifact-panel-${activeArtifact.id}`}
+          role="tabpanel"
+        >
           <div className="artifact-meta">
             <span>{activeArtifact.label}</span>
             <span>{activeArtifact.size > 0 ? "저장됨" : "아직 내용 없음"}</span>

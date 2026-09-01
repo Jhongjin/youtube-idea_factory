@@ -3,6 +3,8 @@ import {
   BarChart3,
   Brain,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clapperboard,
   Image,
   KeyRound,
@@ -77,7 +79,6 @@ import { getRuns, getStageState, type RunSummary } from "@/lib/runs";
 import { getAppStorageMode } from "@/lib/storage-mode";
 import { getWorkQueueSummary, workQueueStatusCopy, type WorkQueueSummary } from "@/lib/work-queue";
 import { getRunWorkerStatus, type RunWorkerStatus } from "@/lib/worker-status";
-import { parseGuidedStep, type GuidedStepKey } from "@/lib/workflow-navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -123,55 +124,63 @@ const feedbackStatusCopy: Record<string, string> = {
 
 const guidedStepDefinitions = [
   {
-    description: "채널과 이번 영상 주제를 확인합니다.",
-    key: "setup",
-    label: "기획",
+    description: "제작할 채널과 기본 운영 상태를 확인합니다.",
+    key: "channel",
+    label: "채널",
   },
   {
-    description: "후보 영상과 근거를 먼저 채웁니다.",
+    description: "주제, 형식, 시청자와 영상 길이를 확인합니다.",
+    key: "topic",
+    label: "주제",
+  },
+  {
+    description: "후보 영상과 근거를 수집하고 검토합니다.",
     key: "research",
-    label: "트렌드 소스",
+    label: "리서치",
   },
   {
-    description: "분석, 대본, 스토리보드를 만듭니다.",
-    key: "draft",
-    label: "AI 스크립트",
+    description: "근거를 연결해 훅, 구성, 내레이션을 완성합니다.",
+    key: "script",
+    label: "대본",
   },
   {
-    description: "이미지, 영상, 음성 생성 준비를 합니다.",
-    key: "production",
-    label: "에셋 검토",
+    description: "대본을 장면과 화면 연출로 나눕니다.",
+    key: "storyboard",
+    label: "스토리보드",
   },
   {
-    description: "영상 조립, 메타데이터, 유튜브 발행 컨펌을 진행합니다.",
-    key: "review",
-    label: "발행 컨펌",
+    description: "장면별 이미지, 영상, 음성 제작을 준비합니다.",
+    key: "media",
+    label: "미디어",
+  },
+  {
+    description: "영상, 메타데이터와 업로드 조건을 최종 확인합니다.",
+    key: "publish",
+    label: "검수·발행",
   },
 ] as const;
+
+type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
 
 function guidedStepIndex(stepKey: GuidedStepKey) {
   return guidedStepDefinitions.findIndex((step) => step.key === stepKey);
 }
 
-const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "setup" | "research">, string[]> = {
-  draft: [
+const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "channel" | "topic" | "research">, string[]> = {
+  script: [
     "video-analysis",
     "script-patterns",
     "claim-ledger",
     "strategy-recommendations",
     "script-plan",
-    "storyboard",
   ],
-  production: ["storyboard", "media-prompts"],
-  review: [
+  storyboard: ["storyboard"],
+  media: ["media-prompts", "render-edl"],
+  publish: [
     "publishing",
     "qa",
     "render-edl",
     "youtube-upload-job",
-    "performance-snapshot",
-    "feedback-insights",
-    "ab-learning-log",
-    "channel-memory-update",
   ],
 };
 
@@ -203,33 +212,45 @@ const actionArtifactFocus: Partial<Record<RunPrimaryActionId, string[]>> = {
 };
 
 function getCurrentArtifactFocus(plan: RunNextActionPlan, step: GuidedStepKey) {
-  if (plan.primaryActionId && actionArtifactFocus[plan.primaryActionId]) {
-    return actionArtifactFocus[plan.primaryActionId] ?? [];
-  }
-  if (step === "draft" || step === "production" || step === "review") {
-    return guidedArtifactFocus[step];
+  if (step === "script" || step === "storyboard" || step === "media" || step === "publish") {
+    const stepArtifacts = guidedArtifactFocus[step];
+    const actionArtifacts = plan.primaryActionId ? actionArtifactFocus[plan.primaryActionId] ?? [] : [];
+    const focusedActionArtifacts = actionArtifacts.filter((artifactId) => stepArtifacts.includes(artifactId));
+    return focusedActionArtifacts.length > 0 ? focusedActionArtifacts : stepArtifacts;
   }
   return [];
 }
 
 function getArtifactWorkspaceCopy(plan: RunNextActionPlan, step: GuidedStepKey) {
   const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
-  if (currentGuide) {
+  if (currentGuide && defaultGuidedStep(plan) === step) {
     return {
       description: "지금 할 일과 연결된 결과만 먼저 보여줍니다.",
       title: `${currentGuide.title} 결과`,
     };
   }
-  if (step === "production") {
+  if (step === "script") {
     return {
-      description: "승인이 끝나면 만들 수 있는 항목부터 이어서 정리합니다.",
-      title: "미디어 만들기 결과",
+      description: "분석과 근거를 바탕으로 훅, 구성, 내레이션을 검토합니다.",
+      title: "대본 작업 결과",
     };
   }
-  if (step === "review") {
+  if (step === "storyboard") {
+    return {
+      description: "대본을 장면 단위로 나누고 화면 연출을 검토합니다.",
+      title: "스토리보드",
+    };
+  }
+  if (step === "media") {
+    return {
+      description: "장면별 생성 요청과 조립 준비 상태를 확인합니다.",
+      title: "미디어 제작",
+    };
+  }
+  if (step === "publish") {
     return {
       description: "유튜브 발행 전 컨펌에 필요한 결과만 먼저 보여줍니다.",
-      title: "유튜브 발행 및 컨펌 결과",
+      title: "검수 및 발행",
     };
   }
   return {
@@ -386,15 +407,17 @@ const advancedActionGroupsByStep: Record<
   GuidedStepKey,
   { actionIds: RunPrimaryActionId[]; label: string }[]
 > = {
-  setup: [
+  channel: [
     { actionIds: ["open-settings"], label: "준비" },
-    { actionIds: ["source-enrich"], label: "리서치" },
+  ],
+  topic: [
+    { actionIds: ["open-settings"], label: "제작 설정" },
   ],
   research: [
     { actionIds: ["source-enrich", "analysis-draft"], label: "리서치" },
     { actionIds: ["draft-flow"], label: "초안" },
   ],
-  draft: [
+  script: [
     {
       actionIds: [
         "draft-flow",
@@ -407,13 +430,15 @@ const advancedActionGroupsByStep: Record<
       ],
       label: "대본",
     },
-    { actionIds: ["storyboard-draft", "qa-draft"], label: "스토리보드" },
   ],
-  production: [
+  storyboard: [
+    { actionIds: ["storyboard-draft", "subtitle-draft"], label: "장면 설계" },
+  ],
+  media: [
     { actionIds: ["media-draft", "asset-manifest", "generation-queue"], label: "미디어" },
     { actionIds: ["subtitle-draft", "render-manifest"], label: "조립 준비" },
   ],
-  review: [
+  publish: [
     {
       actionIds: ["qa-draft", "render-manifest", "render-job", "local-render"],
       label: "확인/조립",
@@ -423,13 +448,8 @@ const advancedActionGroupsByStep: Record<
         "publishing-draft",
         "publishing-handoff",
         "youtube-upload-job",
-        "performance-snapshot",
-        "feedback-flow",
-        "feedback-insights",
-        "learning-log",
-        "channel-memory",
       ],
-      label: "업로드/피드백",
+      label: "업로드",
     },
   ],
 };
@@ -509,7 +529,7 @@ function getCurrentPipelineStageIndex(plan: RunNextActionPlan) {
 
 function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
   if (!plan) {
-    return "setup";
+    return "channel";
   }
   if (
     plan.primaryActionId === "source-enrich" ||
@@ -532,7 +552,9 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.stageLabel === "대본" ||
     plan.stageLabel === "스토리보드"
   ) {
-    return "draft";
+    return plan.primaryActionId === "storyboard-draft" || plan.stageLabel === "스토리보드"
+      ? "storyboard"
+      : "script";
   }
   if (
     plan.primaryActionId === "media-draft" ||
@@ -546,7 +568,7 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.stageLabel === "미디어 만들기" ||
     plan.stageLabel === "생성 승인"
   ) {
-    return "production";
+    return "media";
   }
   if (
     plan.primaryActionId === "publishing-draft" ||
@@ -565,9 +587,9 @@ function defaultGuidedStep(plan?: RunNextActionPlan | null): GuidedStepKey {
     plan.stageLabel === "최종 확인" ||
     plan.stageLabel === "패키지 보정"
   ) {
-    return "review";
+    return "publish";
   }
-  return "setup";
+  return "topic";
 }
 
 const learningStatusCopy: Record<string, string> = {
@@ -877,20 +899,47 @@ function OperatingChannelBar({
 
 function GuidedStepNav({
   activeStep,
+  channelId,
+  currentStep,
+  runId,
 }: {
   activeStep: GuidedStepKey;
+  channelId: string;
+  currentStep: GuidedStepKey;
+  runId: string;
 }) {
   const activeIndex = guidedStepIndex(activeStep);
+  const currentIndex = guidedStepIndex(currentStep);
   const activeStepCopy = guidedStepDefinitions[activeIndex] ?? guidedStepDefinitions[0];
   return (
     <nav className="guided-step-nav" aria-label="현재 제작 단계">
       <div className="guided-step-current">
-        <span>현재 {activeIndex + 1}/5</span>
+        <span>{activeIndex + 1}/7</span>
         <div>
           <strong>{activeStepCopy.label}</strong>
           <small>{activeStepCopy.description}</small>
         </div>
       </div>
+      <ol className="guided-step-list">
+        {guidedStepDefinitions.map((step, index) => {
+          const isActive = step.key === activeStep;
+          const isCurrent = step.key === currentStep;
+          const isComplete = index < currentIndex;
+          return (
+            <li key={step.key}>
+              <Link
+                aria-current={isActive ? "step" : undefined}
+                className={`guided-step-link ${isActive ? "active" : ""} ${isCurrent ? "current" : ""} ${isComplete ? "complete" : ""}`}
+                href={dashboardHref({ channelId, runId, step: step.key })}
+              >
+                <span>{isComplete ? <CheckCircle2 size={14} /> : String(index + 1).padStart(2, "0")}</span>
+                <strong>{step.label}</strong>
+                {isCurrent ? <small>권장</small> : null}
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
     </nav>
   );
 }
@@ -988,16 +1037,22 @@ function GuidedActionPanel({
 
 function GuidedRunWorkspace({
   activeStep,
+  allRuns,
   artifacts,
   channelId,
+  channels,
+  currentStep,
   generationState,
   nextActionPlan,
   providerSettings,
   run,
 }: {
   activeStep: GuidedStepKey;
+  allRuns: RunSummary[];
   artifacts: Awaited<ReturnType<typeof getRunArtifacts>>;
   channelId: string;
+  channels: SafeYouTubeChannel[];
+  currentStep: GuidedStepKey;
   generationState: AssetGenerationState;
   nextActionPlan: RunNextActionPlan;
   providerSettings: SafeProviderSettings;
@@ -1005,12 +1060,39 @@ function GuidedRunWorkspace({
 }) {
   const focusArtifactIds = getCurrentArtifactFocus(nextActionPlan, activeStep);
   const workspaceCopy = getArtifactWorkspaceCopy(nextActionPlan, activeStep);
+  const activeIndex = guidedStepIndex(activeStep);
+  const previousStep = guidedStepDefinitions[activeIndex - 1];
+  const nextStep = guidedStepDefinitions[activeIndex + 1];
+  const isRecommendedStep = activeStep === currentStep;
   return (
     <div className="guided-workspace">
-      <GuidedStepNav activeStep={activeStep} />
-      <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
+      {isRecommendedStep ? (
+        <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
+      ) : (
+        <section className="stage-review-banner" aria-label="단계 둘러보기">
+          <div>
+            <span>다른 단계 확인 중</span>
+            <strong>{guidedStepDefinitions[guidedStepIndex(currentStep)]?.label} 단계가 현재 권장 작업입니다.</strong>
+          </div>
+          <Link
+            className="text-button primary"
+            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
+          >
+            권장 단계로 이동
+          </Link>
+        </section>
+      )}
 
-      {activeStep === "setup" ? (
+      {activeStep === "channel" ? (
+        <OperatingChannelBar
+          activeStep={activeStep}
+          allRuns={allRuns}
+          channels={channels}
+          selectedChannelId={channelId}
+        />
+      ) : null}
+
+      {activeStep === "topic" ? (
         <>
           <SummaryGrid run={run} />
           <BriefPanel run={run} />
@@ -1021,7 +1103,7 @@ function GuidedRunWorkspace({
         <ResearchStepPanel channelId={channelId} run={run} />
       ) : null}
 
-      {activeStep === "draft" ? (
+      {activeStep === "script" ? (
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
@@ -1039,7 +1121,17 @@ function GuidedRunWorkspace({
         </>
       ) : null}
 
-      {activeStep === "production" ? (
+      {activeStep === "storyboard" ? (
+        <ArtifactWorkspace
+          artifacts={artifacts}
+          description={workspaceCopy.description}
+          focusArtifactIds={focusArtifactIds}
+          runId={run.id}
+          title={workspaceCopy.title}
+        />
+      ) : null}
+
+      {activeStep === "media" ? (
         <>
           {generationState.manifestExists ? (
             <GenerationConsolePanel
@@ -1060,7 +1152,7 @@ function GuidedRunWorkspace({
         </>
       ) : null}
 
-      {activeStep === "review" ? (
+      {activeStep === "publish" ? (
         <>
           <ArtifactWorkspace
             artifacts={artifacts}
@@ -1077,6 +1169,35 @@ function GuidedRunWorkspace({
           </details>
         </>
       ) : null}
+
+      <nav className="studio-step-footer" aria-label="제작 단계 이동">
+        {previousStep ? (
+          <Link href={dashboardHref({ channelId, runId: run.id, step: previousStep.key })}>
+            <ChevronLeft size={16} />
+            <span>
+              <small>이전</small>
+              <strong>{previousStep.label}</strong>
+            </span>
+          </Link>
+        ) : (
+          <span />
+        )}
+        <div className="studio-save-state">
+          <span>프로젝트 기록 유지</span>
+          <strong>{run.id}</strong>
+        </div>
+        {nextStep ? (
+          <Link className="next" href={dashboardHref({ channelId, runId: run.id, step: nextStep.key })}>
+            <span>
+              <small>다음 단계 보기</small>
+              <strong>{nextStep.label}</strong>
+            </span>
+            <ChevronRight size={16} />
+          </Link>
+        ) : (
+          <span />
+        )}
+      </nav>
     </div>
   );
 }
@@ -1101,6 +1222,71 @@ function ResearchStepPanel({ channelId, run }: { channelId: string; run: RunSumm
       </div>
       <SourcesPanel run={run} showEnrichAction={hasSources} />
     </>
+  );
+}
+
+function StudioHeader({
+  activeRun,
+  activeStep,
+  channelId,
+  providerSettings,
+  runs,
+}: {
+  activeRun: RunSummary;
+  activeStep: GuidedStepKey;
+  channelId: string;
+  providerSettings: SafeProviderSettings;
+  runs: RunSummary[];
+}) {
+  return (
+    <header className="studio-header">
+      <Link className="studio-brand" href="/dashboard">
+        <span><Wand2 size={18} /></span>
+        <div>
+          <strong>YouTube Idea Factory</strong>
+          <small>제작 워크스페이스</small>
+        </div>
+      </Link>
+      <div className="studio-project-identity">
+        <span>{runChannelLabel(activeRun)}</span>
+        <strong>{activeRun.package.brief.topic}</strong>
+        <small>
+          {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} · {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} · {activeRun.package.brief.target_duration_seconds ?? 0}초
+        </small>
+      </div>
+      <div className="studio-header-actions">
+        <details className="studio-project-switcher">
+          <summary>
+            프로젝트 전환
+            <strong>{runs.length}개</strong>
+          </summary>
+          <div>
+            {runs.slice(0, 8).map((run) => (
+              <Link
+                aria-current={run.id === activeRun.id ? "page" : undefined}
+                href={dashboardHref({ channelId, runId: run.id })}
+                key={run.id}
+              >
+                <strong>{run.package.brief.topic}</strong>
+                <span>{runChannelLabel(run)}</span>
+              </Link>
+            ))}
+          </div>
+        </details>
+        <Link
+          aria-label="실행 데이터 새로고침"
+          className="icon-button"
+          href={dashboardHref({ channelId, runId: activeRun.id, step: activeStep })}
+          title="실행 데이터 새로고침"
+        >
+          <RefreshCw size={16} />
+        </Link>
+        <Link aria-label="운영 설정" className="icon-button" href="/settings" title="운영 설정">
+          <Settings size={16} />
+        </Link>
+        <AdvancedActionMenu activeStep={activeStep} providerSettings={providerSettings} run={activeRun} />
+      </div>
+    </header>
   );
 }
 
@@ -1254,7 +1440,7 @@ function EmptyState({
     <main className="main">
       <DashboardNotice notice={notice} />
       <OperatingChannelBar
-        activeStep="setup"
+        activeStep="channel"
         allRuns={allRuns}
         channels={channels}
         selectedChannelId={selectedChannelId}
@@ -2004,11 +2190,13 @@ function FeedbackPanel({ run }: { run: RunSummary }) {
 }
 
 function StageFocusPanel({
+  activeStep,
   approvals,
   plan,
   run,
   validation,
 }: {
+  activeStep: GuidedStepKey;
   approvals: RunApprovals;
   plan: RunNextActionPlan;
   run: RunSummary;
@@ -2020,8 +2208,9 @@ function StageFocusPanel({
   ).length;
   const decision = inspectorDecision({ plan, run, validation });
   const gate = activeApprovalGate(plan);
-  const guidedStepKey = defaultGuidedStep(plan);
-  const guidedStepPosition = Math.max(guidedStepIndex(guidedStepKey), 0);
+  const recommendedStep = defaultGuidedStep(plan);
+  const isRecommendedStep = activeStep === recommendedStep;
+  const guidedStepPosition = Math.max(guidedStepIndex(activeStep), 0);
   const guidedStep = guidedStepDefinitions[guidedStepPosition] ?? guidedStepDefinitions[0];
   const openApprovalCount = (Object.keys(approvals) as ApprovalGate[]).filter(
     (approvalGate) => !approvalReady(approvals[approvalGate]),
@@ -2029,7 +2218,7 @@ function StageFocusPanel({
   const currentGuide = plan.primaryActionId ? actionGuides[plan.primaryActionId] : undefined;
   const actionOutcome = currentGuide?.output ?? plan.detail;
   return (
-    <section className={`panel focus-inspector-panel ${decision.tone}`}>
+    <section className={`panel focus-inspector-panel ${isRecommendedStep ? decision.tone : "browsing"}`}>
       <div className="panel-header">
         <div>
           <h3 className="panel-title">현재 단계</h3>
@@ -2037,22 +2226,22 @@ function StageFocusPanel({
             {guidedStepPosition + 1}단계 · {guidedStep.label}
           </p>
         </div>
-        <StatusPill status={plan.status} />
+        {isRecommendedStep ? <StatusPill status={plan.status} /> : <span className="stage-browse-pill">결과 확인</span>}
       </div>
       <div className="panel-body">
         <div className="stage-focus-summary">
-          <span>지금 할 일</span>
-          <strong>{plan.headline}</strong>
-          <p>{actionOutcome}</p>
+          <span>{isRecommendedStep ? "지금 할 일" : "이 단계에서 확인할 것"}</span>
+          <strong>{isRecommendedStep ? plan.headline : guidedStep.label}</strong>
+          <p>{isRecommendedStep ? actionOutcome : guidedStep.description}</p>
         </div>
-        {gate ? (
+        {gate && isRecommendedStep ? (
           <div className="approval-gate-summary">
             <span>필요한 승인</span>
             <strong>{approvalReady(approvals[gate]) ? "승인됨" : "승인 대기"}</strong>
             <p>{openApprovalCount}개 확인이 남아 있습니다.</p>
           </div>
         ) : null}
-        <details className="stage-focus-details">
+        {isRecommendedStep ? <details className="stage-focus-details">
           <summary>필요하면 상태 보기</summary>
           <div className="inspector-decision">
             <span>진행 상태</span>
@@ -2093,13 +2282,14 @@ function StageFocusPanel({
               <strong>{run.package.storyboard.length}</strong>
             </div>
           </div>
-        </details>
+        </details> : null}
       </div>
     </section>
   );
 }
 
 function Inspector({
+  activeStep,
   run,
   validation,
   providerSettings,
@@ -2109,6 +2299,7 @@ function Inspector({
   storageMode,
   workerStatus,
 }: {
+  activeStep: GuidedStepKey;
   run: RunSummary;
   validation: PackageValidationResult;
   providerSettings: SafeProviderSettings;
@@ -2133,19 +2324,29 @@ function Inspector({
     (stage === "검수" || stage === "최종 확인" || nextActionPlan.status === "blocked");
 
   return (
-    <aside className="inspector">
+    <aside className="studio-context-panel">
       <div className="detail-stack">
-        <PipelinePanel nextActionPlan={nextActionPlan} run={run} />
+        <StageFocusPanel
+          activeStep={activeStep}
+          approvals={approvals}
+          plan={nextActionPlan}
+          run={run}
+          validation={validation}
+        />
 
-        {showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
+        {showValidationImmediate && activeStep === "publish" ? (
+          <PackageValidationPanel initialResult={validation} runId={run.id} />
+        ) : null}
 
-        {showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
+        {showBlockersImmediate && activeStep === "publish" ? (
+          <BlockersPanel blockers={run.package.qa.blockers} />
+        ) : null}
 
-        {showApprovals ? (
+        {showApprovals && (activeStep === "media" || activeStep === "publish") ? (
           <RunApprovalsPanel key={run.id} initialApprovals={approvals} runId={run.id} />
         ) : null}
 
-        {showProviderReadiness ? (
+        {showProviderReadiness && activeStep === "channel" ? (
           <details className="inspector-more">
             <summary>API 설정 보기</summary>
             <div className="detail-stack">
@@ -2154,7 +2355,7 @@ function Inspector({
           </details>
         ) : null}
 
-        {showGeneration ? (
+        {showGeneration && activeStep === "media" ? (
           <details className="inspector-more">
             <summary>미디어 만들기 버튼 보기</summary>
             <div className="detail-stack">
@@ -2167,7 +2368,7 @@ function Inspector({
           </details>
         ) : null}
 
-        {showAssembly ? (
+        {showAssembly && activeStep === "publish" ? (
           <details className="inspector-more">
             <summary>영상 조립 준비 보기</summary>
             <div className="detail-stack">
@@ -2181,20 +2382,15 @@ function Inspector({
           </details>
         ) : null}
 
-        {showFeedback ? (
-          <details className="inspector-more">
-            <summary>성과 확인 보기</summary>
-            <div className="detail-stack">
-              <FeedbackPanel run={run} />
-            </div>
-          </details>
-        ) : null}
-
         <details className="inspector-more">
-          <summary>필요할 때만 보기</summary>
+          <summary>현재 단계 상세 정보</summary>
           <div className="detail-stack">
-            {!showValidationImmediate ? <PackageValidationPanel initialResult={validation} runId={run.id} /> : null}
-            {!showBlockersImmediate ? <BlockersPanel blockers={run.package.qa.blockers} /> : null}
+            {activeStep === "publish" && !showValidationImmediate ? (
+              <PackageValidationPanel initialResult={validation} runId={run.id} />
+            ) : null}
+            {activeStep === "publish" && !showBlockersImmediate ? (
+              <BlockersPanel blockers={run.package.qa.blockers} />
+            ) : null}
             <BriefPanel run={run} />
           </div>
         </details>
@@ -2211,8 +2407,6 @@ export default async function Home({
   await requireUser({ redirectTo: "/login?next=/dashboard" });
   const runs = await getRuns();
   const channels = await listYouTubeChannels();
-  const memoryIndex = await getChannelMemoryIndex(runs);
-  const workQueueSummary = getWorkQueueSummary();
   const providerSettings = await getSafeProviderSettings();
   const params = searchParams ? await searchParams : {};
   const channelParam = params.channel?.trim() ?? "";
@@ -2251,120 +2445,69 @@ export default async function Home({
       : null;
   const selectedChannelId = activeChannelId || runChannelId(activeRun);
   const currentStep = defaultGuidedStep(nextActionPlan);
-  const activeStep = parseGuidedStep(params.step) ?? currentStep;
+  const requestedStep = guidedStepDefinitions.find((step) => step.key === params.step)?.key;
+  const activeStep = requestedStep ?? currentStep;
 
   return (
-    <div className="shell">
-      <Sidebar
-        activeRun={activeRun}
-        activeChannelId={activeChannelId}
-        allRuns={runs}
-        channels={channels}
-        memoryIndex={memoryIndex}
-        runs={visibleRuns}
-        totalRuns={runs.length}
-        workQueueSummary={workQueueSummary}
-      />
+    <div className="studio-shell">
       {activeRun ? (
-        <main className="main" id="main-content">
-          <DashboardNotice notice={params.notice} />
-          <OperatingChannelBar
+        <>
+          <StudioHeader
+            activeRun={activeRun}
             activeStep={activeStep}
-            allRuns={runs}
-            channels={channels}
-            selectedChannelId={selectedChannelId}
+            channelId={selectedChannelId}
+            providerSettings={providerSettings}
+            runs={visibleRuns}
           />
-          <div className="topbar">
-            <div>
-              <p className="eyebrow">프로젝트 대시보드</p>
-              <h2>{activeRun.package.brief.topic}</h2>
-              <p className="muted">
-                {runChannelLabel(activeRun)} /{" "}
-                {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} /{" "}
-                {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} /{" "}
-                {activeRun.package.brief.target_audience || "타겟 시청자 분석 중"}
-              </p>
-            </div>
-            <div className="toolbar">
-              <Link
-                className="icon-button"
-                href={dashboardHref({
-                  channelId: selectedChannelId,
-                  runId: activeRun.id,
-                  step: activeStep,
-                })}
-                title="실행 데이터 새로고침"
-              >
-                <RefreshCw size={16} />
-              </Link>
-              <Link className="icon-button" href="/settings" title="API 설정">
-                <Settings size={16} />
-              </Link>
-              <AdvancedActionMenu
+          <main className="studio-main" id="main-content">
+            <DashboardNotice notice={params.notice} />
+            <GuidedStepNav
+              activeStep={activeStep}
+              channelId={selectedChannelId}
+              currentStep={currentStep}
+              runId={activeRun.id}
+            />
+            <div className="studio-workspace-layout">
+              <section className="studio-work-canvas" aria-label={`${guidedStepDefinitions[guidedStepIndex(activeStep)]?.label} 작업`}>
+                {nextActionPlan ? (
+                  <GuidedRunWorkspace
+                    activeStep={activeStep}
+                    allRuns={runs}
+                    artifacts={artifacts}
+                    channelId={selectedChannelId}
+                    channels={channels}
+                    currentStep={currentStep}
+                    generationState={generationState!}
+                    nextActionPlan={nextActionPlan}
+                    providerSettings={providerSettings}
+                    run={activeRun}
+                  />
+                ) : null}
+              </section>
+              <Inspector
                 activeStep={activeStep}
+                approvals={approvals!}
+                generationState={generationState!}
+                nextActionPlan={nextActionPlan!}
                 providerSettings={providerSettings}
                 run={activeRun}
+                storageMode={storageMode}
+                validation={validation!}
+                workerStatus={workerStatus!}
               />
             </div>
-          </div>
-
-          {nextActionPlan ? (
-            <GuidedRunWorkspace
-              activeStep={activeStep}
-              artifacts={artifacts}
-              channelId={selectedChannelId}
-              generationState={generationState!}
-              nextActionPlan={nextActionPlan}
-              providerSettings={providerSettings}
-              run={activeRun}
-            />
-          ) : null}
-        </main>
+          </main>
+        </>
       ) : (
-        <EmptyState
-          allRuns={runs}
-          channelName={activeChannel?.channel_name}
-          channels={channels}
-          notice={params.notice}
-          selectedChannelId={selectedChannelId}
-        />
-      )}
-      {activeRun ? (
-        <Inspector
-          approvals={approvals!}
-          generationState={generationState!}
-          nextActionPlan={nextActionPlan!}
-          providerSettings={providerSettings}
-          run={activeRun}
-          storageMode={storageMode}
-          validation={validation!}
-          workerStatus={workerStatus!}
-        />
-      ) : (
-        <aside className="inspector">
-          <section className="panel">
-            <div className="panel-header">
-              <h3 className="panel-title">시작 순서</h3>
-              <ListChecks size={16} />
-            </div>
-            <div className="panel-body">
-              <div className="detail-stack">
-                <div className="detail-row">
-                  <span>1</span>
-                  <span>상단에서 운영 채널 확인</span>
-                </div>
-                <div className="detail-row">
-                  <span>2</span>
-                  <span>가운데 새 제작 시작 작성</span>
-                </div>
-                <div className="detail-row">
-                  <span>3</span>
-                  <span>생성 후 다음 작업 버튼 진행</span>
-                </div>
-              </div>
-            </div>
-          </section>
-        </aside>
+        <div className="studio-empty-layout">
+          <EmptyState
+            allRuns={runs}
+            channelName={activeChannel?.channel_name}
+            channels={channels}
+            notice={params.notice}
+            selectedChannelId={selectedChannelId}
+          />
+        </div>
       )}
     </div>
   );
