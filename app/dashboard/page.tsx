@@ -162,8 +162,123 @@ const guidedStepDefinitions = [
 
 type GuidedStepKey = (typeof guidedStepDefinitions)[number]["key"];
 
+const stageFunctionDefinitions: Record<
+  GuidedStepKey,
+  {
+    completion: string;
+    description: string;
+    functions: { detail: string; href: string; label: string }[];
+    title: string;
+  }
+> = {
+  channel: {
+    completion: "제작 채널이 선택되고, 업로드 연결 상태를 확인하면 완료됩니다.",
+    description: "이번 영상을 올릴 채널을 선택하고 채널의 기본 운영 상태를 확인합니다.",
+    functions: [
+      { detail: "등록된 채널 중 이번 제작에 사용할 채널을 고릅니다.", href: "#channel-selector", label: "채널 선택·변경" },
+      { detail: "운영 상태와 YouTube 업로드 OAuth 준비 여부를 확인합니다.", href: "#channel-readiness", label: "업로드 준비 확인" },
+      { detail: "채널 이름, 기본 언어, OAuth 설정을 관리합니다.", href: "/admin/channels", label: "채널 관리" },
+    ],
+    title: "어느 채널에서 제작할지 결정합니다",
+  },
+  topic: {
+    completion: "사용할 주제를 확정하거나, 다른 주제로 새 프로젝트를 만들면 완료됩니다.",
+    description: "현재 프로젝트의 확정 주제를 확인하고 필요하면 다른 주제로 새 제작을 시작합니다.",
+    functions: [
+      { detail: "현재 프로젝트에 연결된 주제와 제작 조건을 확인합니다.", href: "#selected-topic", label: "선정된 주제 확인" },
+      { detail: "직접 입력 또는 카테고리 탐색으로 새 주제를 선정합니다.", href: "#topic-reselection", label: "새 주제 선정·재선정" },
+      { detail: "잘못 만든 프로젝트와 연결된 주제를 함께 삭제합니다.", href: "#topic-project-danger", label: "선정 내용 삭제" },
+    ],
+    title: "영상 주제를 선정하고 확정합니다",
+  },
+  research: {
+    completion: "사용할 소스를 고르고 분석 대상의 자막·근거가 준비되면 완료됩니다.",
+    description: "확정한 주제를 설명할 수 있는 영상과 자료를 찾고 분석 대상을 정리합니다.",
+    functions: [
+      { detail: "주제 검색, 카테고리 탐색, URL 직접 입력으로 후보를 추가합니다.", href: "#youtube-finder", label: "소스 찾기·추가" },
+      { detail: "분석에 사용할 영상과 제외할 영상을 구분합니다.", href: "#sources-panel", label: "소스 선별·정리" },
+      { detail: "선택한 영상의 자막을 가져오거나 직접 보완합니다.", href: "#sources-panel", label: "자막·근거 준비" },
+    ],
+    title: "대본의 근거가 될 자료를 준비합니다",
+  },
+  script: {
+    completion: "훅, 주장, 근거가 연결된 대본을 검토하고 저장하면 완료됩니다.",
+    description: "리서치 결과를 바탕으로 영상의 훅, 전개, 내레이션을 작성하고 다듬습니다.",
+    functions: [
+      { detail: "현재 자료로 대본 초안을 만들거나 다시 생성합니다.", href: "#stage-primary-action", label: "대본 생성·재생성" },
+      { detail: "훅, 구성, 내레이션과 근거 연결을 직접 검토합니다.", href: "#artifact-script-plan", label: "대본 검토·수정" },
+      { detail: "대본에 사용된 소스와 주장 근거를 다시 확인합니다.", href: "#sources-panel", label: "근거 대조" },
+    ],
+    title: "근거가 있는 대본을 완성합니다",
+  },
+  storyboard: {
+    completion: "모든 대본 구간이 장면과 화면 연출로 연결되면 완료됩니다.",
+    description: "대본을 장면 단위로 나누고 각 장면에서 무엇을 보여줄지 결정합니다.",
+    functions: [
+      { detail: "대본을 기준으로 장면 구성 초안을 생성합니다.", href: "#stage-primary-action", label: "스토리보드 생성" },
+      { detail: "장면 순서, 화면 내용, 내레이션 연결을 검토합니다.", href: "#artifact-storyboard", label: "장면 검토·수정" },
+      { detail: "미디어 제작에 넘길 장면이 빠짐없이 준비됐는지 확인합니다.", href: "#artifact-storyboard", label: "미디어 인계 확인" },
+    ],
+    title: "대본을 촬영 가능한 장면으로 나눕니다",
+  },
+  media: {
+    completion: "장면별 이미지·영상·음성 프롬프트와 제작 상태가 준비되면 완료됩니다.",
+    description: "스토리보드를 실제 이미지, 영상, 음성으로 만들기 위한 요청과 작업 상태를 관리합니다.",
+    functions: [
+      { detail: "장면별 이미지·영상·음성 생성 프롬프트를 만듭니다.", href: "#artifact-media-prompts", label: "생성 프롬프트 준비" },
+      { detail: "준비된 미디어 작업을 승인하고 생성 대기열에 보냅니다.", href: "#media-workboard", label: "미디어 생성·등록" },
+      { detail: "장면별 결과물 누락과 실패 상태를 확인합니다.", href: "#media-workboard", label: "결과물 상태 확인" },
+    ],
+    title: "장면에 필요한 이미지·영상·음성을 준비합니다",
+  },
+  publish: {
+    completion: "검수 오류가 없고 렌더 결과와 게시 정보, 업로드 승인이 준비되면 완료됩니다.",
+    description: "완성된 영상과 게시 정보를 검수하고 렌더·업로드 준비 상태를 확인합니다.",
+    functions: [
+      { detail: "제목, 설명, 썸네일 문구와 최종 품질 항목을 검토합니다.", href: "#artifact-publishing", label: "메타데이터·품질 검수" },
+      { detail: "타임라인과 렌더 작업의 준비 상태를 확인합니다.", href: "#publish-operations", label: "영상 조립·렌더" },
+      { detail: "채널, OAuth, 공개 범위를 확인한 뒤 업로드 작업을 승인합니다.", href: "#publish-operations", label: "YouTube 업로드 준비" },
+    ],
+    title: "최종 영상과 게시 정보를 검수합니다",
+  },
+};
+
 function guidedStepIndex(stepKey: GuidedStepKey) {
   return guidedStepDefinitions.findIndex((step) => step.key === stepKey);
+}
+
+function StageFunctionGuide({ activeStep }: { activeStep: GuidedStepKey }) {
+  const definition = stageFunctionDefinitions[activeStep];
+  const stepNumber = guidedStepIndex(activeStep) + 1;
+  return (
+    <section className="stage-function-guide" aria-labelledby={`stage-function-title-${activeStep}`}>
+      <div className="stage-function-intro">
+        <span className="stage-function-number">{String(stepNumber).padStart(2, "0")}</span>
+        <div>
+          <p>이 단계에서 할 수 있는 것</p>
+          <h2 id={`stage-function-title-${activeStep}`}>{definition.title}</h2>
+          <span>{definition.description}</span>
+        </div>
+      </div>
+      <ol className="stage-function-list">
+        {definition.functions.map((item, index) => (
+          <li key={item.label}>
+            <Link href={item.href}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{item.label}</strong>
+              <p>{item.detail}</p>
+              <small>기능 열기 <ChevronRight size={13} /></small>
+            </Link>
+          </li>
+        ))}
+      </ol>
+      <div className="stage-completion-rule">
+        <CheckCircle2 size={16} />
+        <span>완료 기준</span>
+        <strong>{definition.completion}</strong>
+      </div>
+    </section>
+  );
 }
 
 const guidedArtifactFocus: Record<Exclude<GuidedStepKey, "channel" | "topic" | "research">, string[]> = {
@@ -828,13 +943,13 @@ function OperatingChannelBar({
         : null
     : null;
   return (
-    <section className="operating-channel-bar" aria-label="운영 채널 선택">
+    <section className="operating-channel-bar" id="channel-workspace" aria-label="운영 채널 선택">
       <div className="operating-channel-primary">
         <p className="eyebrow">운영 채널</p>
         <h2>{selectedChannel ? selectedChannel.brand_name : "전체 프로젝트"}</h2>
         <span>{selectedChannelLabel}</span>
       </div>
-      <div className="operating-channel-meta">
+      <div className="operating-channel-meta" id="channel-readiness">
         <span>{channelStatus}</span>
         <span className={selectedChannel?.has_upload_refresh_token ? "ready" : "needs-setup"}>
           {uploadTokenStatus}
@@ -845,7 +960,7 @@ function OperatingChannelBar({
           채널 관리
         </Link>
       </div>
-      <details className="operating-channel-switcher" open={!selectedChannel}>
+      <details className="operating-channel-switcher" id="channel-selector" open={!selectedChannel}>
         <summary>
           <span>{selectedChannel ? "채널 변경" : "채널 선택"}</span>
           <strong>{channels.length}개 채널</strong>
@@ -932,7 +1047,7 @@ function GuidedStepNav({
                 className={`guided-step-link ${isActive ? "active" : ""} ${isCurrent ? "current" : ""} ${isComplete ? "complete" : ""}`}
                 href={dashboardHref({ channelId, runId, step: step.key })}
               >
-                <span>{isComplete ? <CheckCircle2 size={14} /> : String(index + 1).padStart(2, "0")}</span>
+                <span>{isActive ? String(index + 1).padStart(2, "0") : isComplete ? <CheckCircle2 size={14} /> : String(index + 1).padStart(2, "0")}</span>
                 <strong>{step.label}</strong>
                 {isCurrent ? <small>권장</small> : null}
               </Link>
@@ -1035,6 +1150,106 @@ function GuidedActionPanel({
   );
 }
 
+function TopicStepPanel({
+  channelId,
+  channels,
+  run,
+}: {
+  channelId: string;
+  channels: SafeYouTubeChannel[];
+  run: RunSummary;
+}) {
+  const brief = run.package.brief;
+  const hasDependentWork =
+    run.package.sources.length > 0 ||
+    run.package.claim_ledger.length > 0 ||
+    run.package.storyboard.length > 0;
+  return (
+    <div className="topic-step-stack">
+      <section className="topic-selection-panel" id="selected-topic" aria-labelledby="selected-topic-title">
+        <div className="topic-selection-copy">
+          <p>현재 프로젝트의 확정 주제</p>
+          <h2 id="selected-topic-title">{brief.topic}</h2>
+          <span>
+            이 주제는 프로젝트 <code>{run.id}</code>에 연결되어 있습니다. 채널을 바꿔도 이 프로젝트의 주제는 자동으로 바뀌지 않습니다.
+          </span>
+        </div>
+        <div className="topic-selection-meta" aria-label="현재 주제 제작 조건">
+          <div>
+            <span>채널</span>
+            <strong>{runChannelLabel(run)}</strong>
+          </div>
+          <div>
+            <span>형식</span>
+            <strong>{formatCopy[brief.format] ?? brief.format}</strong>
+          </div>
+          <div>
+            <span>길이</span>
+            <strong>{brief.target_duration_seconds ?? 0}초</strong>
+          </div>
+          <div>
+            <span>연결된 자료</span>
+            <strong>{run.package.sources.length}개</strong>
+          </div>
+        </div>
+        <div className="topic-selection-actions">
+          <Link
+            className="text-button primary"
+            href={dashboardHref({ channelId, runId: run.id, step: "research" })}
+          >
+            현재 주제로 리서치 계속
+            <ChevronRight size={15} />
+          </Link>
+          <span>주제를 유지한다면 기존 자료와 대본이 그대로 보존됩니다.</span>
+        </div>
+      </section>
+
+      <details className="topic-reselection-panel" id="topic-reselection">
+        <summary>
+          <div>
+            <span>다른 주제가 필요할 때</span>
+            <strong>새 주제를 선정해 새 프로젝트 만들기</strong>
+          </div>
+          <small>현재 프로젝트는 보존됩니다</small>
+        </summary>
+        <div className="topic-reselection-body">
+          <div className="topic-change-rule">
+            <AlertTriangle size={17} />
+            <p>
+              기존 주제에는 리서치·대본·스토리보드가 연결될 수 있으므로 주제만 덮어쓰지 않습니다.
+              새 주제를 확정하면 별도의 프로젝트가 만들어집니다.
+            </p>
+          </div>
+          <NewRunForm channels={channels} initialChannelId={channelId} />
+        </div>
+      </details>
+
+      <details className="topic-project-danger" id="topic-project-danger">
+        <summary>
+          <span>잘못 선정한 주제와 프로젝트를 제거해야 하나요?</span>
+          <strong>삭제 옵션 보기</strong>
+        </summary>
+        <div>
+          <p>
+            {hasDependentWork
+              ? "이 프로젝트에는 이미 리서치 또는 제작 결과가 연결되어 있습니다. 삭제하면 해당 결과도 함께 제거됩니다."
+              : "아직 연결된 제작 결과가 거의 없습니다. 삭제하면 이 주제로 만든 프로젝트 기록이 제거됩니다."}
+          </p>
+          <RunDeleteButton runId={run.id} topic={brief.topic} />
+        </div>
+      </details>
+
+      <details className="guided-secondary-panel topic-brief-details">
+        <summary>현재 주제의 전체 제작 조건 보기</summary>
+        <div className="topic-brief-details-body">
+          <SummaryGrid run={run} />
+          <BriefPanel run={run} />
+        </div>
+      </details>
+    </div>
+  );
+}
+
 function GuidedRunWorkspace({
   activeStep,
   allRuns,
@@ -1066,22 +1281,26 @@ function GuidedRunWorkspace({
   const isRecommendedStep = activeStep === currentStep;
   return (
     <div className="guided-workspace">
-      {isRecommendedStep ? (
-        <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
-      ) : (
-        <section className="stage-review-banner" aria-label="단계 둘러보기">
-          <div>
-            <span>다른 단계 확인 중</span>
-            <strong>{guidedStepDefinitions[guidedStepIndex(currentStep)]?.label} 단계가 현재 권장 작업입니다.</strong>
-          </div>
-          <Link
-            className="text-button primary"
-            href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
-          >
-            권장 단계로 이동
-          </Link>
-        </section>
-      )}
+      <StageFunctionGuide activeStep={activeStep} />
+
+      <div id="stage-primary-action">
+        {isRecommendedStep ? (
+          <GuidedActionPanel plan={nextActionPlan} providerSettings={providerSettings} run={run} />
+        ) : (
+          <section className="stage-review-banner" aria-label="단계 둘러보기">
+            <div>
+              <span>다른 단계 확인 중</span>
+              <strong>{guidedStepDefinitions[guidedStepIndex(currentStep)]?.label} 단계가 현재 권장 작업입니다.</strong>
+            </div>
+            <Link
+              className="text-button primary"
+              href={dashboardHref({ channelId, runId: run.id, step: currentStep })}
+            >
+              권장 단계로 이동
+            </Link>
+          </section>
+        )}
+      </div>
 
       {activeStep === "channel" ? (
         <OperatingChannelBar
@@ -1093,10 +1312,7 @@ function GuidedRunWorkspace({
       ) : null}
 
       {activeStep === "topic" ? (
-        <>
-          <SummaryGrid run={run} />
-          <BriefPanel run={run} />
-        </>
+        <TopicStepPanel channelId={channelId} channels={channels} run={run} />
       ) : null}
 
       {activeStep === "research" ? (
@@ -1132,11 +1348,11 @@ function GuidedRunWorkspace({
       ) : null}
 
       {activeStep === "media" ? (
-        <>
+        <div className="stage-output-stack" id="media-workboard">
           {generationState.manifestExists ? (
             <GenerationConsolePanel
               generationState={generationState}
-              panelId="media-workboard"
+              panelId="media-generation-console"
               providerSettings={providerSettings}
               run={run}
               title="미디어 작업판"
@@ -1149,11 +1365,11 @@ function GuidedRunWorkspace({
             runId={run.id}
             title={workspaceCopy.title}
           />
-        </>
+        </div>
       ) : null}
 
       {activeStep === "publish" ? (
-        <>
+        <div className="stage-output-stack" id="publish-operations">
           <ArtifactWorkspace
             artifacts={artifacts}
             description={workspaceCopy.description}
@@ -1167,7 +1383,7 @@ function GuidedRunWorkspace({
               <SourcesPanel run={run} />
             </div>
           </details>
-        </>
+        </div>
       ) : null}
 
       <nav className="studio-step-footer" aria-label="제작 단계 이동">
@@ -1238,6 +1454,10 @@ function StudioHeader({
   providerSettings: SafeProviderSettings;
   runs: RunSummary[];
 }) {
+  const channelLabel = runChannelLabel(activeRun);
+  const topic = activeRun.package.brief.topic;
+  const isChannelStep = activeStep === "channel";
+  const isTopicStep = activeStep === "topic";
   return (
     <header className="studio-header">
       <Link className="studio-brand" href="/dashboard">
@@ -1248,10 +1468,20 @@ function StudioHeader({
         </div>
       </Link>
       <div className="studio-project-identity">
-        <span>{runChannelLabel(activeRun)}</span>
-        <strong>{activeRun.package.brief.topic}</strong>
+        <span>
+          {isChannelStep
+            ? "현재 선택된 제작 채널"
+            : isTopicStep
+              ? `${channelLabel} · 주제 선정`
+              : `${channelLabel} · 현재 프로젝트`}
+        </span>
+        <strong>{isChannelStep ? channelLabel : topic}</strong>
         <small>
-          {formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} · {languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} · {activeRun.package.brief.target_duration_seconds ?? 0}초
+          {isChannelStep
+            ? `열려 있는 프로젝트: ${topic}`
+            : isTopicStep
+              ? "현재 프로젝트의 확정 주제 · 다른 주제는 새 프로젝트로 시작합니다"
+              : `${formatCopy[activeRun.package.brief.format] ?? activeRun.package.brief.format} · ${languageCopy[activeRun.package.brief.language] ?? activeRun.package.brief.language} · ${activeRun.package.brief.target_duration_seconds ?? 0}초`}
         </small>
       </div>
       <div className="studio-header-actions">
