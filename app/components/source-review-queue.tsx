@@ -34,20 +34,39 @@ function formatDate(value: string | undefined) {
   if (!value) {
     return "게시일 미확인";
   }
+  const isoDate = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoDate) {
+    return `${isoDate[1]}.${isoDate[2]}.${isoDate[3]}`;
+  }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return new Intl.DateTimeFormat("ko", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(date);
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}.${month}.${day}`;
 }
 
 function formatNumber(value: number | undefined) {
   const number = Number(value ?? 0);
-  return Number.isFinite(number) && number > 0 ? new Intl.NumberFormat("ko", { notation: "compact" }).format(number) : "미확인";
+  if (!Number.isFinite(number) || number <= 0) {
+    return "미확인";
+  }
+  const compact = (divisor: number, suffix: string) => {
+    const rounded = Math.round((number / divisor) * 10) / 10;
+    return `${Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1)}${suffix}`;
+  };
+  if (number >= 100_000_000) {
+    return compact(100_000_000, "억");
+  }
+  if (number >= 10_000) {
+    return compact(10_000, "만");
+  }
+  if (number >= 1_000) {
+    return compact(1_000, "천");
+  }
+  return Math.round(number).toString();
 }
 
 function formatDuration(seconds: number | undefined) {
