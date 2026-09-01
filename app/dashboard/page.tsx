@@ -235,7 +235,7 @@ const stageFunctionDefinitions: Record<
     completion: "검수 오류가 없고 렌더 결과와 게시 정보, 업로드 승인이 준비되면 완료됩니다.",
     description: "완성된 영상과 게시 정보를 검수하고 렌더·업로드 준비 상태를 확인합니다.",
     functions: [
-      { detail: "제목, 설명, 썸네일 문구와 최종 품질 항목을 검토합니다.", href: "#artifact-publishing", label: "메타데이터·품질 검수" },
+      { detail: "제목, 설명, 썸네일 문구와 최종 품질 항목을 검토합니다.", href: "#publish-operations", label: "메타데이터·품질 검수" },
       { detail: "타임라인과 렌더 작업의 준비 상태를 확인합니다.", href: "#publish-operations", label: "영상 조립·렌더" },
       { detail: "채널, OAuth, 공개 범위를 확인한 뒤 업로드 작업을 승인합니다.", href: "#publish-operations", label: "YouTube 업로드 준비" },
     ],
